@@ -1,9 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Lazy singleton – prevents module-level instantiation during SSR/static pre-render
+let _instance: SupabaseClient | null = null;
 
-export const supabase = createClient(url, key);
+function getInstance(): SupabaseClient {
+  if (!_instance) {
+    _instance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
+  }
+  return _instance;
+}
+
+// Proxy so call sites keep using `supabase.from(...)` unchanged
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_target, prop: string) {
+    return (getInstance() as unknown as Record<string, unknown>)[prop];
+  },
+});
 
 export interface Comment {
   id: string;
