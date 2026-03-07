@@ -14,6 +14,10 @@ export interface Message {
   summary: string;
   detail: string;
   source: string;
+  /** Explicit URL for the source — wraps the source text in a link */
+  sourceUrl?: string;
+  /** Description of a chart/visual element to be rendered as a placeholder */
+  visual?: string;
 }
 
 export const TOPICS: Record<Topic, { color: string }> = {
