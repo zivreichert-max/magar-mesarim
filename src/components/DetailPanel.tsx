@@ -2,13 +2,15 @@
 
 import { useEffect } from 'react';
 import { Message, TOPICS } from '@/data/messages';
+import CommentsSection from '@/components/CommentsSection';
 
 interface DetailPanelProps {
   message: Message | null;
   onClose: () => void;
+  authorName: string;
 }
 
-export default function DetailPanel({ message, onClose }: DetailPanelProps) {
+export default function DetailPanel({ message, onClose, authorName }: DetailPanelProps) {
   const isOpen = !!message;
   const color = message ? (TOPICS[message.topic]?.color ?? '#fff') : '#fff';
 
@@ -45,7 +47,7 @@ export default function DetailPanel({ message, onClose }: DetailPanelProps) {
         }}
       />
 
-      {/* Panel – slides in from left (correct for RTL: detail panel on left side) */}
+      {/* Panel – slides in from left (RTL) */}
       <div
         style={{
           position: 'fixed',
@@ -75,6 +77,7 @@ export default function DetailPanel({ message, onClose }: DetailPanelProps) {
                 alignItems: 'flex-start',
                 justifyContent: 'space-between',
                 gap: 12,
+                flexShrink: 0,
               }}
             >
               <div style={{ flex: 1 }}>
@@ -88,14 +91,7 @@ export default function DetailPanel({ message, onClose }: DetailPanelProps) {
                       flexShrink: 0,
                     }}
                   />
-                  <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      letterSpacing: 0.5,
-                      color: color,
-                    }}
-                  >
+                  <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color }}>
                     {message.topic}
                   </span>
                 </div>
@@ -160,13 +156,7 @@ export default function DetailPanel({ message, onClose }: DetailPanelProps) {
                   >
                     תקציר
                   </h3>
-                  <p
-                    style={{
-                      fontSize: 15,
-                      lineHeight: 1.85,
-                      color: 'rgba(232,230,224,0.9)',
-                    }}
-                  >
+                  <p style={{ fontSize: 15, lineHeight: 1.85, color: 'rgba(232,230,224,0.9)' }}>
                     {message.summary}
                   </p>
                 </section>
@@ -188,13 +178,7 @@ export default function DetailPanel({ message, onClose }: DetailPanelProps) {
                   >
                     הרחבה
                   </h3>
-                  <p
-                    style={{
-                      fontSize: 14,
-                      lineHeight: 1.9,
-                      color: 'rgba(232,230,224,0.8)',
-                    }}
-                  >
+                  <p style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(232,230,224,0.8)' }}>
                     {message.detail}
                   </p>
                 </section>
@@ -230,7 +214,7 @@ export default function DetailPanel({ message, onClose }: DetailPanelProps) {
                 </section>
               )}
 
-              {/* Empty state for items with no content */}
+              {/* Empty state */}
               {!message.summary && !message.detail && !message.source && (
                 <div
                   style={{
@@ -243,6 +227,12 @@ export default function DetailPanel({ message, onClose }: DetailPanelProps) {
                   תוכן בפיתוח – יתווסף בקרוב
                 </div>
               )}
+
+              {/* Divider before comments */}
+              <div style={{ borderTop: '1px solid var(--border)', marginTop: 4 }} />
+
+              {/* Comments */}
+              <CommentsSection cardId={message.id} authorName={authorName} />
             </div>
           </>
         )}
