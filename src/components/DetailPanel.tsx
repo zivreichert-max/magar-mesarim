@@ -108,16 +108,17 @@ function renderDetailTable(rows: string[][], key: number) {
           {rows.map((row, ri) => (
             <tr
               key={ri}
-              style={{ background: ri % 2 === 0 ? 'var(--bg)' : 'var(--bg3)' }}
+              style={{ background: ri % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)' }}
             >
               {row.map((cell, ci) => (
                 <td
                   key={ci}
                   style={{
-                    padding: '7px 12px',
-                    border: '1px solid var(--border)',
-                    color: ci === 0 ? 'var(--text)' : 'rgba(232,230,224,0.75)',
+                    padding: '6px 12px',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    color: 'var(--text)',
                     fontWeight: ci === 0 ? 600 : 400,
+                    opacity: ci === 0 ? 1 : 0.75,
                     whiteSpace: 'nowrap',
                   }}
                 >
@@ -135,54 +136,54 @@ function renderDetailTable(rows: string[][], key: number) {
 /** Render detail text with inline table detection. */
 function renderDetail(detail: string): React.ReactNode {
   const lines = detail.split('\n');
-  const nodes: React.ReactNode[] = [];
-  let i = 0;
+  const nonEmptyLines = lines.map(l => l.trim()).filter(Boolean);
 
-  while (i < lines.length) {
-    const line = lines[i];
-    const trimmed = line.trim();
+  // If ANY line contains ' | ', collect all pipe-lines as a table and non-pipe as paragraphs
+  const hasAnyPipe = nonEmptyLines.some(l => l.includes(' | ') && !isSeparatorRow(l));
 
-    if (!trimmed) { i++; continue; }
+  if (hasAnyPipe) {
+    const tableRows: string[][] = [];
+    const paraNodes: React.ReactNode[] = [];
+    const nodes: React.ReactNode[] = [];
+    let tableKey = 0;
 
-    if (isPipeRow(trimmed) && !isSeparatorRow(trimmed)) {
-      // Collect consecutive pipe rows into a table
-      const tableLines: string[] = [];
-      while (i < lines.length) {
-        const t = lines[i].trim();
-        if (!t) { i++; break; }
-        if (isPipeRow(t) && !isSeparatorRow(t)) {
-          tableLines.push(t);
-          i++;
-        } else if (isSeparatorRow(t)) {
-          i++; // skip markdown separator rows
-        } else {
-          break;
+    for (const trimmed of nonEmptyLines) {
+      if (isSeparatorRow(trimmed)) continue;
+      if (trimmed.includes(' | ')) {
+        tableRows.push(
+          trimmed.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim())
+        );
+      } else {
+        // Flush pending table rows before adding paragraph
+        if (tableRows.length > 0) {
+          nodes.push(renderDetailTable([...tableRows], tableKey++));
+          tableRows.length = 0;
         }
-      }
-      const rows = tableLines.map(l =>
-        l.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim())
-      );
-      if (rows.length >= 2) {
-        nodes.push(renderDetailTable(rows, nodes.length));
-      } else if (rows.length === 1) {
-        // Single pipe-row: render as plain text
         nodes.push(
-          <p key={nodes.length} style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(232,230,224,0.8)', margin: 0 }}>
-            {tableLines[0]}
+          <p key={`p-${nodes.length}`} style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(232,230,224,0.8)', margin: 0 }}>
+            {trimmed}
           </p>
         );
       }
-    } else {
-      nodes.push(
-        <p key={nodes.length} style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(232,230,224,0.8)', margin: 0 }}>
-          {trimmed}
-        </p>
-      );
-      i++;
     }
+    // Flush remaining table rows
+    if (tableRows.length > 0) {
+      nodes.push(renderDetailTable([...tableRows], tableKey++));
+    }
+
+    return <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{nodes}</div>;
   }
 
-  // No newlines → whole string is a single paragraph (most existing items)
+  // No pipe rows — render each non-empty line as a paragraph
+  const nodes: React.ReactNode[] = [];
+  for (const trimmed of nonEmptyLines) {
+    nodes.push(
+      <p key={nodes.length} style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(232,230,224,0.8)', margin: 0 }}>
+        {trimmed}
+      </p>
+    );
+  }
+
   if (nodes.length === 0) {
     return (
       <p style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(232,230,224,0.8)', margin: 0 }}>
@@ -364,39 +365,38 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
                 </section>
               )}
 
-              {/* Visual placeholder */}
+              {/* Visual placeholder – immediately after detail/expansion */}
               {message.visual && (
-                <section>
-                  <SectionHeading>ויזואליה</SectionHeading>
-                  <div
+                <div
+                  style={{
+                    border: '1px dashed rgba(255,255,255,0.15)',
+                    background: 'rgba(255,255,255,0.02)',
+                    borderRadius: 8,
+                    padding: 16,
+                    minHeight: 72,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    marginTop: 12,
+                  }}
+                >
+                  <span style={{ fontSize: 28 }}>📊</span>
+                  <span
                     style={{
-                      border: '1px dashed rgba(255,255,255,0.15)',
-                      borderRadius: 10,
-                      padding: '20px 18px',
-                      background: 'rgba(255,255,255,0.03)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 8,
-                      alignItems: 'center',
-                      textAlign: 'center',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: 'var(--muted)',
+                      letterSpacing: 0.5,
                     }}
                   >
-                    <span style={{ fontSize: 28 }}>📊</span>
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: 'var(--muted)',
-                        letterSpacing: 0.5,
-                      }}
-                    >
-                      ויזואליה בפיתוח
-                    </span>
-                    <span style={{ fontSize: 12, color: 'rgba(122,125,138,0.8)', lineHeight: 1.5 }}>
-                      {message.visual}
-                    </span>
-                  </div>
-                </section>
+                    ויזואליה בפיתוח
+                  </span>
+                  <span style={{ fontSize: 12, color: 'rgba(122,125,138,0.8)', lineHeight: 1.5 }}>
+                    {message.visual}
+                  </span>
+                </div>
               )}
 
               {/* Source – with clickable URL support */}
