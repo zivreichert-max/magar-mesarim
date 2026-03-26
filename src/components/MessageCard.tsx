@@ -12,6 +12,28 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
   const color = TOPICS[message.topic]?.color ?? 'rgba(255,255,255,0.2)';
   const sourceShort = message.source ? message.source.split('|')[0].trim() : '';
 
+  function CredibilityBadge({ level }: { level?: 1 | 2 | 3 }) {
+    if (!level) return null;
+    const filled = '⬤';
+    const empty = '○';
+    const labels: Record<number, string> = { 1: 'כתבה', 2: 'מכון מחקר', 3: 'מקור ממשלתי' };
+    const colors: Record<number, string> = { 1: '#7a7d8a', 2: '#4a9eff', 3: '#22c55e' };
+    const dots = Array.from({ length: 3 }, (_, i) => i < level ? filled : empty).join('');
+    return (
+      <span style={{
+        fontSize: 10,
+        color: colors[level],
+        letterSpacing: 2,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4,
+        marginTop: 2,
+      }}>
+        <span>{dots}</span>
+        <span style={{ letterSpacing: 0, opacity: 0.7 }}>{labels[level]}</span>
+      </span>
+    );
+  }
   return (
     <div
       onClick={onClick}
@@ -77,6 +99,7 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
         >
           {message.topic}
         </span>
+        <CredibilityBadge level={message.credibility} />
       </div>
 
       {/* Title */}
