@@ -423,7 +423,7 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
                       מקורות ועדכניות
                     </strong>
                     <span style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.7 }}>
-                      {renderSource(message.source, message.sourceUrl)}
+                      {renderSource(message.source)}
                     </span>
                   </div>
                 </section>

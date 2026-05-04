@@ -99,7 +99,6 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
         >
           {message.topic}
         </span>
-        <CredibilityBadge level={message.credibility} />
       </div>
 
       {/* Title */}
