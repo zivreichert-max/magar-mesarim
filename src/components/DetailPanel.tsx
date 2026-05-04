@@ -160,7 +160,7 @@ function renderDetail(detail: string): React.ReactNode {
           tableRows.length = 0;
         }
         nodes.push(
-          <p key={`p-${nodes.length}`} style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(232,230,224,0.8)', margin: 0 }}>
+          <p key={`p-${nodes.length}`} style={{ fontSize: 14, lineHeight: 1.75, color: 'rgba(232,230,224,0.8)', margin: 0, direction: 'rtl', textAlign: 'right' }}>
             {trimmed}
           </p>
         );
@@ -178,7 +178,7 @@ function renderDetail(detail: string): React.ReactNode {
   const nodes: React.ReactNode[] = [];
   for (const trimmed of nonEmptyLines) {
     nodes.push(
-      <p key={nodes.length} style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(232,230,224,0.8)', margin: 0 }}>
+      <p key={nodes.length} style={{ fontSize: 14, lineHeight: 1.75, color: 'rgba(232,230,224,0.8)', margin: 0, direction: 'rtl', textAlign: 'right' }}>
         {trimmed}
       </p>
     );
@@ -186,7 +186,7 @@ function renderDetail(detail: string): React.ReactNode {
 
   if (nodes.length === 0) {
     return (
-      <p style={{ fontSize: 14, lineHeight: 1.9, color: 'rgba(232,230,224,0.8)', margin: 0 }}>
+      <p style={{ fontSize: 14, lineHeight: 1.75, color: 'rgba(232,230,224,0.8)', margin: 0, direction: 'rtl', textAlign: 'right' }}>
         {detail}
       </p>
     );
@@ -351,7 +351,7 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
               {message.summary && (
                 <section>
                   <SectionHeading>תקציר</SectionHeading>
-                  <p style={{ fontSize: 15, lineHeight: 1.85, color: 'rgba(232,230,224,0.9)', margin: 0 }}>
+                  <p style={{ fontSize: 15, lineHeight: 1.85, color: 'rgba(232,230,224,0.9)', margin: 0, direction: 'rtl', textAlign: 'right' }}>
                     {message.summary}
                   </p>
                 </section>
