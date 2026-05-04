@@ -66,7 +66,7 @@ export default function FilterBar({
       </div>
 
       {/* Topic chips */}
-      <div className="filter-chips flex flex-wrap gap-1.5">
+      <div className="filter-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, overflowX: 'auto' }}>
         {ALL_FILTERS.map(filter => {
           const isActive = filter === activeFilter;
 
@@ -85,6 +85,7 @@ export default function FilterBar({
                 fontWeight: isActive ? 700 : 600,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
+                touchAction: 'manipulation',
                 transition: 'all 0.15s',
               }}
             >

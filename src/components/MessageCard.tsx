@@ -23,6 +23,8 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
         borderRadius: 0,
         padding: 20,
         cursor: 'pointer',
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
         display: 'flex',
         flexDirection: 'column',
         gap: 10,
