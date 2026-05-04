@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Message, TOPICS } from '@/data/messages';
 import CommentsSection from '@/components/CommentsSection';
 
@@ -220,6 +220,13 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 export default function DetailPanel({ message, onClose, authorName }: DetailPanelProps) {
   const isOpen = !!message;
   const color = message ? (TOPICS[message.topic]?.color ?? '#fff') : '#fff';
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -254,9 +261,24 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
         }}
       />
 
-      {/* Panel – slides in from left (RTL) */}
+      {/* Panel – bottom sheet on mobile, side panel on desktop */}
       <div
-        style={{
+        style={isMobile ? {
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '90vh',
+          width: '100%',
+          background: '#f8fafc',
+          borderTop: '2px solid #0075C4',
+          zIndex: 1001,
+          transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
+          transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
+          display: 'flex',
+          flexDirection: 'column' as const,
+          overflow: 'hidden',
+        } : {
           position: 'fixed',
           top: 0,
           left: 0,
@@ -269,7 +291,7 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
           transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
           display: 'flex',
-          flexDirection: 'column',
+          flexDirection: 'column' as const,
           overflow: 'hidden',
         }}
       >
