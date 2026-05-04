@@ -22,11 +22,15 @@ export default function FilterBar({
 }: FilterBarProps) {
   return (
     <div
-      className="filter-bar sticky z-30 flex flex-wrap gap-2.5 items-center"
       style={{
-        top: 78,
-        padding: '14px 32px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 30,
         background: '#f8fafc',
+        padding: '10px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
         borderBottom: '1px solid #e5e7eb',
       }}
     >
@@ -66,7 +70,7 @@ export default function FilterBar({
       </div>
 
       {/* Topic chips */}
-      <div className="filter-chips" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', gap: 6, overflowX: 'auto', paddingBottom: 4 } as React.CSSProperties}>
         {ALL_FILTERS.map(filter => {
           const isActive = filter === activeFilter;
 
