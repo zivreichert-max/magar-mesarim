@@ -74,7 +74,7 @@ function renderSource(source: string, sourceUrl?: string): React.ReactNode {
   const segments = source.split('|').map(s => s.trim()).filter(Boolean);
   return segments.map((seg, i) => (
     <span key={i}>
-      {i > 0 && <span style={{ color: 'var(--muted)', margin: '0 6px' }}>·</span>}
+      {i > 0 && <span style={{ color: '#555555', margin: '0 6px' }}>·</span>}
       {parseSourceSegment(seg)}
     </span>
   ));
@@ -108,15 +108,15 @@ function renderDetailTable(rows: string[][], key: number) {
           {rows.map((row, ri) => (
             <tr
               key={ri}
-              style={{ background: ri % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)' }}
+              style={{ background: ri % 2 === 0 ? '#ffffff' : '#f8fafc' }}
             >
               {row.map((cell, ci) => (
                 <td
                   key={ci}
                   style={{
                     padding: '6px 12px',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    color: 'var(--text)',
+                    border: '1px solid #e5e7eb',
+                    color: '#111111',
                     fontWeight: ci === 0 ? 600 : 400,
                     opacity: ci === 0 ? 1 : 0.75,
                     whiteSpace: 'nowrap',
@@ -160,7 +160,7 @@ function renderDetail(detail: string): React.ReactNode {
           tableRows.length = 0;
         }
         nodes.push(
-          <p key={`p-${nodes.length}`} style={{ fontSize: 14, lineHeight: 1.75, color: 'rgba(232,230,224,0.8)', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+          <p key={`p-${nodes.length}`} style={{ fontSize: 14, lineHeight: 1.75, color: '#333333', margin: 0, direction: 'rtl', textAlign: 'right' }}>
             {trimmed}
           </p>
         );
@@ -178,7 +178,7 @@ function renderDetail(detail: string): React.ReactNode {
   const nodes: React.ReactNode[] = [];
   for (const trimmed of nonEmptyLines) {
     nodes.push(
-      <p key={nodes.length} style={{ fontSize: 14, lineHeight: 1.75, color: 'rgba(232,230,224,0.8)', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+      <p key={nodes.length} style={{ fontSize: 14, lineHeight: 1.75, color: '#333333', margin: 0, direction: 'rtl', textAlign: 'right' }}>
         {trimmed}
       </p>
     );
@@ -186,7 +186,7 @@ function renderDetail(detail: string): React.ReactNode {
 
   if (nodes.length === 0) {
     return (
-      <p style={{ fontSize: 14, lineHeight: 1.75, color: 'rgba(232,230,224,0.8)', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+      <p style={{ fontSize: 14, lineHeight: 1.75, color: '#333333', margin: 0, direction: 'rtl', textAlign: 'right' }}>
         {detail}
       </p>
     );
@@ -204,10 +204,10 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
         fontSize: 10,
         fontWeight: 700,
         letterSpacing: 1,
-        color: 'var(--muted)',
+        color: '#0075C4',
         marginBottom: 10,
         paddingBottom: 8,
-        borderBottom: '1px solid var(--border)',
+        borderBottom: '1px solid #e5e7eb',
       }}
     >
       {children}
@@ -263,8 +263,8 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
           bottom: 0,
           width: 520,
           maxWidth: '100vw',
-          background: 'var(--bg2)',
-          borderRight: '1px solid var(--border)',
+          background: '#f8fafc',
+          borderRight: '1px solid #e5e7eb',
           zIndex: 101,
           transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
@@ -279,7 +279,7 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
             <div
               style={{
                 padding: '24px 24px 20px',
-                borderBottom: '1px solid var(--border)',
+                background: '#0075C4',
                 display: 'flex',
                 alignItems: 'flex-start',
                 justifyContent: 'space-between',
@@ -289,26 +289,29 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
             >
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <div
+                  <span
                     style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: '50%',
-                      background: color,
-                      flexShrink: 0,
+                      display: 'inline-block',
+                      background: 'rgba(255,255,255,0.2)',
+                      color: '#ffffff',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: 2,
                     }}
-                  />
-                  <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color }}>
+                  >
                     {message.topic}
                   </span>
                 </div>
                 <div
                   style={{
-                    fontFamily: "'Frank Ruhl Libre', serif",
-                    fontSize: 22,
-                    fontWeight: 700,
+                    fontFamily: "'Heebo', sans-serif",
+                    fontSize: 20,
+                    fontWeight: 900,
                     lineHeight: 1.4,
-                    color: 'var(--text)',
+                    color: '#ffffff',
+                    direction: 'rtl',
+                    textAlign: 'right',
                   }}
                 >
                   {message.title}
@@ -318,19 +321,19 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
               <button
                 onClick={onClose}
                 style={{
-                  background: 'var(--bg3)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 8,
+                  background: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  borderRadius: 2,
                   padding: '8px 10px',
                   fontSize: 18,
                   cursor: 'pointer',
-                  color: 'var(--muted)',
+                  color: '#ffffff',
                   flexShrink: 0,
                   lineHeight: 1,
-                  transition: 'color 0.15s',
+                  transition: 'background 0.15s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.25)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.15)')}
               >
                 ✕
               </button>
@@ -342,6 +345,7 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
                 flex: 1,
                 overflowY: 'auto',
                 padding: 24,
+                background: '#ffffff',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 24,
@@ -351,7 +355,7 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
               {message.summary && (
                 <section>
                   <SectionHeading>תקציר</SectionHeading>
-                  <p style={{ fontSize: 15, lineHeight: 1.85, color: 'rgba(232,230,224,0.9)', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+                  <p style={{ fontSize: 15, lineHeight: 1.85, color: '#111111', margin: 0, direction: 'rtl', textAlign: 'right' }}>
                     {message.summary}
                   </p>
                 </section>
@@ -377,8 +381,8 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
                   ) : (
                     <div style={{
                       minHeight: 120,
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px dashed rgba(255,255,255,0.2)',
+                      background: '#f8fafc',
+                      border: '1px dashed #e5e7eb',
                       borderRadius: 10,
                       padding: 20,
                       display: 'flex',
@@ -388,10 +392,10 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
                       <div style={{ fontSize: 14, fontWeight: 700, color, letterSpacing: 0.3 }}>
                         📊 ויזואליה
                       </div>
-                      <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>
+                      <div style={{ fontSize: 13, color: '#555555', lineHeight: 1.6 }}>
                         {message.visual}
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--muted)', opacity: 0.6 }}>
+                      <div style={{ fontSize: 11, color: '#555555', opacity: 0.6 }}>
                         גרף / תמונה יצורפו בקרוב
                       </div>
                     </div>
@@ -404,9 +408,9 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
                 <section>
                   <div
                     style={{
-                      background: 'var(--bg3)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 8,
+                      background: '#f8fafc',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: 2,
                       padding: '12px 16px',
                     }}
                   >
@@ -417,12 +421,12 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
                         fontSize: 11,
                         fontWeight: 700,
                         letterSpacing: 0.5,
-                        color: 'var(--text)',
+                        color: '#0075C4',
                       }}
                     >
                       מקורות ועדכניות
                     </strong>
-                    <span style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.7 }}>
+                    <span style={{ fontSize: 12, color: '#555555', lineHeight: 1.7 }}>
                       {renderSource(message.source)}
                     </span>
                   </div>
@@ -435,7 +439,7 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
                   style={{
                     textAlign: 'center',
                     padding: '40px 20px',
-                    color: 'var(--muted)',
+                    color: '#555555',
                     fontSize: 13,
                   }}
                 >
@@ -444,7 +448,7 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
               )}
 
               {/* Divider before comments */}
-              <div style={{ borderTop: '1px solid var(--border)', marginTop: 4 }} />
+              <div style={{ borderTop: '1px solid #e5e7eb', marginTop: 4 }} />
 
               {/* Comments */}
               <CommentsSection cardId={message.id} authorName={authorName} />

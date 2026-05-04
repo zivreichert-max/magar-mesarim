@@ -31,15 +31,53 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
   return (
     <div
       className="fixed inset-0 flex flex-col items-center justify-center gap-6 z-50"
-      style={{ background: 'var(--bg)' }}
+      style={{ background: '#ffffff' }}
     >
-      <h1
-        className="text-3xl font-black"
-        style={{ fontFamily: "'Frank Ruhl Libre', serif", color: 'var(--text)' }}
+      {/* Logo square */}
+      <div
+        style={{
+          width: 64,
+          height: 64,
+          border: '2px solid #111111',
+          background: '#ffffff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
       >
-        🔒 מאגר מסרים
-      </h1>
-      <p style={{ color: 'var(--muted)', fontSize: 14 }}>הזן סיסמה לכניסה</p>
+        <span
+          style={{
+            fontFamily: "'Heebo', sans-serif",
+            fontSize: 13,
+            fontWeight: 900,
+            color: '#111111',
+            lineHeight: 1.2,
+            textAlign: 'center',
+            whiteSpace: 'pre-line',
+          }}
+        >
+          {'בונים\nמחדש'}
+        </span>
+      </div>
+
+      <div style={{ textAlign: 'center' }}>
+        <h1
+          style={{
+            fontFamily: "'Heebo', sans-serif",
+            fontSize: 28,
+            fontWeight: 900,
+            color: '#111111',
+            margin: 0,
+          }}
+        >
+          מאגר מסרים
+        </h1>
+        <p style={{ color: '#0075C4', fontSize: 14, margin: '6px 0 0' }}>
+          בחירות 2026 · בונים מחדש
+        </p>
+      </div>
+
+      <p style={{ color: '#555555', fontSize: 14, margin: 0 }}>הזן סיסמה לכניסה</p>
 
       <div className="flex gap-2.5">
         <input
@@ -52,10 +90,10 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
           autoFocus
           style={{
             padding: '12px 18px',
-            borderRadius: 8,
-            border: '1px solid var(--border)',
-            background: 'var(--bg3)',
-            color: 'var(--text)',
+            borderRadius: 0,
+            border: '1px solid #e5e7eb',
+            background: '#ffffff',
+            color: '#111111',
             fontFamily: 'inherit',
             fontSize: 16,
             outline: 'none',
@@ -69,10 +107,10 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
           onClick={handleSubmit}
           style={{
             padding: '12px 24px',
-            borderRadius: 8,
+            borderRadius: 2,
             border: 'none',
-            background: 'var(--text)',
-            color: 'var(--bg)',
+            background: '#0075C4',
+            color: '#ffffff',
             fontFamily: 'inherit',
             fontWeight: 700,
             cursor: 'pointer',

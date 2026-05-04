@@ -24,10 +24,10 @@ export default function FilterBar({
     <div
       className="sticky z-30 flex flex-wrap gap-2.5 items-center"
       style={{
-        top: 73,
+        top: 78,
         padding: '14px 32px',
-        background: 'var(--bg2)',
-        borderBottom: '1px solid var(--border)',
+        background: '#f8fafc',
+        borderBottom: '1px solid #e5e7eb',
       }}
     >
       {/* Search */}
@@ -38,8 +38,8 @@ export default function FilterBar({
             right: 11,
             top: '50%',
             transform: 'translateY(-50%)',
-            color: 'var(--muted)',
-            fontSize: 15,
+            color: '#555555',
+            fontSize: 13,
             pointerEvents: 'none',
           }}
         >
@@ -53,10 +53,10 @@ export default function FilterBar({
           style={{
             width: '100%',
             padding: '9px 36px 9px 14px',
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            background: 'var(--bg3)',
-            color: 'var(--text)',
+            border: '1px solid #e5e7eb',
+            borderRadius: 2,
+            background: '#ffffff',
+            color: '#111111',
             fontFamily: 'inherit',
             fontSize: 14,
             outline: 'none',
@@ -69,27 +69,17 @@ export default function FilterBar({
       <div className="flex flex-wrap gap-1.5">
         {ALL_FILTERS.map(filter => {
           const isActive = filter === activeFilter;
-          const color = filter === 'הכל' ? undefined : TOPICS[filter as Topic]?.color;
 
           return (
             <button
               key={filter}
               onClick={() => onFilterChange(filter)}
               style={{
-                padding: '6px 14px',
-                borderRadius: 20,
-                border: '1px solid',
-                borderColor: isActive && filter !== 'הכל' ? 'transparent' : isActive ? 'rgba(255,255,255,0.2)' : 'var(--border)',
-                background: isActive
-                  ? filter === 'הכל'
-                    ? 'rgba(255,255,255,0.12)'
-                    : color
-                  : 'transparent',
-                color: isActive
-                  ? filter === 'הכל'
-                    ? 'var(--text)'
-                    : '#0f1117'
-                  : 'var(--muted)',
+                padding: '5px 12px',
+                borderRadius: 2,
+                border: '1px solid #0075C4',
+                background: isActive ? '#0075C4' : 'transparent',
+                color: isActive ? '#ffffff' : '#0075C4',
                 fontFamily: 'inherit',
                 fontSize: 12,
                 fontWeight: isActive ? 700 : 600,

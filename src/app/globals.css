@@ -1,12 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0f1117;
-  --bg2: #161820;
-  --bg3: #1e2030;
-  --border: rgba(255,255,255,0.08);
-  --text: #e8e6e0;
-  --muted: #7a7d8a;
+  --bg: #ffffff;
+  --bg2: #ffffff;
+  --bg3: #f8fafc;
+  --border: #e5e7eb;
+  --text: #111111;
+  --muted: #555555;
+  --brand: #0075C4;
 }
 
 * {
@@ -18,8 +19,8 @@ html {
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
+  background: #ffffff;
+  color: #111111;
   font-family: 'Heebo', 'Arial Hebrew', 'Arial', sans-serif;
   direction: rtl;
   overflow-x: hidden;
@@ -33,7 +34,7 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: #e5e7eb;
   border-radius: 2px;
 }
 
