@@ -365,28 +365,39 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
                 </section>
               )}
 
-              {/* ── ויזואליה — תמיד מוצגת, בולטת, לפני סימוכין ── */}
-              <section>
-                <div style={{
-                  minHeight: 120,
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px dashed rgba(255,255,255,0.2)',
-                  borderRadius: 10, padding: 20,
-                  display: 'flex', flexDirection: 'column', gap: 10,
-                }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color, letterSpacing: 0.3 }}>
-                    📊 ויזואליה
-                  </div>
-                  {message.visual ? (
-                    <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>
-                      {message.visual}
+              {/* ── ויזואליה ── */}
+              {message.visual && (
+                <section style={{ marginTop: 16 }}>
+                  {message.visual.startsWith('/visuals/') ? (
+                    <img
+                      src={message.visual}
+                      alt="ויזואליה"
+                      style={{ width: '100%', borderRadius: 8, display: 'block' }}
+                    />
+                  ) : (
+                    <div style={{
+                      minHeight: 120,
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px dashed rgba(255,255,255,0.2)',
+                      borderRadius: 10,
+                      padding: 20,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 10,
+                    }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color, letterSpacing: 0.3 }}>
+                        📊 ויזואליה
+                      </div>
+                      <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>
+                        {message.visual}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--muted)', opacity: 0.6 }}>
+                        גרף / תמונה יצורפו בקרוב
+                      </div>
                     </div>
-                  ) : null}
-                  <div style={{ fontSize: 11, color: 'var(--muted)', opacity: 0.6, marginTop: 4 }}>
-                    גרף / תמונה יצורפו בקרוב
-                  </div>
-                </div>
-              </section>
+                  )}
+                </section>
+              )}
 
               {/* Source – with clickable URL support */}
               {message.source && (
