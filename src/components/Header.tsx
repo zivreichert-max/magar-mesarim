@@ -6,7 +6,7 @@ interface HeaderProps {
 export default function Header({ count, total }: HeaderProps) {
   return (
     <header
-      className="sticky top-0 z-40 flex items-center justify-between"
+      className="site-header sticky top-0 z-40 flex items-center justify-between"
       style={{
         padding: '16px 32px',
         borderBottom: '2px solid #0075C4',
@@ -44,6 +44,7 @@ export default function Header({ count, total }: HeaderProps) {
 
         <div>
           <div
+            className="site-header-title"
             style={{
               fontFamily: "'Heebo', sans-serif",
               fontSize: 20,

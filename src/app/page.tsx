@@ -68,7 +68,7 @@ export default function Home() {
         onSearchChange={setSearch}
       />
 
-      <main style={{ flex: 1, padding: '28px 32px' }}>
+      <main className="page-main" style={{ flex: 1, padding: '28px 32px' }}>
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--muted)' }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
@@ -76,6 +76,7 @@ export default function Home() {
           </div>
         ) : (
           <div
+            className="cards-grid"
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',

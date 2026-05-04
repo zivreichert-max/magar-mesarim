@@ -22,7 +22,7 @@ export default function FilterBar({
 }: FilterBarProps) {
   return (
     <div
-      className="sticky z-30 flex flex-wrap gap-2.5 items-center"
+      className="filter-bar sticky z-30 flex flex-wrap gap-2.5 items-center"
       style={{
         top: 78,
         padding: '14px 32px',
@@ -66,7 +66,7 @@ export default function FilterBar({
       </div>
 
       {/* Topic chips */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="filter-chips flex flex-wrap gap-1.5">
         {ALL_FILTERS.map(filter => {
           const isActive = filter === activeFilter;
 

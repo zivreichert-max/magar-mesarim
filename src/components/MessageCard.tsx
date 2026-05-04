@@ -15,7 +15,7 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
   return (
     <div
       onClick={onClick}
-      className="animate-fade-up"
+      className="animate-fade-up card-padding"
       style={{
         background: '#ffffff',
         border: '1px solid #e5e7eb',
