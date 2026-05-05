@@ -88,7 +88,7 @@ export default function Home() {
                 key={msg.id}
                 message={msg}
                 index={i}
-                onClick={() => setSelectedMessage(msg)}
+                onClick={() => { console.log('clicked:', msg.title); setSelectedMessage(msg); }}
               />
             ))}
           </div>
