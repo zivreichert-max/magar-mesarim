@@ -218,24 +218,23 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function DetailPanel({ message, onClose, authorName }: DetailPanelProps) {
-  const isOpen = !!message;
   const color = message ? (TOPICS[message.topic]?.color ?? '#fff') : '#fff';
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
     }
-    if (isOpen) {
+    if (message) {
       window.addEventListener('keydown', handleKey);
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
     }
     return () => {
       window.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
     };
-  }, [isOpen, onClose]);
+  }, [message, onClose]);
+
+  if (!message) return null;
 
   return (
     <>
@@ -247,10 +246,7 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
           inset: 0,
           background: 'rgba(0,0,0,0.6)',
           zIndex: 9998,
-          opacity: isOpen ? 1 : 0,
-          pointerEvents: isOpen ? 'all' : 'none',
-          transition: 'opacity 0.25s',
-          backdropFilter: isOpen ? 'blur(4px)' : 'none',
+          cursor: 'pointer',
         }}
       />
 
@@ -264,16 +260,13 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
           width: '100%',
           maxWidth: '100vw',
           zIndex: 9999,
-          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.3s ease',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
           background: '#f8fafc',
         }}
       >
-        {message && (
-          <>
+        <>
             {/* Panel Header */}
             <div
               style={{
@@ -453,7 +446,6 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
               <CommentsSection cardId={message.id} authorName={authorName} />
             </div>
           </>
-        )}
       </div>
     </>
   );
