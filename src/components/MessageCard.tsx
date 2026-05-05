@@ -13,13 +13,16 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
   const sourceShort = message.source ? message.source.split('|')[0].trim() : '';
 
   return (
-    <div
+    <button
       onClick={() => { console.log('card div clicked'); onClick(); }}
       className="animate-fade-up card-padding"
       style={{
         background: '#ffffff',
-        border: '1px solid #e5e7eb',
         borderTop: `3px solid ${color}`,
+        borderRight: '1px solid #e5e7eb',
+        borderBottom: '1px solid #e5e7eb',
+        borderLeft: '1px solid #e5e7eb',
+        outline: 'none',
         borderRadius: 0,
         padding: 20,
         cursor: 'pointer',
@@ -28,16 +31,19 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
         display: 'flex',
         flexDirection: 'column',
         gap: 10,
+        width: '100%',
+        fontFamily: 'inherit',
+        textAlign: 'right',
         animationDelay: `${index * 25}ms`,
         transition: 'box-shadow 0.15s, transform 0.15s',
       }}
       onMouseEnter={e => {
-        const el = e.currentTarget as HTMLDivElement;
+        const el = e.currentTarget as HTMLButtonElement;
         el.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
         el.style.transform = 'translateY(-1px)';
       }}
       onMouseLeave={e => {
-        const el = e.currentTarget as HTMLDivElement;
+        const el = e.currentTarget as HTMLButtonElement;
         el.style.boxShadow = 'none';
         el.style.transform = 'translateY(0)';
       }}
@@ -108,6 +114,6 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
           ←
         </span>
       </div>
-    </div>
+    </button>
   );
 }
