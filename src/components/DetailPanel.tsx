@@ -238,214 +238,64 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
 
   return (
     <>
-      {/* Overlay */}
       <div
         onClick={onClose}
         style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.6)',
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.5)',
           zIndex: 9998,
-          cursor: 'pointer',
         }}
       />
-
-      {/* Panel */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: '100%',
-          maxWidth: '100vw',
-          zIndex: 9999,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          background: '#f8fafc',
-        }}
-      >
-        <>
-            {/* Panel Header */}
-            <div
-              style={{
-                padding: '24px 24px 20px',
-                background: '#0075C4',
-                display: 'flex',
-                alignItems: 'flex-start',
-                justifyContent: 'space-between',
-                gap: 12,
-                flexShrink: 0,
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <span
-                    style={{
-                      display: 'inline-block',
-                      background: 'rgba(255,255,255,0.2)',
-                      color: '#ffffff',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      padding: '2px 8px',
-                      borderRadius: 2,
-                    }}
-                  >
-                    {message.topic}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Heebo', sans-serif",
-                    fontSize: 20,
-                    fontWeight: 900,
-                    lineHeight: 1.4,
-                    color: '#ffffff',
-                    direction: 'rtl',
-                    textAlign: 'right',
-                  }}
-                >
-                  {message.title}
-                </div>
-              </div>
-
-              <button
-                onClick={onClose}
-                style={{
-                  background: 'rgba(255,255,255,0.15)',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: 2,
-                  padding: '8px 10px',
-                  fontSize: 18,
-                  cursor: 'pointer',
-                  color: '#ffffff',
-                  flexShrink: 0,
-                  lineHeight: 1,
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.25)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.15)')}
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Panel Body */}
-            <div
-              style={{
-                flex: 1,
-                overflowY: 'auto',
-                padding: 24,
-                background: '#ffffff',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 24,
-              }}
-            >
-              {/* Summary */}
-              {message.summary && (
-                <section>
-                  <SectionHeading>תקציר</SectionHeading>
-                  <p style={{ fontSize: 15, lineHeight: 1.85, color: '#111111', margin: 0, direction: 'rtl', textAlign: 'right' }}>
-                    {message.summary}
-                  </p>
-                </section>
-              )}
-
-              {/* Detail – with table support */}
-              {message.detail && message.detail.trim() && (
-                <section>
-                  <SectionHeading>הרחבה</SectionHeading>
-                  {renderDetail(message.detail)}
-                </section>
-              )}
-
-              {/* ── ויזואליה ── */}
-              {message.visual && (
-                <section style={{ marginTop: 16 }}>
-                  {message.visual.startsWith('/visuals/') ? (
-                    <img
-                      src={message.visual}
-                      alt="ויזואליה"
-                      style={{ width: '100%', borderRadius: 8, display: 'block' }}
-                    />
-                  ) : (
-                    <div style={{
-                      minHeight: 120,
-                      background: '#f8fafc',
-                      border: '1px dashed #e5e7eb',
-                      borderRadius: 10,
-                      padding: 20,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 10,
-                    }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color, letterSpacing: 0.3 }}>
-                        📊 ויזואליה
-                      </div>
-                      <div style={{ fontSize: 13, color: '#555555', lineHeight: 1.6 }}>
-                        {message.visual}
-                      </div>
-                      <div style={{ fontSize: 11, color: '#555555', opacity: 0.6 }}>
-                        גרף / תמונה יצורפו בקרוב
-                      </div>
-                    </div>
-                  )}
-                </section>
-              )}
-
-              {/* Source – with clickable URL support */}
-              {message.source && (
-                <section>
-                  <div
-                    style={{
-                      background: '#f8fafc',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: 2,
-                      padding: '12px 16px',
-                    }}
-                  >
-                    <strong
-                      style={{
-                        display: 'block',
-                        marginBottom: 6,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: 0.5,
-                        color: '#0075C4',
-                      }}
-                    >
-                      מקורות ועדכניות
-                    </strong>
-                    <span style={{ fontSize: 12, color: '#555555', lineHeight: 1.7 }}>
-                      {renderSource(message.source)}
-                    </span>
-                  </div>
-                </section>
-              )}
-
-              {/* Empty state */}
-              {!message.summary && !message.detail && !message.source && !message.visual && (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    padding: '40px 20px',
-                    color: '#555555',
-                    fontSize: 13,
-                  }}
-                >
-                  תוכן בפיתוח – יתווסף בקרוב
-                </div>
-              )}
-
-              {/* Divider before comments */}
-              <div style={{ borderTop: '1px solid #e5e7eb', marginTop: 4 }} />
-
-              {/* Comments */}
-              <CommentsSection cardId={message.id} authorName={authorName} />
-            </div>
-          </>
+      <div style={{
+        position: 'fixed',
+        bottom: 0, left: 0, right: 0,
+        height: '85vh',
+        background: '#fff',
+        zIndex: 9999,
+        overflowY: 'auto',
+        borderRadius: '12px 12px 0 0',
+        padding: '20px',
+        direction: 'rtl',
+      }}>
+        <button
+          onClick={onClose}
+          type="button"
+          style={{
+            fontSize: 16, fontWeight: 700,
+            color: '#0075C4', background: 'none',
+            border: 'none', cursor: 'pointer',
+            marginBottom: 16, display: 'block',
+          }}
+        >
+          ✕ סגור
+        </button>
+        <div style={{fontSize: 11, color: '#0075C4', fontWeight: 700, marginBottom: 8}}>
+          {message.topic}
+        </div>
+        <h2 style={{fontSize: 18, fontWeight: 900, margin: '0 0 16px', color: '#111'}}>
+          {message.title}
+        </h2>
+        {message.summary && (
+          <p style={{fontSize: 14, lineHeight: 1.7, color: '#333', marginBottom: 16}}>
+            {message.summary}
+          </p>
+        )}
+        {message.detail && (
+          <p style={{fontSize: 13, lineHeight: 1.75, color: '#555', marginBottom: 16}}>
+            {message.detail}
+          </p>
+        )}
+        {message.visual && message.visual.startsWith('/visuals/') && (
+          <img src={message.visual} style={{width: '100%', borderRadius: 8}} alt="" />
+        )}
+        {message.source && (
+          <div style={{fontSize: 11, color: '#888', marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12}}>
+            {message.source}
+          </div>
+        )}
+        <div style={{borderTop: '1px solid #eee', marginTop: 20, paddingTop: 16}}>
+          <CommentsSection cardId={message.id} authorName={authorName} />
+        </div>
       </div>
     </>
   );

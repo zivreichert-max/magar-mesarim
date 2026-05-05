@@ -54,8 +54,7 @@ export default function Home() {
     });
   }, [activeFilter, search]);
 
-  console.log('selectedMessage:', selectedMessage);
-  if (appState === 'password') return <PasswordGate onUnlock={handleUnlock} />;
+if (appState === 'password') return <PasswordGate onUnlock={handleUnlock} />;
   if (appState === 'name') return <NamePrompt onName={handleName} />;
 
   return (
