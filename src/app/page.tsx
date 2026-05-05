@@ -88,7 +88,7 @@ export default function Home() {
                 key={msg.id}
                 message={msg}
                 index={i}
-                onClick={() => { alert('נלחץ: ' + msg.title.substring(0, 20)); setSelectedMessage(msg); }}
+                onClick={() => setSelectedMessage(msg)}
               />
             ))}
           </div>
