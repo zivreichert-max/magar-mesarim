@@ -250,7 +250,7 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
         position: 'fixed',
         bottom: 0, left: 0, right: 0,
         height: '85vh',
-        background: '#fff',
+        background: 'red',
         zIndex: 9999,
         overflowY: 'auto',
         borderRadius: '12px 12px 0 0',
