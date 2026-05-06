@@ -33,6 +33,10 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
         flexDirection: 'column',
         gap: 10,
         width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
+        overflow: 'hidden',
+        boxSizing: 'border-box',
         fontFamily: 'inherit',
         textAlign: 'right',
         animationDelay: `${index * 25}ms`,
@@ -108,7 +112,11 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
           marginTop: 4,
         }}
       >
-        <span style={{ fontSize: 11, color: '#555555', opacity: 0.6 }}>
+        <span style={{
+          fontSize: 11, color: '#555555', opacity: 0.6,
+          overflow: 'hidden', textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap', maxWidth: '80%', display: 'block',
+        }}>
           {sourceShort}
         </span>
         <span style={{ fontSize: 14, color: '#0075C4', opacity: 0.7 }}>

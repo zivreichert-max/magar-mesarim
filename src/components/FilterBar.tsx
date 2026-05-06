@@ -23,7 +23,7 @@ export default function FilterBar({
   return (
     <div style={{
       position: 'sticky', top: 0, zIndex: 30,
-      background: '#f8fafc', borderBottom: '1px solid #e5e7eb',
+      background: '#dce8f7', borderBottom: '2px solid #0075C4',
       padding: '10px 16px', display: 'flex',
       flexDirection: 'column', gap: 8,
     }}>
@@ -34,10 +34,10 @@ export default function FilterBar({
         onChange={e => onSearchChange(e.target.value)}
         style={{
           width: '100%', padding: '8px 12px',
-          border: '1px solid #e5e7eb', borderRadius: 2,
+          border: '2px solid #0075C4', borderRadius: 6,
           fontFamily: 'inherit', fontSize: 14,
           direction: 'rtl', outline: 'none',
-          boxSizing: 'border-box',
+          boxSizing: 'border-box', background: '#fff',
         }}
       />
       <div style={{
