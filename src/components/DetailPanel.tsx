@@ -241,14 +241,14 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
       <div
         onClick={onClose}
         style={{
-          position: 'fixed', inset: 0,
+          position: 'fixed', top: 0, right: 0, bottom: 0, left: 0,
           background: 'rgba(0,0,0,0.5)',
           zIndex: 9998,
         }}
       />
       <div style={{
         position: 'fixed',
-        bottom: 0, left: 0, right: 0,
+        top: 'auto', bottom: 0, left: 0, right: 0,
         height: '85vh',
         background: '#fff',
         zIndex: 9999,
