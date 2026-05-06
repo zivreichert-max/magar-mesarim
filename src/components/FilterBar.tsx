@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { TOPICS, Topic } from '@/data/messages';
 
 interface FilterBarProps {
@@ -21,25 +21,16 @@ export default function FilterBar({
   onFilterChange,
   onSearchChange,
 }: FilterBarProps) {
-  const [isMobile, setIsMobile] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
+  const hasActiveFilter = activeFilter !== 'הכל' || search.trim().length > 0;
 
-  useEffect(() => {
-    function check() {
-      setIsMobile(window.innerWidth < 640);
-    }
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-
-  // ── Desktop: sticky bar (unchanged) ─────────────────────────────────────────
-  if (!isMobile) {
-    return (
-      <div style={{
+  return (
+    <>
+      {/* ── Desktop: sticky bar (hidden on mobile via CSS) ── */}
+      <div className="filter-bar-desktop" style={{
         position: 'sticky', top: 0, zIndex: 30,
         background: '#f8fafc', borderBottom: '1px solid #e5e7eb',
-        padding: '10px 16px', display: 'flex',
+        padding: '10px 16px',
         flexDirection: 'column', gap: 8,
       }}>
         <input
@@ -82,20 +73,13 @@ export default function FilterBar({
           ))}
         </div>
       </div>
-    );
-  }
 
-  // ── Mobile: fixed bottom button + slide-up panel ─────────────────────────────
-  const hasActiveFilter = activeFilter !== 'הכל' || search.trim().length > 0;
-
-  return (
-    <>
-      {/* Fixed filter button — centered via flex to avoid RTL/transform iOS bugs */}
-      <div style={{
+      {/* ── Mobile: fixed bottom button (hidden on desktop via CSS) ── */}
+      <div className="filter-bar-mobile-btn" style={{
         position: 'fixed', bottom: 20, left: 0, right: 0,
-        display: 'flex', justifyContent: 'center',
-        zIndex: 500, pointerEvents: 'none',
-        direction: 'ltr',
+        justifyContent: 'center',
+        zIndex: 500,
+        pointerEvents: 'none',
       }}>
         <button
           onClick={() => setPanelOpen(true)}
@@ -103,26 +87,26 @@ export default function FilterBar({
             pointerEvents: 'auto',
             background: '#0075C4', color: '#fff',
             border: 'none', borderRadius: 24,
-            padding: '12px 24px', fontSize: 15, fontWeight: 700,
+            padding: '12px 28px', fontSize: 15, fontWeight: 700,
             touchAction: 'manipulation', cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(0,117,196,0.35)',
+            boxShadow: '0 4px 16px rgba(0,117,196,0.4)',
             display: 'flex', alignItems: 'center', gap: 8,
-            whiteSpace: 'nowrap', direction: 'rtl',
+            whiteSpace: 'nowrap',
           }}
         >
           🔍 סינון וחיפוש
           {hasActiveFilter && (
             <span style={{
-              width: 8, height: 8,
-              background: '#fff', borderRadius: '50%',
-              display: 'inline-block', flexShrink: 0,
+              width: 8, height: 8, background: '#fff',
+              borderRadius: '50%', display: 'inline-block', flexShrink: 0,
             }} />
           )}
         </button>
       </div>
 
+      {/* ── Mobile panel (always in DOM, CSS controls display) ── */}
       {panelOpen && (
-        <>
+        <div className="filter-panel-overlay">
           {/* Overlay */}
           <div
             onClick={() => setPanelOpen(false)}
@@ -132,7 +116,6 @@ export default function FilterBar({
               zIndex: 998,
             }}
           />
-
           {/* Panel */}
           <div style={{
             position: 'fixed', top: 'auto', bottom: 0, left: 0, right: 0,
@@ -143,13 +126,11 @@ export default function FilterBar({
             boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
             maxHeight: '70vh', overflowY: 'auto',
           }}>
-            {/* Drag handle */}
             <div style={{
               width: 36, height: 4, borderRadius: 2,
               background: '#e5e7eb', margin: '0 auto 18px',
             }} />
 
-            {/* Search input */}
             <input
               type="text"
               placeholder="חיפוש חופשי..."
@@ -164,15 +145,11 @@ export default function FilterBar({
               }}
             />
 
-            {/* Topic chips */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {ALL_FILTERS.map(filter => (
                 <button
                   key={filter}
-                  onClick={() => {
-                    onFilterChange(filter);
-                    setPanelOpen(false);
-                  }}
+                  onClick={() => { onFilterChange(filter); setPanelOpen(false); }}
                   style={{
                     padding: '7px 16px',
                     border: '1px solid #0075C4',
@@ -189,7 +166,6 @@ export default function FilterBar({
               ))}
             </div>
 
-            {/* Close button */}
             <button
               onClick={() => setPanelOpen(false)}
               style={{
@@ -204,7 +180,7 @@ export default function FilterBar({
               סגור
             </button>
           </div>
-        </>
+        </div>
       )}
     </>
   );
