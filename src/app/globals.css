@@ -16,7 +16,6 @@
 
 html {
   direction: rtl;
-  overflow-x: hidden;
 }
 
 body {
@@ -24,6 +23,8 @@ body {
   color: #111111;
   font-family: 'Heebo', 'Arial Hebrew', 'Arial', sans-serif;
   direction: rtl;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 /* Custom scrollbar */
