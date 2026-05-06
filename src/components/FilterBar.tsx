@@ -90,31 +90,36 @@ export default function FilterBar({
 
   return (
     <>
-      {/* Fixed filter button */}
-      <button
-        onClick={() => setPanelOpen(true)}
-        style={{
-          position: 'fixed', bottom: 20, left: '50%',
-          transform: 'translateX(-50%)',
-          background: '#0075C4', color: '#fff',
-          border: 'none', borderRadius: 24,
-          padding: '12px 24px', fontSize: 15, fontWeight: 700,
-          zIndex: 500, touchAction: 'manipulation',
-          cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(0,117,196,0.35)',
-          display: 'flex', alignItems: 'center', gap: 8,
-          whiteSpace: 'nowrap',
-        }}
-      >
-        🔍 סינון וחיפוש
-        {hasActiveFilter && (
-          <span style={{
-            width: 8, height: 8,
-            background: '#fff', borderRadius: '50%',
-            display: 'inline-block', flexShrink: 0,
-          }} />
-        )}
-      </button>
+      {/* Fixed filter button — centered via flex to avoid RTL/transform iOS bugs */}
+      <div style={{
+        position: 'fixed', bottom: 20, left: 0, right: 0,
+        display: 'flex', justifyContent: 'center',
+        zIndex: 500, pointerEvents: 'none',
+        direction: 'ltr',
+      }}>
+        <button
+          onClick={() => setPanelOpen(true)}
+          style={{
+            pointerEvents: 'auto',
+            background: '#0075C4', color: '#fff',
+            border: 'none', borderRadius: 24,
+            padding: '12px 24px', fontSize: 15, fontWeight: 700,
+            touchAction: 'manipulation', cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(0,117,196,0.35)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            whiteSpace: 'nowrap', direction: 'rtl',
+          }}
+        >
+          🔍 סינון וחיפוש
+          {hasActiveFilter && (
+            <span style={{
+              width: 8, height: 8,
+              background: '#fff', borderRadius: '50%',
+              display: 'inline-block', flexShrink: 0,
+            }} />
+          )}
+        </button>
+      </div>
 
       {panelOpen && (
         <>
@@ -136,6 +141,7 @@ export default function FilterBar({
             padding: 20,
             zIndex: 999,
             boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
+            maxHeight: '70vh', overflowY: 'auto',
           }}>
             {/* Drag handle */}
             <div style={{
@@ -149,7 +155,6 @@ export default function FilterBar({
               placeholder="חיפוש חופשי..."
               value={search}
               onChange={e => onSearchChange(e.target.value)}
-              autoFocus
               style={{
                 width: '100%', padding: '10px 14px',
                 border: '1px solid #e5e7eb', borderRadius: 8,

@@ -102,7 +102,7 @@ export default function SuggestButton({ authorName }: SuggestButtonProps) {
           onClick={e => { if (e.target === e.currentTarget) setOpen(false); }}
           style={{
             position: 'fixed',
-            inset: 0,
+            top: 0, right: 0, bottom: 0, left: 0,
             background: 'rgba(0,0,0,0.6)',
             backdropFilter: 'blur(4px)',
             zIndex: 200,
