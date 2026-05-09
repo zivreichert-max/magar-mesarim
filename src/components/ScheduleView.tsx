@@ -123,7 +123,7 @@ export default function ScheduleView() {
                           </div>}
                           {ev.detail && <div>
                             <div style={{ fontSize: 10, fontWeight: 700, color: '#0075C4', marginBottom: 4, letterSpacing: '0.06em' }}>הרחבה</div>
-                            <div style={{ fontSize: 12, lineHeight: 1.75, color: '#555' }}>{ev.detail}</div>
+                            <div style={{ fontSize: 12, lineHeight: 1.75, color: '#555', whiteSpace: 'pre-wrap' }}>{ev.detail}</div>
                           </div>}
                         </div>
                       )}
