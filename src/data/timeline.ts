@@ -1,0 +1,170 @@
+export interface TimelineEvent {
+  title: string;
+  dateStart: string;
+  dateEnd?: string;
+  category: string;
+  importance: string;
+  detail?: string;
+  url?: string;
+}
+
+export const TIMELINE: TimelineEvent[] = [
+  {
+    title: `תחילת כנס הקיץ`,
+    dateStart: `2026-05-10`,
+    category: `מועדי כנסת ופגרה`,
+    importance: `ודאי`,
+  },
+  {
+    title: `יום ירושלים`,
+    dateStart: `2026-05-15`,
+    dateEnd: `2026-05-15`,
+    category: `חגים`,
+    importance: `ודאי`,
+  },
+  {
+    title: `ביטול הטבות בתחבורה ציבורית וארנונה למשתמטים - הנחה ברכישת דירה , בסוד שכר הלימוד במעונות יום ובמשפחתונים, ובצהרונים`,
+    dateStart: `2026-05-17`,
+    dateEnd: `2026-05-17`,
+    category: `בג"ץ`,
+    importance: `ודאי`,
+    detail: `לאחר שהממשלה נמנעה מביצוע צעדים לאכיפת חובת הגיוס על משתמטים, ב26 באפריל הורה בית המשפט העליון על שורת צעדים מעשיים בעניין, שכוללים ביטול הטבות שעשויות להגיע לאלפי שקלים בחודש למשפחה. בין הצעדים - השתתפות 'במחיר מטרה' (מועצת מקרקעי ישראל) וסבסוד מעונות יום, משפחתונים וצהרונים (עבודה)`,
+    url: `https://z.calcalist.co.il/assets/pickerul/e59b8df8-cb7f-4f83-a6cf-58c58b6558aa.pdf`,
+  },
+  {
+    title: `חג שבועות`,
+    dateStart: `2026-05-21`,
+    dateEnd: `2026-05-22`,
+    category: `חגים`,
+    importance: `ודאי`,
+  },
+  {
+    title: `בנק ישראל — ריבית + תחזית Q2`,
+    dateStart: `2026-05-25`,
+    dateEnd: `2026-05-25`,
+    category: `כלכלי`,
+    importance: `ודאי`,
+    detail: `תאריך מאושר; תחזית רבעונית; ריבית צפויה 4%`,
+  },
+  {
+    title: `ביטול הטבות בתחבורה ציבורית וארנונה למשתמטים`,
+    dateStart: `2026-05-31`,
+    dateEnd: `2026-05-31`,
+    category: `בג"ץ`,
+    importance: `ודאי`,
+    detail: `לאחר שהממשלה נמנעה מביצוע צעדים לאכיפת חובת הגיוס על משתמטים, ב26 באפריל הורה בית המשפט העליון על שורת צעדים מעשיים בעניין, שכוללים ביטול הטבות שעשויות להגיע לאלפי שקלים בחודש למשפחה. בין הצעדים - הנחה לנוסעי תחבורה ציבורית (תחבורה ואוצר) וארנונה (פנים)`,
+    url: `https://z.calcalist.co.il/assets/pickerul/e59b8df8-cb7f-4f83-a6cf-58c58b6558aa.pdf`,
+  },
+  {
+    title: `הצבעה על מבקר המדינה`,
+    dateStart: `2026-06-01`,
+    dateEnd: `2026-06-01`,
+    category: `פוליטי`,
+    importance: `הערכה`,
+    detail: `הודעה על מועד כשלושה שבועות מראש, 1 ביוני המועד המאוחר ביותר`,
+  },
+  {
+    title: `סיום כהונה ראש המוסד - דדי ברנע`,
+    dateStart: `2026-06-01`,
+    dateEnd: `2026-06-01`,
+    category: `פוליטי`,
+    importance: `ודאי`,
+  },
+  {
+    title: `פסגת G7 `,
+    dateStart: `2026-06-15`,
+    category: `גיאופוליטי`,
+    importance: `ודאי`,
+  },
+  {
+    title: `פד - ריבית `,
+    dateStart: `2026-06-17`,
+    category: `כלכלי`,
+    importance: `ודאי`,
+  },
+  {
+    title: `שנתיים לפסיקת בג"ץ - גיוס חרדים`,
+    dateStart: `2026-06-25`,
+    category: `פוליטי`,
+    importance: `ודאי`,
+  },
+  {
+    title: `סיום קדנציה מבקר המדינה`,
+    dateStart: `2026-07-01`,
+    dateEnd: `2026-07-01`,
+    category: `פוליטי`,
+    importance: `ודאי`,
+  },
+  {
+    title: `חקיקת בחירות`,
+    dateStart: `2026-07-01`,
+    dateEnd: `2026-08-01`,
+    category: `פוליטי`,
+    importance: `הערכה`,
+  },
+  {
+    title: `בנק ישראל — ריבית + תחזית Q3`,
+    dateStart: `2026-07-06`,
+    dateEnd: `2026-07-06`,
+    category: `כלכלי`,
+    importance: `ודאי`,
+    detail: `תאריך מאושר; תחזית רבעונית Q3`,
+  },
+  {
+    title: `סיום כנס הקיץ`,
+    dateStart: `2026-02-26`,
+    category: `מועדי כנסת ופגרה`,
+    importance: `הערכה`,
+  },
+  {
+    title: `מועד הגשת רשימות מועמדים לכנסת`,
+    dateStart: `2026-09-27`,
+    category: `בחירות`,
+    importance: ``,
+  },
+  {
+    title: `מינוי ועדות אזוריות (סעיף 19)`,
+    dateStart: `2026-09-27`,
+    category: `בחירות`,
+    importance: `הערכה`,
+    detail: `לכול המאוחר 52 יום לפני הבחירות`,
+  },
+  {
+    title: `עצרת האו"ם — שבוע הנאומים`,
+    dateStart: `2026-09-21`,
+    dateEnd: `2026-09-25`,
+    category: `גיאופוליטי`,
+    importance: `ודאי`,
+    detail: `ישראל בדרך כלל מציגה עמדות; שנה קריטית עם תיק ICC`,
+  },
+  {
+    title: `סוכות`,
+    dateStart: `2026-09-25`,
+    dateEnd: `2026-10-02`,
+    category: `חגים`,
+    importance: `ודאי`,
+  },
+  {
+    title: `בנק ישראל — ריבית + תחזית Q4`,
+    dateStart: `2026-10-01`,
+    dateEnd: `2026-10-31`,
+    category: `כלכלי`,
+    importance: `הערכה`,
+    detail: `הערכה; תאריך מדויק טרם פורסם`,
+  },
+  {
+    title: `השביעי באוקטובר`,
+    dateStart: `2026-10-07`,
+    dateEnd: `2026-10-07`,
+    category: `פוליטי`,
+    importance: `ודאי`,
+  },
+  {
+    title: `בחירות לכנסת ה-26`,
+    dateStart: `2026-10-27`,
+    dateEnd: `2026-10-27`,
+    category: `בחירות`,
+    importance: `הערכה`,
+    detail: `מועד חוקי אחרון; ייתכן הקדמה לקיץ–סתיו`,
+  },
+];
