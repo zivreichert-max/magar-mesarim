@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Message, TOPICS } from '@/data/messages';
 import CommentsSection from '@/components/CommentsSection';
 
@@ -160,7 +160,7 @@ function renderDetail(detail: string): React.ReactNode {
           tableRows.length = 0;
         }
         nodes.push(
-          <p key={`p-${nodes.length}`} style={{ fontSize: 14, lineHeight: 1.75, color: '#333333', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+          <p key={`p-${nodes.length}`} style={{ fontSize: 15, lineHeight: 1.8, color: '#222', margin: 0, direction: 'rtl', textAlign: 'right' }}>
             {trimmed}
           </p>
         );
@@ -178,7 +178,7 @@ function renderDetail(detail: string): React.ReactNode {
   const nodes: React.ReactNode[] = [];
   for (const trimmed of nonEmptyLines) {
     nodes.push(
-      <p key={nodes.length} style={{ fontSize: 14, lineHeight: 1.75, color: '#333333', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+      <p key={nodes.length} style={{ fontSize: 15, lineHeight: 1.8, color: '#222', margin: 0, direction: 'rtl', textAlign: 'right' }}>
         {trimmed}
       </p>
     );
@@ -186,7 +186,7 @@ function renderDetail(detail: string): React.ReactNode {
 
   if (nodes.length === 0) {
     return (
-      <p style={{ fontSize: 14, lineHeight: 1.75, color: '#333333', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+      <p style={{ fontSize: 15, lineHeight: 1.8, color: '#222', margin: 0, direction: 'rtl', textAlign: 'right' }}>
         {detail}
       </p>
     );
@@ -219,6 +219,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 export default function DetailPanel({ message, onClose, authorName }: DetailPanelProps) {
   const color = message ? (TOPICS[message.topic]?.color ?? '#fff') : '#fff';
+  const [imgZoomed, setImgZoomed] = useState(false);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -272,25 +273,49 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
         <div style={{fontSize: 11, color: '#0075C4', fontWeight: 700, marginBottom: 8}}>
           {message.topic}
         </div>
-        <h2 style={{fontSize: 18, fontWeight: 900, margin: '0 0 16px', color: '#111'}}>
+        <h2 style={{fontSize: 20, fontWeight: 900, margin: '0 0 16px', color: '#111'}}>
           {message.title}
         </h2>
         {message.summary && (
           <div style={{ marginBottom: 20 }}>
             <SectionHeading>תקציר</SectionHeading>
-            <p style={{ fontSize: 16, lineHeight: 1.8, color: '#222', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+            <p style={{ fontSize: 17, lineHeight: 1.85, color: '#222', margin: 0, direction: 'rtl', textAlign: 'right' }}>
               {message.summary}
             </p>
           </div>
         )}
         {message.visual && message.visual.startsWith('/visuals/') && (
-          <div style={{ marginBottom: 20, textAlign: 'center' }}>
-            <img
-              src={message.visual}
-              style={{ maxWidth: '100%', maxHeight: '40vh', borderRadius: 8, objectFit: 'contain', display: 'inline-block' }}
-              alt=""
-            />
-          </div>
+          <>
+            <div style={{ marginBottom: 20, textAlign: 'center' }}>
+              <img
+                src={message.visual}
+                onClick={() => setImgZoomed(true)}
+                style={{ maxWidth: '100%', maxHeight: '40vh', borderRadius: 8, objectFit: 'contain', display: 'inline-block', cursor: 'zoom-in' }}
+                alt=""
+                title="לחץ להגדלה"
+              />
+              <div style={{ fontSize: 11, color: '#aaa', marginTop: 4 }}>לחץ על התמונה להגדלה</div>
+            </div>
+            {imgZoomed && (
+              <div
+                onClick={() => setImgZoomed(false)}
+                style={{
+                  position: 'fixed', top: 0, right: 0, bottom: 0, left: 0,
+                  background: 'rgba(0,0,0,0.85)',
+                  zIndex: 19999,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'zoom-out',
+                }}
+              >
+                <img
+                  src={message.visual}
+                  style={{ maxWidth: '95vw', maxHeight: '92vh', borderRadius: 8, objectFit: 'contain' }}
+                  alt=""
+                />
+                <div style={{ position: 'absolute', top: 16, left: 16, color: '#fff', fontSize: 24, cursor: 'pointer', fontWeight: 700 }}>✕</div>
+              </div>
+            )}
+          </>
         )}
         {message.detail && (
           <div style={{ marginBottom: 20 }}>
