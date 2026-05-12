@@ -276,21 +276,32 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
           {message.title}
         </h2>
         {message.summary && (
-          <p style={{fontSize: 14, lineHeight: 1.7, color: '#333', marginBottom: 16}}>
-            {message.summary}
-          </p>
-        )}
-        {message.detail && (
-          <p style={{fontSize: 13, lineHeight: 1.75, color: '#555', marginBottom: 16}}>
-            {message.detail}
-          </p>
+          <div style={{ marginBottom: 20 }}>
+            <SectionHeading>תקציר</SectionHeading>
+            <p style={{ fontSize: 16, lineHeight: 1.8, color: '#222', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+              {message.summary}
+            </p>
+          </div>
         )}
         {message.visual && message.visual.startsWith('/visuals/') && (
-          <img src={message.visual} style={{width: '100%', borderRadius: 8}} alt="" />
+          <div style={{ marginBottom: 20, textAlign: 'center' }}>
+            <img
+              src={message.visual}
+              style={{ maxWidth: '100%', maxHeight: '40vh', borderRadius: 8, objectFit: 'contain', display: 'inline-block' }}
+              alt=""
+            />
+          </div>
+        )}
+        {message.detail && (
+          <div style={{ marginBottom: 20 }}>
+            <SectionHeading>הרחבה</SectionHeading>
+            {renderDetail(message.detail)}
+          </div>
         )}
         {message.source && (
-          <div style={{fontSize: 11, color: '#888', marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12}}>
-            {message.source}
+          <div style={{ fontSize: 12, color: '#888', marginTop: 8, borderTop: '1px solid #eee', paddingTop: 12 }}>
+            <span style={{ fontWeight: 600, color: '#555', marginLeft: 6 }}>מקור:</span>
+            {renderSource(message.source)}
           </div>
         )}
         <div style={{borderTop: '1px solid #eee', marginTop: 20, paddingTop: 16}}>
