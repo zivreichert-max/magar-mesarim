@@ -1,11 +1,14 @@
-import os, re, sys
+import os, re, sys, shutil, tempfile
 from docx import Document
 from docx.oxml.ns import qn
 
 DOCX = r'C:\Users\ZivReichert\OneDrive - Bonim Mehadash\Storage - צוותים ותוצרים\בחירות\דף מסרים\חומרים מתעדכנים באתר.docx'
 OUT = r'C:\Users\ZivReichert\magar-mesarim\src\data\messages.ts'
 
-doc = Document(DOCX)
+tmp = tempfile.NamedTemporaryFile(suffix='.docx', delete=False)
+tmp.close()
+shutil.copy2(DOCX, tmp.name)
+doc = Document(tmp.name)
 rels = doc.part.rels
 url_map = {rId: rel._target for rId, rel in rels.items() if 'hyperlink' in rel.reltype.lower()}
 img_map = {}
