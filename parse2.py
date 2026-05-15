@@ -79,7 +79,7 @@ def new_item(title):
     cur = {
         'topic': topic, 'title': title,
         'summary': '', 'detail': '', 'source': '',
-        'urls': [], 'visual_path': '', 'embed_img': '',
+        'urls': [], 'visual_path': '', 'embed_img': '', 'all_imgs': [],
     }
 
 def add(field, val):
@@ -121,10 +121,13 @@ for para in doc.paragraphs:
     if cur is None:
         continue
 
-    # Collect hyperlinks from every paragraph
+    # Collect hyperlinks and embedded images from every paragraph
     for u in ul:
         if u not in cur['urls']:
             cur['urls'].append(u)
+    for img in ig:
+        if img not in cur['all_imgs']:
+            cur['all_imgs'].append(img)
 
     # Empty paragraph → stop continuation
     if not t:
@@ -191,6 +194,8 @@ def resolve_visual(item):
             return ''
     if item['embed_img']:
         return '/visuals/' + item['embed_img']
+    if item['all_imgs']:
+        return '/visuals/' + item['all_imgs'][0]
     return ''
 
 # ── Write messages.ts ──────────────────────────────────────────────────────────
