@@ -97,7 +97,6 @@ for para in doc.paragraphs:
     m = re.match(r'^(יום\s+\S+)\s+בשעה\s+(\d{1,2}:\d{2})', text)
     if m:
         flush(); current_day = m.group(1); current_time = m.group(2); last_label = None
-        if current_cat == 'gov': new_event('ישיבת ממשלה')
         continue
 
     # plain day
@@ -112,7 +111,12 @@ for para in doc.paragraphs:
         is_day = True; current_day = 'יום ' + text; current_time = ''
     if is_day: flush(); last_label = None; continue
 
-    # label
+    # label (standalone line or inline "תקציר: content")
+    il = re.match(r'^(תקציר|בקצרה|הרחבה|פירוט|העמקה)\s*:\s*(.+)$', text)
+    if il:
+        if il.group(1) in SUMMARY_LABELS: add_s(il.group(2)); last_label = 'summary'
+        else: add_d(il.group(2)); last_label = 'detail'
+        save_url(urls); continue
     if tl in SUMMARY_LABELS: last_label = 'summary'; continue
     if tl in DETAIL_LABELS:  last_label = 'detail';  continue
 
@@ -126,9 +130,18 @@ for para in doc.paragraphs:
             add_d(text)
         save_url(urls); continue
 
-    # List Paragraph: gov / knesset
-    if style == 'List Paragraph' and current_cat in ('gov', 'knesset'):
-        add_s(text); save_url(urls); continue
+    # List Paragraph: gov → each agenda item is its own event
+    if style == 'List Paragraph' and current_cat == 'gov':
+        new_event(text); save_url(urls); continue
+
+    # List Paragraph: knesset → new event if none active (e.g. Wednesday has no time prefix),
+    # otherwise add as sub-item to current event
+    if style == 'List Paragraph' and current_cat == 'knesset':
+        if current_event is None:
+            new_event(text); save_url(urls)
+        else:
+            add_s(text); save_url(urls)
+        continue
 
     # time+title (no last_label check — always creates new event)
     m = re.match(r'^(\d{1,2}:\d{2})\s*[–\-—]?\s*(.+)$', text)
