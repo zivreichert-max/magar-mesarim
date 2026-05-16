@@ -80,7 +80,7 @@ if (appState === 'password') return <PasswordGate onUnlock={handleUnlock} />;
             marginBottom: -2,
           }}
         >
-          מאגר מסרים
+          זמן בחירות
         </button>
         <button
           type="button"
