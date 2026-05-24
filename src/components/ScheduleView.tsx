@@ -125,6 +125,12 @@ export default function ScheduleView() {
                             <div style={{ fontSize: 10, fontWeight: 700, color: '#0075C4', marginBottom: 4, letterSpacing: '0.06em' }}>הרחבה</div>
                             <div style={{ fontSize: 12, lineHeight: 1.75, color: '#555', whiteSpace: 'pre-wrap' }}>{ev.detail}</div>
                           </div>}
+                          {ev.url && (
+                            <a href={ev.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+                              style={{ display: 'inline-block', marginTop: 8, fontSize: 12, color: '#0075C4' }}>
+                              לקישור המקור ›
+                            </a>
+                          )}
                         </div>
                       )}
                     </div>
