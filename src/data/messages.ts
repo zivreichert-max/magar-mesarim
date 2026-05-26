@@ -140,7 +140,7 @@ export const MESSAGES: Message[] = [
     summary: `שיעור התעסוקה של גברים חרדיים נמצאת בסטגנציה כבר עשור ונעה בין 50%-55%, כשהשכר של גבר חרדי עומד רק על 49% מהשכר של יהודי לא חילוני`,
     detail: `32.8% מהמשפחות החרדיות עניות, 47% מהילדים החרדים מתחת לקו העוני, 49% שכר של גבר חרדי ביחס ליהודי לא-חרדי, ורק 54% מהגברים החרדים מועסקים נכון ל2024.`,
     source: `מצגת מסכמת חינוך שקף 16 בונים מחדש`,
-    visual: '/visuals/image7.png',
+    visual: '/visuals/image5.png',
   },
   {
     id: 13,
@@ -149,7 +149,7 @@ export const MESSAGES: Message[] = [
     summary: `בשכבת א' 25% משתייכים לזרם החרדי, כך שרבע מהתלמידים לא לומדים לימודי יסוד`,
     detail: `אם בשכבת י"ב כמעט מחצית היו יהודים חילונים בכיתה א' מדובר רק ב35%, ולעומת זאת תלמידי הזרם החרדי גדלים מ18% ל-25%.`,
     source: ``,
-    visual: '/visuals/image8.png',
+    visual: '/visuals/תמונה2.png',
   },
   {
     id: 14,
@@ -158,7 +158,7 @@ export const MESSAGES: Message[] = [
     summary: `רמת היכולת הדיגיטלית של תלמידים נמוכה (61%) ואף ירדה ב-7% בהשוואה לשנה הקודמת, עם פערים משמעותיים בין מגזרים.`,
     detail: `הרמה הדיגיטלית של תלמידים בישראל נכון לשנת 2025 עומדת על 61% וירדה ב-7% בהשוואה לשנה שעברה. ישנם פערים מגזריים ביכולת עבודה דיגיטלית: תלמידים דוברי ערבית מגיעים לכ-74% (יסודי), לעומת כ-52% בלבד בחינוך הממלכתי-דתי. בנוסף, כ-6 מתוך 10 תלמידים משתמשים בכלי בינה מלאכותית, אך רק כשליש מדווחים כי בית הספר מלמד אותם להשתמש בהם מה שמעיד על פער בין שימוש בפועל לבין הכשרה.`,
     source: `ראמ"ה, סקר תלמידים ארצי תשפ"ה (2025) - https://meyda.education.gov.il/files/Rama/national_survey_students_25.pdf`,
-    visual: '/visuals/image9.png',
+    visual: '/visuals/image7.png',
   },
   {
     id: 15,
@@ -167,7 +167,7 @@ export const MESSAGES: Message[] = [
     summary: `הממוצע הארצי של התלמידים המרגישים שיש להם אוזן קשבת בבתי הספר עומד על 58% בלבד., תוך פערים משמעותיים בין קבוצות שונות.`,
     detail: `רק כ-52% מהתלמידים מרגישים נוח לפנות לצוות בית הספר בעת קושי, נתון המעיד על חולשה במענה הרגשי, 58% מרגישים שהמורים שמים לב לצרכים שלהם, ו63% מהתלמידים טוענים שמישהו מהצוות יסייע להם במידה והם חווים קושי.`,
     source: `ראמ"ה, סקר תלמידים ארצי תשפ"ה (2025) - https://meyda.education.gov.il/files/Rama/national_survey_students_25.pdf`,
-    visual: '/visuals/image11.png',
+    visual: '/visuals/image9.png',
   },
   {
     id: 16,
@@ -176,7 +176,7 @@ export const MESSAGES: Message[] = [
     summary: `נרשמה עלייה בהתנהגויות הפוגעות באקלים הלימודי, כאשר כ-54% מהתלמידים מדווחים על תופעות אלו - עלייה ביחס לשנה הקודמת.`,
     detail: `הפערים בין הקבוצות בולטים: הרמות הגבוהות ביותר של התנהגות לא נאותה נרשמות בקרב תלמידי חטיבת ביניים דוברי עברית (כ־63%), בעוד שבקרב תלמידים דוברי ערבית ביסודי הנתון נמוך משמעותית (כ־32%). בנוסף, כ־55% מהתלמידים מדווחים על התחצפות למורים ועל רעש והפרעות בכיתה — עלייה של כ־4% בהשוואה לתשפ״ד. נתונים אלו מצביעים על פערים באקלים הכיתתי ועל החמרה בהתנהלות בכיתה.`,
     source: ``,
-    visual: '/visuals/image12.png',
+    visual: '/visuals/image10.png',
   },
   {
     id: 17,
@@ -193,7 +193,7 @@ export const MESSAGES: Message[] = [
     summary: `הפערים בין מרכז לפריפריה הם חריפים גם כשלא בוחנים את הקצוות, והם מתחילים בבית הספר ומחריפים בשירות הצבאי.`,
     detail: `כשבוחנים את רעננה מול באר שבע מגלים פערים משמעותיים גם בהישגים של חינוך פורמאלי וגם בהשתתפות בחינוך לא פורמאלי`,
     source: ``,
-    visual: '/visuals/image13.png',
+    visual: '/visuals/image11.png',
   },
   {
     id: 19,
@@ -220,7 +220,7 @@ https://fs.knesset.gov.il/25/Committees/25_cs_bg_5957925.pdf?utm_source=chatgpt.
     detail: ``,
     source: `אוקטובר 2025 PEW
 https://www.pewresearch.org/politics/2025/10/03/americans-views-of-israelis-palestinians-and-their-political-leadership/`,
-    visual: '/visuals/image14.png',
+    visual: '/visuals/image12.png',
   },
   {
     id: 22,
@@ -238,7 +238,7 @@ https://library.mevaker.gov.il/sites/DigitalLibrary/Pages/Reports/9194-7.aspx`,
     summary: `מאזן ההגירה השלילי של ישראל זינק מ-11,684 בשנת 2022 ל-28,163 בשנת 2023 ול-29,278 בשנת 2024.`,
     detail: `לאחר שנים ארוכות של יציבות יחסית במאזן ההגירה, הנתונים מצביעים על יציאה משיווי משקל. בשנים 2023-2024  עזבו כ100,000 ישראלים את הארץ (50,000 בכל שנה).  מאידך, מספר הישראלים שמהגרים חזרה לארץ בנסיגה מ24,014 בשנת 2022 ל19,911 בשנת 2024.`,
     source: `ממצאי מחקר על הגירה מישראל - פברואר 26`,
-    visual: '/visuals/image15.png',
+    visual: '/visuals/image13.png',
   },
   {
     id: 24,
@@ -247,7 +247,7 @@ https://library.mevaker.gov.il/sites/DigitalLibrary/Pages/Reports/9194-7.aspx`,
     summary: `מאזן ההגירה השלילי של ישראלים בעלי תואר ראשון ומעלה זינק מ-3,292 בשנת 2022 ל-7,735 בשנת 2024.`,
     detail: `מינואר 2023 עזבו את הארץ למעלה מ-21,000 בוגרי תואר ראשון, מתוכם למעלה מ-7,400 בוגרי מקצועות הSTEM.`,
     source: `ממצאי מחקר על הגירה מישראל - פברואר 26`,
-    visual: '/visuals/image16.png',
+    visual: '/visuals/image14.png',
   },
   {
     id: 25,
@@ -256,7 +256,7 @@ https://library.mevaker.gov.il/sites/DigitalLibrary/Pages/Reports/9194-7.aspx`,
     summary: `מאזן ההגירה השלילי של רופאים עלה מ-135 בשנת 2022 לכ-328 בשנת 2024.`,
     detail: `כשני שליש מהרופאים שעזבו הם בוגרי לימודי רפואה בישראל, דבר המעיד על אובדן כוח אדם רפואי שהוכשר במערכת המקומית.`,
     source: `ממצאי מחקר על הגירה מישראל – פברואר 2026`,
-    visual: '/visuals/image17.png',
+    visual: '/visuals/image14.png',
   },
   {
     id: 26,
@@ -265,7 +265,7 @@ https://library.mevaker.gov.il/sites/DigitalLibrary/Pages/Reports/9194-7.aspx`,
     summary: `מאזן ההגירה השלילי של מהנדסים עלה מכ-521 בשנת 2022 לכ-1,348 בשנת 2024.`,
     detail: ``,
     source: `ממצאי מחקר על הגירה מישראל – פברואר 2026`,
-    visual: '/visuals/image18.png',
+    visual: '/visuals/image16.png',
   },
   {
     id: 27,
@@ -275,7 +275,7 @@ https://library.mevaker.gov.il/sites/DigitalLibrary/Pages/Reports/9194-7.aspx`,
     detail: `הפער חד במיוחד בהולנד (78% שלילי), בספרד ושבדיה (כ-75%) ויפן (79%). נתונים אלו מצביעים על כך שבמדינות מערביות ומפותחות רבות, התדמית הציבורית של ישראל היא שלילית באופן מובהק.`,
     source: `Pew Research Center, יוני 2025 - https://www.pewresearch.org/short-reads/2025/06/03/most-people-across-24-surveyed-countries-have-negative-views-of-israel-and-netanyahu/?utm_source=chatgpt.com
 https://www.pewresearch.org/short-reads/2025/06/03/most-people-across-24-surveyed-countries-have-negative-views-of-israel-and-netanyahu/?utm_source=chatgpt.com`,
-    visual: '/visuals/image19.png',
+    visual: '/visuals/image17.png',
   },
   {
     id: 28,
@@ -285,7 +285,7 @@ https://www.pewresearch.org/short-reads/2025/06/03/most-people-across-24-surveye
     detail: `מתוך כלל האירועים, כ-81% סווגו כהתנהגות פוגענית, 26 כאיומים, 10 תקיפות פיזיות, ו-21 מקרי השחתת רכוש. בנוסף, 152 אירועים התרחשו במחרב המקוון.`,
     source: `Community Security Trust (CST), 2024 - https://cst.org.uk/data/file/f/d/Campus%20Antisemitism%20in%20Britain%202022-2024.1733481071.pdf
 https://cst.org.uk/data/file/f/d/Campus%20Antisemitism%20in%20Britain%202022-2024.1733481071.pdf`,
-    visual: '/visuals/image20.png',
+    visual: '/visuals/image18.png',
   },
   {
     id: 29,
@@ -295,7 +295,7 @@ https://cst.org.uk/data/file/f/d/Campus%20Antisemitism%20in%20Britain%202022-202
     detail: ``,
     source: `Humanitarian Situation Update #337 | West Bank | United Nations Office for the Coordination of Humanitarian Affairs - Occupied Palestinian Territory - https://www.ochaopt.org/content/humanitarian-situation-update-337-west-bank
 https://www.ochaopt.org/content/humanitarian-situation-update-337-west-bank`,
-    visual: '/visuals/image21.png',
+    visual: '/visuals/image19.png',
   },
   {
     id: 30,
@@ -305,7 +305,7 @@ https://www.ochaopt.org/content/humanitarian-situation-update-337-west-bank`,
     detail: `במחצית הראשונה של 2025 הוגשו 427 תלונות על פשיעה לאומנית בגדה, לעומת 680 תלונות שהוגשו ב־2024 כולה. מבחינת כמות החקירות ישנה מגמת ירידה כשבשנת 2025 כ33% מהתלונות תורגמו לחקירות פליליות, לעומת 45% בשנת 2024. היחידה האמונה על חקירות טרור יהודי (מחוז ש"י) מתנהלת כבר כשנה ללא מפקד קבוע, כשהמפקד הקודם נחשד שנהג להתעלם במכוון ממידע מודיעני הנוגע לאירועי טרור יהודי ולהימנע ממעצרים בכדי לרצות את השר.`,
     source: `התנועה לחופש המידע אוקטובר 2025 - https://www.meida.org.il/17352
 https://www.meida.org.il/17352`,
-    visual: '/visuals/image22.png',
+    visual: '/visuals/image20.png',
   },
   {
     id: 31,
@@ -316,7 +316,7 @@ https://www.meida.org.il/17352`,
 לאורך השנים ישראל נמנעה מבנייה רשמית ב־E1 בשל התנגדות בינלאומית והתחייבויות לארה״ב. כעת, לאחר קידום “כביש מרקם חיים” ודחיית ההתנגדויות לתכנית הכוללת 3,412 יחידות דיור, הממשלה מקדמת בפועל מהלך בעל משמעות מדינית רחבה: חיזוק אחיזה ישראלית במרחב שמחבר את ירושלים למעלה אדומים, במחיר של פגיעה ברצף הפלסטיני.
 המשמעות היא לא רק תכנונית אלא אסטרטגית: המהלך מחזק טענות לסיפוח זוחל, פוגע באפשרות למדינה פלסטינית רציפה ובת־קיימא, עלול להחריף את המתיחות הביטחונית מול הרשות הפלסטינית, ולגרור ביקורת בינלאומית, סנקציות או פגיעה ביחסים הדיפלומטיים של ישראל.`,
     source: ``,
-    visual: '/visuals/image23.png',
+    visual: '/visuals/image21.png',
   },
   {
     id: 32,
@@ -387,7 +387,7 @@ https://www.meida.org.il/17352`,
     summary: `שיעור פענוח מקרי הרצח ירד הן בחברה הערבית והן בחברה היהודית, תוך פערים משמעותיים ביניהן.`,
     detail: `בין השנים 2021–2024 נרשמה ירידה בשיעור פענוח מקרי הרצח בשני המגזרים, אך הפערים נותרו גבוהים. בחברה הערבית ירד שיעור הפענוח מכ-30% בשנת 2021 לכ-18% בשנת 2024. במקביל, גם בחברה היהודית נרשמה ירידה  מכ-80% בשנת 2021 לכ-50% בשנת 2024. בממוצע שיעור הפיענוח ירד מ43% בשנת 2021 ל26% בשנת 2024.`,
     source: `מרכז המידע של הכנסת, תרשים 5, מרץ 2025 - https://main.knesset.gov.il/activity/info/research/pages/incident.aspx?ver=2&rid=8291`,
-    visual: '/visuals/image25.png',
+    visual: '/visuals/image23.png',
   },
   {
     id: 40,
@@ -398,7 +398,7 @@ https://www.meida.org.il/17352`,
 ברמה העירונית, לוד ממשיכה להוביל זו השנה השלישית ברציפות במספר הקורבנות, עם 18 הרוגים בשנת 2025, לצד נצרת עם מספר זהה. אחריהן רמלה עם 14 קורבנות, וברחבי הדרום העיר רהט עם 11 קורבנות. נתונים אלו מצביעים על ריכוז גבוה של האלימות באזורים ובערים מסוימים.`,
     source: `יוזמת אברהם - דו"ח מסכם 25
 https://drive.google.com/file/d/10FF06XGcDOfCKhXF88p7jp-6GoGGazdX/view`,
-    visual: '/visuals/image27.png',
+    visual: '/visuals/image25.png',
   },
   {
     id: 41,
@@ -407,7 +407,7 @@ https://drive.google.com/file/d/10FF06XGcDOfCKhXF88p7jp-6GoGGazdX/view`,
     summary: `בעשור האחרון גדל היחס בין שיעור מקרי הרצח בקרב יהודים וערבים מ-פי 4 ל-פי 14`,
     detail: `מספרי מקרי רצח ל-100 אלף נפש שונה מאוד בין יהודים לערבים בישראל. שיעור היהודים הנרצחים נמוך מאוד בהשוואה ל- OECD (0.85) בעוד שיעור הערבים הנרצחים נמוך רק מקולומביה ומקסיקו (11.11). היחס בין שיעור מקרי הרצח בקרב ערבים ויהודים גדל בעשור האחרון מפי 4 לפי 14.`,
     source: `מצגת בונים שקפים 11-12`,
-    visual: '/visuals/image29.png',
+    visual: '/visuals/image27.png',
   },
   {
     id: 42,
@@ -425,7 +425,7 @@ https://drive.google.com/file/d/10FF06XGcDOfCKhXF88p7jp-6GoGGazdX/view`,
     summary: `שיא בהרוגים בתאונות הדרכים ב-20 השנים האחרונות, מ351 בשנת 2022 ל457 בשנת 2025.`,
     detail: ``,
     source: `מצגת בונים שקף 8`,
-    visual: '/visuals/image30.png',
+    visual: '/visuals/image29.png',
   },
   {
     id: 44,
@@ -492,7 +492,7 @@ https://www.mevaker.gov.il/newsroom/2026-04-28-special-report`,
 10% עבירות כלפי רכוש
 18% עבירות סדר ציבור`,
     source: `מצגת בונים שקף 9`,
-    visual: '/visuals/image31.png',
+    visual: '/visuals/image30.png',
   },
   {
     id: 51,
@@ -501,7 +501,7 @@ https://www.mevaker.gov.il/newsroom/2026-04-28-special-report`,
     summary: `אחרי שלוש שנים של הבטחות למשילות, 74% מהציבור סבורים שהחלטות המשטרה מושפעות מלחצים פוליטיים, ורק 37% חושבים שהיא מתנהגת בהוגנות כלפי כלל האזרחים.`,
     detail: `74% מהנשאלים סבורים שהחלטות הפיקוד הבכיר והשוטרים בשטח מושפעות מלחצים פוליטיים, ורק 36% רואים במשטרה גוף ניטרלי פוליטית. במקביל, רק 37% מהציבור סבורים שהמשטרה מתנהגת בצורה הוגנת כלפי כלל האזרחים.`,
     source: `המכון הישראלי לדמוקרטיה, 25.11.2025 - https://www.idi.org.il/articles/62283`,
-    visual: '/visuals/image32.png',
+    visual: '/visuals/image31.png',
   },
   {
     id: 52,
@@ -511,7 +511,7 @@ https://www.mevaker.gov.il/newsroom/2026-04-28-special-report`,
     detail: `וח הסניגוריה הציבורית לשנת 2024 מצביע על תמונה מטרידה: יותר ויותר אזרחים שמיוצגים על ידי הסניגוריה מתלוננים על אלימות שוטרים. מספר התלונות עלה מ־119 בשנת 2021 ל־316 בשנת 2024. אלה לא כל התלונות על אלימות משטרתית, אלא רק תלונות שעלו מתוך תיקים של מיוצגי הסניגוריה. למשל, תלונות של מוחאים בהפגנות קפלן אינן משוקפות בנתונים הללו, שכן לרוב הם מיוצגים על ידי "מערך עוטף העצורים". הסנגוריה עמדה על שתי מגמות נוספות:`,
     source: `דו"ח הסנגוריה הציבורית, 2024
 https://www.gov.il/BlobFolder/dynamiccollectorresultitem/sanegorya-annual-report-2025/he/Sanegorya-Annual-report-2025.pdf?utm_source=chatgpt.com`,
-    visual: '/visuals/image34.png',
+    visual: '/visuals/image33.png',
   },
   {
     id: 53,
