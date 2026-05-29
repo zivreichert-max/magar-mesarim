@@ -80,7 +80,7 @@ if (appState === 'password') return <PasswordGate onUnlock={handleUnlock} />;
             marginBottom: -2,
           }}
         >
-          זמן בחירות
+          מסרים
         </button>
         <button
           type="button"
@@ -94,7 +94,7 @@ if (appState === 'password') return <PasswordGate onUnlock={handleUnlock} />;
             marginBottom: -2,
           }}
         >
-          לו&quot;ז שבועי
+          לו&quot;ז
         </button>
       </div>
 
