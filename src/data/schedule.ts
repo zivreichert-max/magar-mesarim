@@ -9,7 +9,7 @@ export interface ScheduleEvent {
   url?: string;
 }
 
-export const WEEK_TITLE = `לו"ז שבועי 21.5-17.5`;
+export const WEEK_TITLE = `לו"ז שבועי 31.5-4.6`;
 
 export const SCHEDULE: ScheduleEvent[] = [
   {

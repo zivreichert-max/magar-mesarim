@@ -52,7 +52,7 @@ export default function Header({ count, total }: HeaderProps) {
               color: '#111111',
             }}
           >
-            זמן בחירות
+            מסרים
           </div>
           <div style={{ fontWeight: 400, fontSize: 12, color: '#0075C4', marginTop: 1 }}>
             בחירות 2026 · בונים מחדש

@@ -3,13 +3,23 @@ import { useState } from 'react';
 import { SCHEDULE, WEEK_TITLE } from '@/data/schedule';
 import { TIMELINE, TimelineEvent } from '@/data/timeline';
 
-const CATS = [
-  { id: 'all', label: 'הכל', color: '#6b7280' },
-  { id: 'bgz', label: 'בג"ץ', color: '#0075C4' },
-  { id: 'gov', label: 'ממשלה', color: '#16a34a' },
-  { id: 'ministers', label: 'ועדת שרים', color: '#d97706' },
-  { id: 'knesset', label: 'ועדות כנסת', color: '#6b7280' },
+const STATIC_CATS = [
+  { id: 'all',       label: 'הכל',            color: '#6b7280' },
+  { id: 'bgz',       label: 'בג"ץ',           color: '#0075C4' },
+  { id: 'events',    label: 'אירועים בולטים', color: '#7c3aed' },
+  { id: 'gov',       label: 'ממשלה',          color: '#16a34a' },
+  { id: 'ministers', label: 'ועדת שרים',      color: '#d97706' },
+  { id: 'plenary',   label: 'מליאה',          color: '#0891b2' },
 ];
+const STATIC_IDS = new Set(STATIC_CATS.map(c => c.id));
+const KNESSET_COLOR = '#6b7280';
+
+// Build committee filter pills dynamically from schedule data
+const KNESSET_CATS = Array.from(
+  new Set(SCHEDULE.filter(e => !STATIC_IDS.has(e.category)).map(e => e.category))
+).map(id => ({ id, label: id, color: KNESSET_COLOR }));
+
+const CATS = [...STATIC_CATS, ...KNESSET_CATS];
 const DAYS = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי'];
 
 const TL_COLORS: Record<string, string> = {
@@ -67,7 +77,7 @@ export default function ScheduleView() {
               fontFamily: 'inherit', touchAction: 'manipulation', marginBottom: -1,
             }}
           >
-            {v === 'weekly' ? 'לו"ז שבועי' : 'אירועים בולטים'}
+            {v === 'weekly' ? 'לו"ז' : 'אירועים בולטים'}
           </button>
         ))}
       </div>

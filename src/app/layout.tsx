@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'זמן בחירות – בחירות 2026',
-  description: 'זמן בחירות – נקודות דיון לקראת הבחירות',
+  title: 'מסרים – בחירות 2026',
+  description: 'מסרים – נקודות דיון לקראת הבחירות',
 };
 
 export default function RootLayout({

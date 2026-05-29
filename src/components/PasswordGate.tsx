@@ -70,7 +70,7 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
             margin: 0,
           }}
         >
-          זמן בחירות
+          מסרים
         </h1>
         <p style={{ color: '#0075C4', fontSize: 14, margin: '6px 0 0' }}>
           בחירות 2026 · בונים מחדש
