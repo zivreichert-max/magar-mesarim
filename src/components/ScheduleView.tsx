@@ -180,23 +180,28 @@ export default function ScheduleView() {
               const hasDetail = !!(ev.detail);
               const color = tlColor(ev.category);
               const isEstimate = ev.importance === 'הערכה';
+              const daySpan = ev.dateEnd && ev.dateEnd !== ev.dateStart
+                ? Math.round((new Date(ev.dateEnd).getTime() - new Date(ev.dateStart).getTime()) / 86400000)
+                : 0;
+              const isWindow = daySpan > 20;
               return (
                 <div key={idx}
-                  style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRight: `3px solid ${color}`, borderRadius: 4, marginBottom: 5, overflow: 'hidden', cursor: hasDetail ? 'pointer' : 'default' }}
+                  style={{ background: isWindow ? color + '08' : '#fff', border: isWindow ? `1px solid ${color}40` : '0.5px solid #e5e7eb', borderRight: `3px solid ${color}`, borderRadius: 4, marginBottom: 5, overflow: 'hidden', cursor: hasDetail ? 'pointer' : 'default' }}
                   onClick={() => hasDetail && setOpenTl(isOpen ? null : idx)}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px' }}>
                     <div style={{ flexShrink: 0, textAlign: 'center', minWidth: 52 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: '#111', lineHeight: 1.2 }}>{fmtDate(ev.dateStart)}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: isWindow ? color : '#111', lineHeight: 1.2 }}>{fmtDate(ev.dateStart)}</div>
                       {ev.dateEnd && ev.dateEnd !== ev.dateStart && (
-                        <div style={{ fontSize: 10, color: '#9ca3af' }}>–{fmtDate(ev.dateEnd)}</div>
+                        <div style={{ fontSize: 10, color: isWindow ? color : '#9ca3af', fontWeight: isWindow ? 600 : 400 }}>–{fmtDate(ev.dateEnd)}</div>
                       )}
+                      {isWindow && <div style={{ fontSize: 8, fontWeight: 700, color, letterSpacing: '0.05em', marginTop: 2 }}>חלון</div>}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                         <div style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 2, background: color + '20', color }}>{ev.category}</div>
                         {isEstimate && <div style={{ fontSize: 9, color: '#9ca3af', fontWeight: 500 }}>הערכה</div>}
                       </div>
-                      <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.4 }}>{ev.title}</div>
+                      <div style={{ fontSize: isWindow ? 14 : 13, fontWeight: isWindow ? 700 : 500, lineHeight: 1.4 }}>{ev.title}</div>
                     </div>
                     {hasDetail && <span style={{ color: '#0075C4', fontSize: 16, transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>›</span>}
                     {ev.url && !hasDetail && (
