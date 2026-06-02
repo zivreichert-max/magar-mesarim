@@ -98,17 +98,19 @@ export async function submitClientRequest(data: {
   description: string;
   source: string;
 }): Promise<void> {
-  await supabase.from('client_requests').insert({
+  const { error } = await supabase.from('client_requests').insert({
     ...data,
     status: 'new',
   });
+  if (error) throw new Error(error.message);
 }
 
 export async function getClientRequests(): Promise<ClientRequest[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('client_requests')
     .select('*')
     .order('created_at', { ascending: false });
+  if (error) throw new Error(error.message);
   return data ?? [];
 }
 

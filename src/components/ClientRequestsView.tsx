@@ -304,19 +304,25 @@ function RequestDetailPanel({ request, onClose, onStatusChange }: RequestDetailP
 export default function ClientRequestsView() {
   const [requests, setRequests] = useState<ClientRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<ClientRequest | null>(null);
   const [clientFilter, setClientFilter] = useState<string>('all');
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
-    const data = await getClientRequests();
-    setRequests(data);
-    setLoading(false);
+    setFetchError('');
+    try {
+      const data = await getClientRequests();
+      setRequests(data);
+    } catch (e) {
+      setFetchError(e instanceof Error ? e.message : 'שגיאה בטעינת הבקשות');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchRequests().then(() => {/* loaded */}).catch(() => {/* error */});
+    fetchRequests();
   }, [fetchRequests]);
 
   function handleStatusChange(id: string, status: string) {
@@ -373,7 +379,12 @@ export default function ClientRequestsView() {
       </div>
 
       <main style={{ flex: 1, padding: '28px 32px' }}>
-        {loading ? (
+        {fetchError ? (
+          <div style={{ textAlign: 'center', padding: '80px 20px', color: '#ef4444', fontSize: 14 }}>
+            <div style={{ marginBottom: 8 }}>⚠️ שגיאה בטעינת הבקשות</div>
+            <div style={{ fontSize: 12, color: '#999', direction: 'ltr' }}>{fetchError}</div>
+          </div>
+        ) : loading ? (
           <div style={{ textAlign: 'center', padding: '80px 20px', color: '#999', fontSize: 14 }}>
             טוען...
           </div>
