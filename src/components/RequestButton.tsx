@@ -52,7 +52,7 @@ export default function RequestButton({ authorName, clientId }: RequestButtonPro
   }
 
   async function handleSubmit() {
-    if (!topic || topic === '' || !description.trim() || submitting) return;
+    if (!topic || !description.trim() || submitting) return;
     if (topic === 'other' && !customTopic.trim()) return;
     setSubmitting(true);
     setError('');
