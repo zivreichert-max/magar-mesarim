@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useRef, KeyboardEvent } from 'react';
+import { CLIENTS, Client } from '@/data/clients';
 
-const CORRECT_PASSWORD = '61218384';
+const FULL_PASSWORD = '61218384';
 
 interface PasswordGateProps {
-  onUnlock: () => void;
+  onUnlock: (role: 'full' | 'client', client: Client | null) => void;
 }
 
 export default function PasswordGate({ onUnlock }: PasswordGateProps) {
@@ -14,14 +15,19 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   function handleSubmit() {
-    if (value === CORRECT_PASSWORD) {
-      onUnlock();
-    } else {
-      setError('סיסמה שגויה');
-      setValue('');
-      setTimeout(() => setError(''), 2000);
-      inputRef.current?.focus();
+    if (value === FULL_PASSWORD) {
+      onUnlock('full', null);
+      return;
     }
+    const matchedClient = CLIENTS.find(c => c.password === value);
+    if (matchedClient) {
+      onUnlock('client', matchedClient);
+      return;
+    }
+    setError('סיסמה שגויה');
+    setValue('');
+    setTimeout(() => setError(''), 2000);
+    inputRef.current?.focus();
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {

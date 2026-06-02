@@ -38,3 +38,83 @@ export interface Suggestion {
   created_at: string;
   status: string;
 }
+
+export interface MessageShare {
+  id: string;
+  message_id: number;
+  client_id: string;
+  created_at: string;
+}
+
+export interface ClientRequest {
+  id: string;
+  client_id: string;
+  client_name: string;
+  subtopic: string;
+  description: string;
+  source: string;
+  created_at: string;
+  status: string;
+}
+
+// ─── message_shares helpers ───────────────────────────────────────────────────
+
+export async function getSharesForMessage(messageId: number): Promise<string[]> {
+  const { data } = await supabase
+    .from('message_shares')
+    .select('client_id')
+    .eq('message_id', messageId);
+  return (data ?? []).map((row: { client_id: string }) => row.client_id);
+}
+
+export async function getSharedMessageIds(clientId: string): Promise<number[]> {
+  const { data } = await supabase
+    .from('message_shares')
+    .select('message_id')
+    .eq('client_id', clientId);
+  return (data ?? []).map((row: { message_id: number }) => row.message_id);
+}
+
+export async function addShare(messageId: number, clientId: string): Promise<void> {
+  await supabase
+    .from('message_shares')
+    .insert({ message_id: messageId, client_id: clientId });
+}
+
+export async function removeShare(messageId: number, clientId: string): Promise<void> {
+  await supabase
+    .from('message_shares')
+    .delete()
+    .eq('message_id', messageId)
+    .eq('client_id', clientId);
+}
+
+// ─── client_requests helpers ──────────────────────────────────────────────────
+
+export async function submitClientRequest(data: {
+  client_id: string;
+  client_name: string;
+  subtopic: string;
+  description: string;
+  source: string;
+}): Promise<void> {
+  await supabase.from('client_requests').insert({
+    ...data,
+    status: 'new',
+  });
+}
+
+export async function getClientRequests(): Promise<ClientRequest[]> {
+  const { data } = await supabase
+    .from('client_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+  return data ?? [];
+}
+
+export async function updateRequestStatus(id: string, status: string): Promise<void> {
+  await supabase
+    .from('client_requests')
+    .update({ status })
+    .eq('id', id);
+}

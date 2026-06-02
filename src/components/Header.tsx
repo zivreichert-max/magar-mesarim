@@ -1,9 +1,13 @@
+import { Client } from '@/data/clients';
+
 interface HeaderProps {
   count: number;
   total: number;
+  role: 'full' | 'client';
+  activeClient: Client | null;
 }
 
-export default function Header({ count, total }: HeaderProps) {
+export default function Header({ count, total, role, activeClient }: HeaderProps) {
   return (
     <header
       className="site-header sticky top-0 z-40 flex items-center justify-between"
@@ -60,13 +64,28 @@ export default function Header({ count, total }: HeaderProps) {
         </div>
       </div>
 
-      <div style={{ fontSize: 12, color: '#555555', textAlign: 'left' }}>
-        <span style={{ color: '#111111', fontSize: 18, fontWeight: 800 }}>{count}</span>
-        {count !== total && (
-          <span> / {total}</span>
-        )}
-        {' '}מסרים
-      </div>
+      {role === 'client' && activeClient ? (
+        <div
+          style={{
+            borderRadius: 20,
+            background: activeClient.color + '20',
+            color: activeClient.color,
+            fontSize: 11,
+            fontWeight: 600,
+            padding: '4px 12px',
+          }}
+        >
+          {activeClient.name}
+        </div>
+      ) : (
+        <div style={{ fontSize: 12, color: '#555555', textAlign: 'left' }}>
+          <span style={{ color: '#111111', fontSize: 18, fontWeight: 800 }}>{count}</span>
+          {count !== total && (
+            <span> / {total}</span>
+          )}
+          {' '}מסרים
+        </div>
+      )}
     </header>
   );
 }

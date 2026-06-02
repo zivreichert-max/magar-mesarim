@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { Message, TOPICS } from '@/data/messages';
+import { CLIENTS } from '@/data/clients';
 import CommentsSection from '@/components/CommentsSection';
+import { getSharesForMessage, addShare, removeShare } from '@/lib/supabase';
 
 interface DetailPanelProps {
   message: Message | null;
   onClose: () => void;
   authorName: string;
+  role: 'full' | 'client';
 }
 
 // ─── Source rendering ────────────────────────────────────────────────────────
@@ -143,13 +146,12 @@ function renderDetail(detail: string): React.ReactNode {
 
   if (hasAnyPipe) {
     const tableRows: string[][] = [];
-    const paraNodes: React.ReactNode[] = [];
     const nodes: React.ReactNode[] = [];
     let tableKey = 0;
 
     for (const trimmed of nonEmptyLines) {
       if (isSeparatorRow(trimmed)) continue;
-      if (trimmed.includes(' | ')) {
+      if (isPipeRow(trimmed) && trimmed.includes(' | ')) {
         tableRows.push(
           trimmed.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim())
         );
@@ -217,9 +219,10 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function DetailPanel({ message, onClose, authorName }: DetailPanelProps) {
+export default function DetailPanel({ message, onClose, authorName, role }: DetailPanelProps) {
   const color = message ? (TOPICS[message.topic]?.color ?? '#fff') : '#fff';
   const [imgZoomed, setImgZoomed] = useState(false);
+  const [sharedWith, setSharedWith] = useState<string[]>([]);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -234,6 +237,33 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
       document.body.style.overflow = '';
     };
   }, [message, onClose]);
+
+  // Load sharing state when message changes (only for full role)
+  useEffect(() => {
+    const load = async () => {
+      if (!message || role !== 'full') {
+        setSharedWith([]);
+        return;
+      }
+      const ids = await getSharesForMessage(message.id);
+      setSharedWith(ids);
+    };
+    load();
+  }, [message, role]);
+
+  async function handleToggleShare(clientId: string) {
+    if (!message) return;
+    const isShared = sharedWith.includes(clientId);
+    // Optimistic update
+    setSharedWith(prev =>
+      isShared ? prev.filter(id => id !== clientId) : [...prev, clientId]
+    );
+    if (isShared) {
+      await removeShare(message.id, clientId);
+    } else {
+      await addShare(message.id, clientId);
+    }
+  }
 
   if (!message) return null;
 
@@ -270,7 +300,7 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
         >
           ✕ סגור
         </button>
-        <div style={{fontSize: 11, color: '#0075C4', fontWeight: 700, marginBottom: 8}}>
+        <div style={{fontSize: 11, color: color, fontWeight: 700, marginBottom: 8}}>
           {message.topic}
         </div>
         <h2 style={{fontSize: 20, fontWeight: 900, margin: '0 0 16px', color: '#111'}}>
@@ -332,6 +362,39 @@ export default function DetailPanel({ message, onClose, authorName }: DetailPane
         <div style={{borderTop: '1px solid #eee', marginTop: 20, paddingTop: 16}}>
           <CommentsSection cardId={message.id} authorName={authorName} />
         </div>
+
+        {/* Share with clients — visible only for full role */}
+        {role === 'full' && (
+          <div style={{ borderTop: '1px solid #eee', marginTop: 20, paddingTop: 16 }}>
+            <SectionHeading>לשתף עם</SectionHeading>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {CLIENTS.map(client => {
+                const isActive = sharedWith.includes(client.id);
+                return (
+                  <button
+                    key={client.id}
+                    type="button"
+                    onClick={() => handleToggleShare(client.id)}
+                    style={{
+                      borderRadius: 2,
+                      padding: '4px 12px',
+                      fontSize: 12,
+                      fontFamily: 'inherit',
+                      cursor: 'pointer',
+                      border: `1px solid ${client.color}`,
+                      background: isActive ? client.color : 'transparent',
+                      color: isActive ? '#ffffff' : client.color,
+                      fontWeight: 600,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {client.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
