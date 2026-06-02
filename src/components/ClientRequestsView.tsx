@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { getClientRequests, updateRequestStatus, ClientRequest } from '@/lib/supabase';
+import { getClientRequests, updateRequestStatus, deleteClientRequest, ClientRequest } from '@/lib/supabase';
 import { CLIENTS, Client } from '@/data/clients';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -28,9 +28,10 @@ function formatDate(dateStr: string): string {
 interface RequestCardProps {
   request: ClientRequest;
   onClick: () => void;
+  onDelete: () => void;
 }
 
-function RequestCard({ request, onClick }: RequestCardProps) {
+function RequestCard({ request, onClick, onDelete }: RequestCardProps) {
   const client = getClient(request.client_id);
   const clientColor = client?.color ?? '#6b7280';
   const clientName = client?.name ?? request.client_id;
@@ -38,8 +39,7 @@ function RequestCard({ request, onClick }: RequestCardProps) {
   const statusLabel = STATUS_LABELS[request.status] ?? request.status;
 
   return (
-    <button
-      type="button"
+    <div
       onClick={onClick}
       style={{
         background: '#ffffff',
@@ -47,35 +47,38 @@ function RequestCard({ request, onClick }: RequestCardProps) {
         borderRight: '1px solid #e5e7eb',
         borderBottom: '1px solid #e5e7eb',
         borderLeft: `3px solid ${clientColor}`,
-        outline: 'none',
         borderRadius: 0,
         padding: 20,
         cursor: 'pointer',
-        touchAction: 'manipulation',
-        WebkitTapHighlightColor: 'transparent',
         display: 'flex',
         flexDirection: 'column',
         gap: 10,
         width: '100%',
-        maxWidth: '100%',
-        minWidth: 0,
-        overflow: 'hidden',
+        position: 'relative',
         boxSizing: 'border-box',
-        fontFamily: 'inherit',
         textAlign: 'right',
-        transition: 'box-shadow 0.15s, transform 0.15s',
+        transition: 'box-shadow 0.15s',
       }}
-      onMouseEnter={e => {
-        const el = e.currentTarget as HTMLButtonElement;
-        el.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
-        el.style.transform = 'translateY(-1px)';
-      }}
-      onMouseLeave={e => {
-        const el = e.currentTarget as HTMLButtonElement;
-        el.style.boxShadow = 'none';
-        el.style.transform = 'translateY(0)';
-      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none'; }}
     >
+      {/* Delete button */}
+      <button
+        type="button"
+        onClick={e => { e.stopPropagation(); onDelete(); }}
+        title="מחק בקשה"
+        style={{
+          position: 'absolute', top: 8, left: 8,
+          width: 22, height: 22, borderRadius: '50%',
+          border: 'none', background: '#f3f4f6', color: '#9ca3af',
+          cursor: 'pointer', fontSize: 14, lineHeight: 1,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 0,
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#fee2e2'; (e.currentTarget as HTMLButtonElement).style.color = '#ef4444'; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f3f4f6'; (e.currentTarget as HTMLButtonElement).style.color = '#9ca3af'; }}
+      >×</button>
+
       {/* Client badge */}
       <div>
         <span
@@ -151,7 +154,7 @@ function RequestCard({ request, onClick }: RequestCardProps) {
           {statusLabel}
         </span>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -332,6 +335,16 @@ export default function ClientRequestsView() {
     }
   }
 
+  async function handleDelete(id: string) {
+    try {
+      await deleteClientRequest(id);
+      setRequests(prev => prev.filter(r => r.id !== id));
+      if (selectedRequest?.id === id) setSelectedRequest(null);
+    } catch {
+      // silent — user stays in place
+    }
+  }
+
   const filtered = clientFilter === 'all'
     ? requests
     : requests.filter(r => r.client_id === clientFilter);
@@ -406,6 +419,7 @@ export default function ClientRequestsView() {
                 key={req.id}
                 request={req}
                 onClick={() => setSelectedRequest(req)}
+                onDelete={() => handleDelete(req.id)}
               />
             ))}
           </div>

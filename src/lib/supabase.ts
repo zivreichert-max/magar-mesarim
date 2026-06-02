@@ -120,3 +120,11 @@ export async function updateRequestStatus(id: string, status: string): Promise<v
     .update({ status })
     .eq('id', id);
 }
+
+export async function deleteClientRequest(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('client_requests')
+    .delete()
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
