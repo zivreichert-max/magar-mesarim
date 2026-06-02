@@ -71,9 +71,9 @@ export default function RequestButton({ authorName, clientId }: RequestButtonPro
         setOpen(false);
         resetForm();
       }, 1800);
-    } catch {
+    } catch (e) {
       setSubmitting(false);
-      setError('שגיאה בשליחה, נסה שוב');
+      setError(e instanceof Error ? e.message : 'שגיאה בשליחה, נסה שוב');
     }
   }
 
