@@ -13,6 +13,7 @@ import SuggestButton from '@/components/SuggestButton';
 import RequestButton from '@/components/RequestButton';
 import ScheduleView from '@/components/ScheduleView';
 import ClientRequestsView from '@/components/ClientRequestsView';
+import PapersView from '@/components/PapersView';
 import { getSharedMessageIds } from '@/lib/supabase';
 
 type AppState = 'password' | 'name' | 'ready';
@@ -26,7 +27,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<Topic | 'הכל'>('הכל');
   const [search, setSearch] = useState('');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [activeView, setActiveView] = useState<'messages' | 'schedule' | 'requests'>('messages');
+  const [activeView, setActiveView] = useState<'messages' | 'schedule' | 'requests' | 'papers'>('messages');
 
   // On mount, check if name is already stored
   useEffect(() => {
@@ -147,6 +148,19 @@ export default function Home() {
             בקשות
           </button>
         )}
+        <button
+          type="button"
+          onClick={() => setActiveView('papers')}
+          style={{
+            padding: '12px 20px', fontSize: 14, fontWeight: 600,
+            border: 'none', background: 'none', cursor: 'pointer',
+            borderBottom: activeView === 'papers' ? '2px solid #0075C4' : '2px solid transparent',
+            color: activeView === 'papers' ? '#0075C4' : '#6b7280',
+            fontFamily: 'inherit', touchAction: 'manipulation', marginBottom: -2,
+          }}
+        >
+          ניירות עמדה
+        </button>
       </div>
 
       {activeView === 'messages' ? (
@@ -190,6 +204,7 @@ export default function Home() {
       ) : null}
 
       {activeView === 'requests' && role === 'full' && <ClientRequestsView />}
+      {activeView === 'papers' && <PapersView role={role} clientId={activeClient?.id} />}
 
       <DetailPanel
         message={selectedMessage}
