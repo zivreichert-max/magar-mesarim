@@ -49,10 +49,8 @@ function buildGcalUrl(ev: ScheduleEvent): string {
 
   const catName = CATS.find(c => c.id === ev.category)?.label ?? ev.category;
   const title   = encodeURIComponent(`[${catName}] ${ev.title}`);
-  const summaryTrunc = (ev.summary ?? '').slice(0, 500);
-  const details = encodeURIComponent(summaryTrunc);
 
-  const base = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`;
+  const base = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}`;
   return startDt && endDt ? `${base}&dates=${startDt}/${endDt}` : base;
 }
 
