@@ -1,7 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PAPERS, Paper } from '@/data/papers';
 import { CLIENTS } from '@/data/clients';
+import { getSharesForPaper, addPaperShare, removePaperShare, getSharedPaperIds } from '@/lib/supabase';
 
 interface PapersViewProps {
   role: string;
@@ -10,10 +11,33 @@ interface PapersViewProps {
 
 export default function PapersView({ role, clientId }: PapersViewProps) {
   const [selected, setSelected] = useState<Paper | null>(null);
+  const [sharedWith, setSharedWith] = useState<string[]>([]);
+  const [allowedPaperIds, setAllowedPaperIds] = useState<number[] | null>(null);
+
+  // For client role: load which papers are shared with them
+  useEffect(() => {
+    if (role === 'client' && clientId) {
+      getSharedPaperIds(clientId).then(ids => setAllowedPaperIds(ids));
+    }
+  }, [role, clientId]);
+
+  // When a paper is selected (full role): load its sharing state from Supabase
+  useEffect(() => {
+    if (!selected || role !== 'full') { setSharedWith([]); return; }
+    getSharesForPaper(selected.id).then(ids => setSharedWith(ids));
+  }, [selected, role]);
+
+  async function handleToggleShare(cid: string) {
+    if (!selected) return;
+    const isShared = sharedWith.includes(cid);
+    setSharedWith(prev => isShared ? prev.filter(id => id !== cid) : [...prev, cid]);
+    if (isShared) await removePaperShare(selected.id, cid);
+    else await addPaperShare(selected.id, cid);
+  }
 
   const visible = role === 'full'
     ? PAPERS
-    : PAPERS.filter(p => clientId && p.sharedWith.includes(clientId));
+    : PAPERS.filter(p => allowedPaperIds?.includes(p.id) ?? false);
 
   return (
     <div style={{ direction: 'rtl', fontFamily: "'Heebo', sans-serif" }}>
@@ -76,26 +100,31 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
               <div style={{ fontSize: 13, lineHeight: 1.7, color: '#1e40af', fontWeight: 500 }}>{selected.bottomLine}</div>
             </div>
 
-            {/* Share — full only */}
+            {/* Share — full role only */}
             {role === 'full' && (
               <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 16 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 10 }}>שתף עם:</div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {CLIENTS.map(c => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      style={{
-                        padding: '6px 16px', fontSize: 12, fontWeight: 600,
-                        border: '1px solid #0075C4',
-                        background: selected.sharedWith.includes(c.id) ? '#0075C4' : 'transparent',
-                        color: selected.sharedWith.includes(c.id) ? '#fff' : '#0075C4',
-                        borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit',
-                      }}
-                    >
-                      {c.name}
-                    </button>
-                  ))}
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 10 }}>לשתף עם:</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {CLIENTS.map(c => {
+                    const isActive = sharedWith.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => handleToggleShare(c.id)}
+                        style={{
+                          padding: '4px 14px', fontSize: 12, fontWeight: 600,
+                          border: `1px solid ${c.color}`,
+                          background: isActive ? c.color : 'transparent',
+                          color: isActive ? '#fff' : c.color,
+                          borderRadius: 2, cursor: 'pointer', fontFamily: 'inherit',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

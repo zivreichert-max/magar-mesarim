@@ -89,6 +89,38 @@ export async function removeShare(messageId: number, clientId: string): Promise<
     .eq('client_id', clientId);
 }
 
+// ─── paper_shares helpers ─────────────────────────────────────────────────────
+
+export async function getSharesForPaper(paperId: number): Promise<string[]> {
+  const { data } = await supabase
+    .from('paper_shares')
+    .select('client_id')
+    .eq('paper_id', paperId);
+  return (data ?? []).map((row: { client_id: string }) => row.client_id);
+}
+
+export async function getSharedPaperIds(clientId: string): Promise<number[]> {
+  const { data } = await supabase
+    .from('paper_shares')
+    .select('paper_id')
+    .eq('client_id', clientId);
+  return (data ?? []).map((row: { paper_id: number }) => row.paper_id);
+}
+
+export async function addPaperShare(paperId: number, clientId: string): Promise<void> {
+  await supabase
+    .from('paper_shares')
+    .insert({ paper_id: paperId, client_id: clientId });
+}
+
+export async function removePaperShare(paperId: number, clientId: string): Promise<void> {
+  await supabase
+    .from('paper_shares')
+    .delete()
+    .eq('paper_id', paperId)
+    .eq('client_id', clientId);
+}
+
 // ─── client_requests helpers ──────────────────────────────────────────────────
 
 export async function submitClientRequest(data: {
