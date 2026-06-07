@@ -55,7 +55,7 @@ export const PAPERS: Paper[] = [
       },
     ],
     bottomLine: 'חוק המעונות במתכונתו הנוכחית הוא ניסיון להשתמש בכספי ציבור כדי להכשיר השתמטות. אבל התשובה אינה רק לומר "לא". התשובה היא להציג חלופה: מדיניות מעונות הוגנת, אוניברסלית, שמסייעת למשפחות שנושאות בנטל ומורידה את יוקר המחיה.',
-    sharedWith: ['naama', 'liran'],
+    sharedWith: ['democrats', 'beyahad', 'yisrael-b', 'yashar'],
   },
   {
     id: 2,
@@ -90,6 +90,6 @@ export const PAPERS: Paper[] = [
       },
     ],
     bottomLine: 'מתן חסינות לגוטליב יהווה הכשר לניהול מאבקים פוליטיים על גבם של הלוחמים. שמירה על סודיות זהותם של לוחמים היא אפוד המגן שלהם — ואת זה אסור לכנסת לאפשר.',
-    sharedWith: ['naama', 'liran'],
+    sharedWith: ['democrats', 'beyahad', 'yisrael-b', 'yashar'],
   },
 ];

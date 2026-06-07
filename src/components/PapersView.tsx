@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { PAPERS, Paper } from '@/data/papers';
+import { CLIENTS } from '@/data/clients';
 
 interface PapersViewProps {
   role: string;
@@ -80,7 +81,7 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
               <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 10 }}>שתף עם:</div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  {[{ id: 'naama', name: 'נעמה לזימי' }, { id: 'liran', name: 'לירן אביבשר' }].map(c => (
+                  {CLIENTS.map(c => (
                     <button
                       key={c.id}
                       type="button"
