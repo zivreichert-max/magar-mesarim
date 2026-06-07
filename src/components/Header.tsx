@@ -5,9 +5,10 @@ interface HeaderProps {
   total: number;
   role: 'full' | 'client';
   activeClient: Client | null;
+  viewTitle?: string;
 }
 
-export default function Header({ count, total, role, activeClient }: HeaderProps) {
+export default function Header({ count, total, role, activeClient, viewTitle }: HeaderProps) {
   return (
     <header
       className="site-header sticky top-0 z-40 flex items-center justify-between"
@@ -56,7 +57,7 @@ export default function Header({ count, total, role, activeClient }: HeaderProps
               color: '#111111',
             }}
           >
-            מסרים
+            {viewTitle ?? 'מסרים'}
           </div>
           <div style={{ fontWeight: 400, fontSize: 12, color: '#0075C4', marginTop: 1 }}>
             בחירות 2026 · בונים מחדש

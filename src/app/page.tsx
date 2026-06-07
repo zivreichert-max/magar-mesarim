@@ -18,6 +18,13 @@ import { getSharedMessageIds } from '@/lib/supabase';
 
 type AppState = 'password' | 'name' | 'ready';
 
+const VIEW_TITLES: Record<string, string> = {
+  messages: 'מסרים',
+  schedule: 'לו"ז שבועי',
+  requests: 'בקשות',
+  papers:   'ניירות עמדה',
+};
+
 export default function Home() {
   const [appState, setAppState] = useState<AppState>('password');
   const [authorName, setAuthorName] = useState('');
@@ -97,7 +104,7 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-      <Header count={filtered.length} total={role === 'client' ? (allowedMessageIds?.length ?? 0) : MESSAGES.length} role={role} activeClient={activeClient} />
+      <Header count={filtered.length} total={role === 'client' ? (allowedMessageIds?.length ?? 0) : MESSAGES.length} role={role} activeClient={activeClient} viewTitle={VIEW_TITLES[activeView]} />
 
       {/* View switcher */}
       <div style={{

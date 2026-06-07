@@ -11,8 +11,19 @@ interface PapersViewProps {
 
 export default function PapersView({ role, clientId }: PapersViewProps) {
   const [selected, setSelected] = useState<Paper | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
   const [sharedWith, setSharedWith] = useState<string[]>([]);
   const [allowedPaperIds, setAllowedPaperIds] = useState<number[] | null>(null);
+
+  function openPanel(paper: Paper) {
+    setSelected(paper);
+    requestAnimationFrame(() => setIsOpen(true));
+  }
+
+  function closePanel() {
+    setIsOpen(false);
+    setTimeout(() => setSelected(null), 300);
+  }
 
   // For client role: load which papers are shared with them
   useEffect(() => {
@@ -42,20 +53,25 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
   return (
     <div style={{ direction: 'rtl', fontFamily: "'Heebo', sans-serif" }}>
       {/* Overlay */}
-      {selected && (
-        <div
-          onClick={() => setSelected(null)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }}
-        />
-      )}
+      <div
+        onClick={closePanel}
+        style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998,
+          opacity: isOpen ? 1 : 0,
+          transition: 'opacity 0.25s ease',
+          pointerEvents: isOpen ? 'all' : 'none',
+        }}
+      />
 
       {/* Panel */}
-      {selected && (
-        <div style={{
-          position: 'fixed', top: 0, right: 0, bottom: 0,
-          width: '100%', maxWidth: 520, zIndex: 9999,
-          background: '#f8fafc', display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        }}>
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0,
+        width: '100%', maxWidth: 520, zIndex: 9999,
+        background: '#f8fafc', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.28s cubic-bezier(0.32, 0, 0, 1)',
+      }}>{selected && (
+          <>
           {/* Header */}
           <div style={{ background: '#0075C4', padding: '20px', flexShrink: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
@@ -68,7 +84,7 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
                 </div>
               </div>
               <button
-                onClick={() => setSelected(null)}
+                onClick={closePanel}
                 type="button"
                 style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', borderRadius: 2, padding: '6px 10px', fontSize: 16, cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit' }}
               >✕</button>
@@ -129,8 +145,9 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
               </div>
             )}
           </div>
-        </div>
+        </>
       )}
+      </div>
 
       {/* Cards */}
       <div style={{ padding: '24px', maxWidth: 860, margin: '0 auto' }}>
@@ -139,7 +156,7 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
         ) : visible.map(paper => (
           <div
             key={paper.id}
-            onClick={() => setSelected(paper)}
+            onClick={() => openPanel(paper)}
             style={{
               background: '#fff', border: '0.5px solid #e5e7eb',
               borderRight: '3px solid #0075C4', borderRadius: 4,

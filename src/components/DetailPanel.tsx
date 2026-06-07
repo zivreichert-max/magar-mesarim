@@ -220,15 +220,30 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function DetailPanel({ message, onClose, authorName, role }: DetailPanelProps) {
-  const color = message ? (TOPICS[message.topic]?.color ?? '#fff') : '#fff';
+  const [isOpen, setIsOpen] = useState(false);
+  const [current, setCurrent] = useState<Message | null>(null);
   const [imgZoomed, setImgZoomed] = useState(false);
   const [sharedWith, setSharedWith] = useState<string[]>([]);
+
+  // Sync open/close state with message prop
+  useEffect(() => {
+    if (message) {
+      setCurrent(message);
+      requestAnimationFrame(() => setIsOpen(true));
+    } else {
+      setIsOpen(false);
+      const t = setTimeout(() => setCurrent(null), 320);
+      return () => clearTimeout(t);
+    }
+  }, [message]);
+
+  const color = current ? (TOPICS[current.topic]?.color ?? '#fff') : '#fff';
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
     }
-    if (message) {
+    if (isOpen) {
       window.addEventListener('keydown', handleKey);
       document.body.style.overflow = 'hidden';
     }
@@ -236,7 +251,7 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
       window.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
     };
-  }, [message, onClose]);
+  }, [isOpen, onClose]);
 
   // Load sharing state when message changes (only for full role)
   useEffect(() => {
@@ -252,20 +267,18 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
   }, [message, role]);
 
   async function handleToggleShare(clientId: string) {
-    if (!message) return;
+    if (!current) return;
     const isShared = sharedWith.includes(clientId);
     // Optimistic update
     setSharedWith(prev =>
       isShared ? prev.filter(id => id !== clientId) : [...prev, clientId]
     );
     if (isShared) {
-      await removeShare(message.id, clientId);
+      await removeShare(current.id, clientId);
     } else {
-      await addShare(message.id, clientId);
+      await addShare(current.id, clientId);
     }
   }
-
-  if (!message) return null;
 
   return (
     <>
@@ -275,6 +288,9 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
           position: 'fixed', top: 0, right: 0, bottom: 0, left: 0,
           background: 'rgba(0,0,0,0.5)',
           zIndex: 9998,
+          opacity: isOpen ? 1 : 0,
+          transition: 'opacity 0.25s ease',
+          pointerEvents: isOpen ? 'all' : 'none',
         }}
       />
       <div style={{
@@ -287,6 +303,8 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
         borderRadius: '12px 12px 0 0',
         padding: '20px',
         direction: 'rtl',
+        transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
+        transition: 'transform 0.3s cubic-bezier(0.32, 0, 0, 1)',
       }}>
         <button
           onClick={onClose}
@@ -301,24 +319,24 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
           ✕ סגור
         </button>
         <div style={{fontSize: 11, color: color, fontWeight: 700, marginBottom: 8}}>
-          {message.topic}
+          {current?.topic}
         </div>
         <h2 style={{fontSize: 20, fontWeight: 900, margin: '0 0 16px', color: '#111'}}>
-          {message.title}
+          {current?.title}
         </h2>
-        {message.summary && (
+        {current?.summary && (
           <div style={{ marginBottom: 20 }}>
             <SectionHeading>תקציר</SectionHeading>
             <p style={{ fontSize: 17, lineHeight: 1.85, color: '#222', margin: 0, direction: 'rtl', textAlign: 'right' }}>
-              {message.summary}
+              {current.summary}
             </p>
           </div>
         )}
-        {message.visual && message.visual.startsWith('/visuals/') && (
+        {current?.visual && current.visual.startsWith('/visuals/') && (
           <>
             <div style={{ marginBottom: 20, textAlign: 'center' }}>
               <img
-                src={message.visual}
+                src={current.visual}
                 onClick={() => setImgZoomed(true)}
                 style={{ maxWidth: '100%', maxHeight: '40vh', borderRadius: 8, objectFit: 'contain', display: 'inline-block', cursor: 'zoom-in' }}
                 alt=""
@@ -338,7 +356,7 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
                 }}
               >
                 <img
-                  src={message.visual}
+                  src={current.visual}
                   style={{ maxWidth: '95vw', maxHeight: '92vh', borderRadius: 8, objectFit: 'contain' }}
                   alt=""
                 />
@@ -347,20 +365,20 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
             )}
           </>
         )}
-        {message.detail && (
+        {current?.detail && (
           <div style={{ marginBottom: 20 }}>
             <SectionHeading>הרחבה</SectionHeading>
-            {renderDetail(message.detail)}
+            {renderDetail(current.detail)}
           </div>
         )}
-        {message.source && (
+        {current?.source && (
           <div style={{ fontSize: 12, color: '#888', marginTop: 8, borderTop: '1px solid #eee', paddingTop: 12 }}>
             <span style={{ fontWeight: 600, color: '#555', marginLeft: 6 }}>מקור:</span>
-            {renderSource(message.source)}
+            {renderSource(current.source)}
           </div>
         )}
         <div style={{borderTop: '1px solid #eee', marginTop: 20, paddingTop: 16}}>
-          <CommentsSection cardId={message.id} authorName={authorName} />
+          <CommentsSection cardId={current?.id ?? 0} authorName={authorName} />
         </div>
 
         {/* Share with clients — visible only for full role */}
