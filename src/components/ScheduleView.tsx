@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { SCHEDULE, WEEK_TITLE } from '@/data/schedule';
+import { SCHEDULE, WEEK_TITLE, ScheduleEvent } from '@/data/schedule';
 import { TIMELINE, TimelineEvent } from '@/data/timeline';
 
 const STATIC_CATS = [
@@ -21,6 +21,39 @@ const KNESSET_CATS = Array.from(
 
 const CATS = [...STATIC_CATS, ...KNESSET_CATS];
 const DAYS = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי'];
+
+const DAY_OFFSET: Record<string, number> = {
+  'יום ראשון': 0, 'יום שני': 1, 'יום שלישי': 2, 'יום רביעי': 3, 'יום חמישי': 4,
+};
+
+function buildGcalUrl(ev: ScheduleEvent): string {
+  // WEEK_TITLE format: 'לו"ז 07-11.06' → startDay=07, month=06
+  let dateStr = '';
+  const m = WEEK_TITLE.match(/(\d{1,2})-\d{1,2}\.(\d{2})(?:\.(\d{4}))?/);
+  if (m) {
+    const year = m[3] ?? String(new Date().getFullYear());
+    const base = new Date(`${year}-${m[2]}-${m[1].padStart(2, '0')}`);
+    base.setDate(base.getDate() + (DAY_OFFSET[ev.day] ?? 0));
+    dateStr = `${base.getFullYear()}${String(base.getMonth() + 1).padStart(2, '0')}${String(base.getDate()).padStart(2, '0')}`;
+  }
+
+  const DURATION = 90;
+  let startDt = '', endDt = '';
+  const tm = ev.time?.match(/(\d{1,2}):(\d{2})/);
+  if (dateStr && tm) {
+    const h = parseInt(tm[1]), min = parseInt(tm[2]);
+    const endMins = h * 60 + min + DURATION;
+    startDt = `${dateStr}T${String(h).padStart(2,'0')}${String(min).padStart(2,'0')}00`;
+    endDt   = `${dateStr}T${String(Math.floor(endMins/60)).padStart(2,'0')}${String(endMins%60).padStart(2,'0')}00`;
+  }
+
+  const catName = CATS.find(c => c.id === ev.category)?.label ?? ev.category;
+  const title   = encodeURIComponent(`[${catName}] ${ev.title}`);
+  const details = encodeURIComponent([ev.summary, ev.detail].filter(Boolean).join('\n\n'));
+
+  const base = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`;
+  return startDt && endDt ? `${base}&dates=${startDt}/${endDt}` : base;
+}
 
 const TL_COLORS: Record<string, string> = {
   'בג"ץ': '#0075C4',
@@ -141,6 +174,18 @@ export default function ScheduleView() {
                               לקישור המקור ›
                             </a>
                           )}
+                          <div style={{ borderTop: '0.5px solid #e5e7eb', paddingTop: 10, marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                            <span style={{ fontSize: 11, color: '#9ca3af' }}>משך משוער: 90 דקות</span>
+                            <a
+                              href={buildGcalUrl(ev)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#0075C4', color: '#fff', borderRadius: 4, fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: 'inherit' }}
+                            >
+                              📅 הוסף ליומן
+                            </a>
+                          </div>
                         </div>
                       )}
                     </div>
