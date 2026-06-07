@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { SCHEDULE, WEEK_TITLE, ScheduleEvent } from '@/data/schedule';
 import { TIMELINE, TimelineEvent } from '@/data/timeline';
+import KnessetUpdates from '@/components/KnessetUpdates';
 
 const STATIC_CATS = [
   { id: 'all',       label: 'הכל',            color: '#6b7280' },
@@ -74,7 +75,7 @@ function fmtDate(iso: string) {
 const TL_CATS = ['הכל', ...Array.from(new Set(TIMELINE.map(e => e.category)))];
 const SORTED_TIMELINE = [...TIMELINE].sort((a, b) => a.dateStart.localeCompare(b.dateStart));
 
-export default function ScheduleView() {
+export default function ScheduleView({ role }: { role: 'full' | 'client' }) {
   const [subView, setSubView] = useState<'weekly' | 'timeline'>('weekly');
   const [activeCat, setActiveCat] = useState('all');
   const [tlCat, setTlCat] = useState('הכל');
@@ -193,6 +194,7 @@ export default function ScheduleView() {
               </div>
             ))}
           </div>
+          {role === 'full' && <KnessetUpdates />}
         </>
       ) : (
         <>

@@ -200,7 +200,7 @@ export default function Home() {
           </main>
         </>
       ) : activeView === 'schedule' ? (
-        <ScheduleView />
+        <ScheduleView role={role} />
       ) : null}
 
       {activeView === 'requests' && role === 'full' && <ClientRequestsView />}
