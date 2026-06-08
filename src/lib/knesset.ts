@@ -37,7 +37,12 @@ export async function fetchKnessetWeeklySessions(): Promise<KnessetSession[]> {
 
   const res = await fetch(url, {
     cache: 'no-store',
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; magar-mesarim-bot/1.0)' },
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+      'Referer': 'https://knesset.gov.il/',
+      'Accept': 'application/json,text/plain,*/*',
+      'Accept-Language': 'he-IL,he;q=0.9',
+    },
   });
   if (!res.ok) throw new Error(`Knesset API error: ${res.status}`);
   const text = await res.text();
