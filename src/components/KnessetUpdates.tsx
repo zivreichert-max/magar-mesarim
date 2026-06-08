@@ -39,6 +39,7 @@ export default function KnessetUpdates() {
   const [markErrors, setMarkErrors] = useState<Record<string, string>>({});
   const [modalSession, setModalSession] = useState<SessionInfo | null>(null);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
+  const [selectedDay, setSelectedDay] = useState<string>(() => DAY_ORDER[new Date().getDay()] ?? 'יום ראשון');
 
   async function load() {
     try {
@@ -75,6 +76,13 @@ export default function KnessetUpdates() {
   }
 
   useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (sessions.length === 0) return;
+    if (!sessions.some(s => s.day_name === selectedDay)) {
+      const first = DAY_ORDER.find(d => sessions.some(s => s.day_name === d));
+      if (first) setSelectedDay(first);
+    }
+  }, [sessions, selectedDay]);
 
   // Build map: session_id → highest-priority update
   const updateMap = new Map<string, KnessetUpdate>();
@@ -85,13 +93,16 @@ export default function KnessetUpdates() {
     }
   }
 
-  // Group by day, sort by time within each day
-  const byDay = DAY_ORDER.map(day => ({
-    day,
-    sessions: sessions
-      .filter(s => s.day_name === day)
-      .sort((a, b) => normalizeTime(a.time).localeCompare(normalizeTime(b.time))),
-  })).filter(d => d.sessions.length > 0);
+  const availableDays = DAY_ORDER
+    .map(day => {
+      const ds = sessions.filter(s => s.day_name === day);
+      return ds.length > 0 ? { day, date: ds[0].date } : null;
+    })
+    .filter((d): d is { day: string; date: string } => d !== null);
+
+  const displaySessions = sessions
+    .filter(s => s.day_name === selectedDay)
+    .sort((a, b) => normalizeTime(a.time).localeCompare(normalizeTime(b.time)));
 
   const cancelCount = sessions.filter(s => s.status === 'cancelled').length;
 
@@ -119,16 +130,32 @@ export default function KnessetUpdates() {
         </div>
       </div>
 
-      {byDay.length === 0 ? (
+      {availableDays.length > 1 && (
+        <div style={{ display: 'flex', background: '#f0f4f9', borderBottom: '2px solid #dde3ed', overflowX: 'auto', margin: '0 -24px 14px', direction: 'rtl' }}>
+          {availableDays.map(({ day, date }) => {
+            const isSel = selectedDay === day;
+            return (
+              <button key={day} type="button" onClick={() => setSelectedDay(day)}
+                style={{
+                  padding: '10px 16px', minWidth: 76, textAlign: 'center',
+                  background: isSel ? '#1e3a7b' : 'transparent',
+                  color: isSel ? '#fff' : '#1e3a7b',
+                  border: 'none', borderLeft: '1px solid #dde3ed',
+                  cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
+                }}>
+                <div style={{ fontSize: 13, fontWeight: 700 }}>{day.replace('יום ', '')}</div>
+                <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>{date}</div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {sessions.length === 0 ? (
         <div style={{ fontSize: 12, color: '#9ca3af', padding: '12px 0' }}>אין נתונים לשבוע זה</div>
       ) : (
-        byDay.map(({ day, sessions: daySessions }) => (
-          <div key={day} style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, borderBottom: '0.5px solid #e5e7eb', paddingBottom: 5, marginBottom: 6, color: '#111' }}>
-              {day}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {daySessions.map(session => {
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {displaySessions.map(session => {
                 const isCancelled = session.status === 'cancelled';
                 const update = updateMap.get(session.id);
                 const isMarked = update?.marked_in_schedule ?? false;
@@ -249,10 +276,8 @@ export default function KnessetUpdates() {
                     )}
                   </div>
                 );
-              })}
-            </div>
-          </div>
-        ))
+          })}
+        </div>
       )}
 
       <div style={{ marginTop: 10, fontSize: 11, color: '#d1d5db', textAlign: 'center' }}>

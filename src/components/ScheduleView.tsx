@@ -106,6 +106,10 @@ export default function ScheduleView() {
   const [openTl, setOpenTl] = useState<number | null>(null);
   const [cancellations, setCancellations] = useState<ScheduleCancellation[]>([]);
   const [manualEvents, setManualEvents] = useState<ManualScheduleEvent[]>([]);
+  const [selectedWeekDay, setSelectedWeekDay] = useState<string>(() => {
+    const todayName = DAYS[new Date().getDay()];
+    return todayName ?? DAYS[0];
+  });
 
   useEffect(() => {
     getScheduleCancellations().then(setCancellations).catch(() => {});
@@ -123,6 +127,23 @@ export default function ScheduleView() {
     day,
     events: filtered.filter(e => e.day.startsWith(day)),
   })).filter(d => d.events.length > 0);
+
+  // Dates per day derived from WEEK_TITLE (e.g. 'לו"ז 07-11.06')
+  const weekDates: Record<string, string> = (() => {
+    const result: Record<string, string> = {};
+    const m = WEEK_TITLE.match(/(\d{1,2})-\d{1,2}\.(\d{2})(?:\.(\d{4}))?/);
+    if (!m) return result;
+    const year = parseInt(m[3] ?? String(new Date().getFullYear()));
+    const month = parseInt(m[2]) - 1;
+    const startDay = parseInt(m[1]);
+    DAYS.forEach(day => {
+      const d = new Date(year, month, startDay + (DAY_OFFSET[day] ?? 0));
+      result[day] = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+    });
+    return result;
+  })();
+
+  const filteredForDay = filtered.filter(e => e.day.startsWith(selectedWeekDay));
 
   const tlFiltered = SORTED_TIMELINE.filter(e => tlCat === 'הכל' || e.category === tlCat);
 
@@ -169,14 +190,31 @@ export default function ScheduleView() {
               ))}
             </div>
           </div>
+          {/* Day tab bar */}
+          <div style={{ display: 'flex', background: '#f0f4f9', borderBottom: '2px solid #dde3ed', overflowX: 'auto', direction: 'rtl' }}>
+            {byDay.map(({ day }) => {
+              const isSel = selectedWeekDay === day;
+              return (
+                <button key={day} type="button" onClick={() => setSelectedWeekDay(day)}
+                  style={{
+                    padding: '10px 16px', minWidth: 76, textAlign: 'center',
+                    background: isSel ? '#1e3a7b' : 'transparent',
+                    color: isSel ? '#fff' : '#1e3a7b',
+                    border: 'none', borderLeft: '1px solid #dde3ed',
+                    cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
+                  }}>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>{day.replace('יום ', '')}</div>
+                  <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>{weekDates[day] ?? ''}</div>
+                </button>
+              );
+            })}
+          </div>
+
           <div style={{ padding: '16px 24px 80px' }}>
-            {byDay.length === 0 && (
+            {filteredForDay.length === 0 && (
               <div style={{ textAlign: 'center', padding: 48, color: '#9ca3af' }}>אין אירועים בסינון זה</div>
             )}
-            {byDay.map(({ day, events }) => (
-              <div key={day} style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, borderBottom: '0.5px solid #e5e7eb', paddingBottom: 6, marginBottom: 6 }}>{day}</div>
-                {events.map(ev => {
+            {filteredForDay.map(ev => {
                   const gi = ALL_EVENTS.indexOf(ev);
                   const isOpen = openEvent === gi;
                   const hasDetail = !!(ev.summary || ev.detail);
@@ -234,9 +272,7 @@ export default function ScheduleView() {
                       )}
                     </div>
                   );
-                })}
-              </div>
-            ))}
+            })}
           </div>
         </>
       ) : (
