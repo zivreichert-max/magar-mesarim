@@ -67,7 +67,7 @@ export async function fetchKnessetWeeklySessions(): Promise<KnessetSession[]> {
     const isCancelled = (item.StatusID as number) === CANCELLED_STATUS_ID;
 
     // Use the URL provided directly by the API
-    const sessionUrl = (item.SessionUrl as string) ?? (
+    const sessionUrl = ((item.SessionUrl as string) ?? '').replace('http://', 'https://') || (
       sessionId
         ? `https://main.knesset.gov.il/Activity/committees/Pages/AllCommitteesAgenda.aspx?Tab=3&ItemID=${sessionId}`
         : 'https://main.knesset.gov.il'
