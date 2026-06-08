@@ -1,8 +1,3 @@
 {
-  "crons": [
-    {
-      "path": "/api/knesset-sync",
-      "schedule": "0 6 * * *"
-    }
-  ]
+  "crons": []
 }
