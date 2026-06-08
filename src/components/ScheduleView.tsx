@@ -80,11 +80,20 @@ function normalizeTime(t: string) {
   return `${h.padStart(2, '0')}:${(m ?? '00')}`;
 }
 
+function committeeMatches(committee: string, ev: ScheduleEvent): boolean {
+  if (committee === ev.category) return true;
+  // e.g. category='ביטחון לאומי', title starts with 'הוועדה לביטחון לאומי:'
+  if (ev.title.startsWith(committee + ':') || ev.title.startsWith(committee + ' ')) return true;
+  // partial: 'הוועדה לביטחון לאומי' contains 'ביטחון לאומי'
+  if (committee.includes(ev.category) || ev.category.includes(committee)) return true;
+  return false;
+}
+
 function isCancelledBySchedule(ev: ScheduleEvent, cancellations: ScheduleCancellation[]) {
   return cancellations.some(c =>
     c.day_name === ev.day &&
     normalizeTime(c.time_before) === normalizeTime(ev.time) &&
-    c.committee === ev.category
+    committeeMatches(c.committee, ev)
   );
 }
 

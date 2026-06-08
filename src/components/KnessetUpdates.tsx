@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { getAllKnessetUpdates, KnessetUpdate } from '@/lib/knessetSync';
 import { getWeeklyKnessetSessions, KnessetSessionRow, markKnessetUpdateInSchedule } from '@/lib/supabase';
+import { SCHEDULE, ScheduleEvent } from '@/data/schedule';
 
 const DAY_ORDER = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי'];
 const UPDATE_PRIORITY: Record<string, number> = { cancel: 3, change: 2, new: 1 };
@@ -10,6 +11,21 @@ function normalizeTime(t: string) {
   if (!t) return '';
   const [h, m] = t.split(':');
   return `${h.padStart(2, '0')}:${m ?? '00'}`;
+}
+
+function committeeMatches(committee: string, ev: ScheduleEvent): boolean {
+  if (committee === ev.category) return true;
+  if (ev.title.startsWith(committee + ':') || ev.title.startsWith(committee + ' ')) return true;
+  if (committee.includes(ev.category) || ev.category.includes(committee)) return true;
+  return false;
+}
+
+function findMatchingScheduleEvent(session: KnessetSessionRow): ScheduleEvent | null {
+  return SCHEDULE.find(ev =>
+    ev.day === session.day_name &&
+    normalizeTime(ev.time) === normalizeTime(session.time) &&
+    committeeMatches(session.committee, ev)
+  ) ?? null;
 }
 
 export default function KnessetUpdates() {
@@ -115,6 +131,7 @@ export default function KnessetUpdates() {
                 const isMarked = update?.marked_in_schedule ?? false;
                 const isMarking = update ? markingIds.has(update.id) : false;
                 const markErr = update ? markErrors[update.id] : undefined;
+                const matchedEvent = isCancelled ? findMatchingScheduleEvent(session) : null;
 
                 return (
                   <div key={session.id} style={{
@@ -170,13 +187,21 @@ export default function KnessetUpdates() {
                       {markErr && (
                         <div style={{ fontSize: 11, color: '#dc2626', marginTop: 3 }}>שגיאה: {markErr}</div>
                       )}
-                      {isMarked && !markErr && (
-                        <div style={{ fontSize: 10, color: '#16a34a', marginTop: 3 }}>✓ מסומן בלו"ז — עבור לטאב הלו"ז לראות</div>
+                      {isCancelled && update && !isMarked && matchedEvent && (
+                        <div style={{ fontSize: 10, color: '#6b7280', marginTop: 4, background: '#f3f4f6', borderRadius: 3, padding: '2px 6px', display: 'inline-block' }}>
+                          יסמן בלו"ז: <span style={{ fontWeight: 600, color: '#374151' }}>{matchedEvent.title}</span>
+                        </div>
+                      )}
+                      {isCancelled && update && !isMarked && !matchedEvent && (
+                        <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 4 }}>לא נמצא אירוע מתאים בלו"ז שלך</div>
+                      )}
+                      {isMarked && !markErr && matchedEvent && (
+                        <div style={{ fontSize: 10, color: '#16a34a', marginTop: 3 }}>✓ מסומן בלו"ז: {matchedEvent.title}</div>
                       )}
                     </div>
 
-                    {/* Mark button — only for cancelled sessions that have an update row */}
-                    {isCancelled && update && (
+                    {/* Mark button — only for cancelled sessions with a matching schedule event */}
+                    {isCancelled && update && matchedEvent && (
                       <button type="button" disabled={isMarking}
                         onClick={() => handleMark(update.id, isMarked)}
                         style={{
