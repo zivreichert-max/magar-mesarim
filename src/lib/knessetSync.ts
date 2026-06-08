@@ -24,53 +24,74 @@ interface StoredSession {
   date: string;
   time: string;
   url: string;
-  status: string; // 'active' | 'cancelled'
+  status: string;
 }
 
 export async function syncKnessetSessions(): Promise<KnessetUpdate[]> {
   const all = await fetchKnessetWeeklySessions();
-
-  // Split into active and cancelled based on live API status
-  const liveActive   = all.filter(s => !s.cancelled);
+  const liveActive    = all.filter(s => !s.cancelled);
   const liveCancelled = all.filter(s => s.cancelled);
 
   const { data: stored } = await supabase.from('knesset_sessions').select('*');
   const storedMap = new Map(((stored ?? []) as StoredSession[]).map(s => [s.id, s]));
 
+  // Load existing updates so we don't create duplicates
+  const { data: existingUpdates } = await supabase
+    .from('knesset_updates')
+    .select('session_id, update_type');
+  const alreadyCancelled = new Set(
+    (existingUpdates ?? [])
+      .filter((u: { update_type: string }) => u.update_type === 'cancel')
+      .map((u: { session_id: string }) => u.session_id)
+  );
+
   const newUpdates: Omit<KnessetUpdate, 'id' | 'created_at'>[] = [];
 
-  // ── Detect NEW sessions (active, not seen before) ─────────────────────────
+  // ── ALL currently-cancelled sessions → ensure a cancel update exists ────────
+  for (const session of liveCancelled) {
+    if (!alreadyCancelled.has(session.id)) {
+      const prev = storedMap.get(session.id);
+      newUpdates.push({
+        session_id: session.id,
+        update_type: 'cancel',
+        committee: session.committee,
+        title: session.title,
+        day_name: session.dayName,
+        date: session.date,
+        time_before: prev?.time ?? session.time,
+        time_after: '',
+        url: session.url,
+        change_desc: 'הישיבה בוטלה',
+      });
+    }
+  }
+
+  // ── Active sessions: detect NEW and TIME CHANGES vs stored ──────────────────
   for (const session of liveActive) {
     const prev = storedMap.get(session.id);
-    if (!prev) {
-      newUpdates.push({
-        session_id: session.id,
-        update_type: 'new',
-        committee: session.committee,
-        title: session.title,
-        day_name: session.dayName,
-        date: session.date,
-        time_before: '',
-        time_after: session.time,
-        url: session.url,
-        change_desc: 'ישיבה חדשה נוספה ללו"ז',
-      });
-    } else if (prev.status === 'cancelled') {
-      // Session was cancelled but is now active again
-      newUpdates.push({
-        session_id: session.id,
-        update_type: 'new',
-        committee: session.committee,
-        title: session.title,
-        day_name: session.dayName,
-        date: session.date,
-        time_before: '',
-        time_after: session.time,
-        url: session.url,
-        change_desc: 'ישיבה שהוחזרה ללו"ז לאחר ביטול',
-      });
+    if (!prev || prev.status === 'cancelled') {
+      // New or reactivated — only report if not seen as "new" before
+      const alreadyNew = (existingUpdates ?? []).some(
+        (u: { session_id: string; update_type: string }) =>
+          u.session_id === session.id && u.update_type === 'new'
+      );
+      if (!alreadyNew) {
+        newUpdates.push({
+          session_id: session.id,
+          update_type: 'new',
+          committee: session.committee,
+          title: session.title,
+          day_name: session.dayName,
+          date: session.date,
+          time_before: '',
+          time_after: session.time,
+          url: session.url,
+          change_desc: prev?.status === 'cancelled'
+            ? 'ישיבה שהוחזרה ללו"ז לאחר ביטול'
+            : 'ישיבה חדשה נוספה ללו"ז',
+        });
+      }
     } else if (prev.time !== session.time) {
-      // Time changed
       newUpdates.push({
         session_id: session.id,
         update_type: 'change',
@@ -82,45 +103,6 @@ export async function syncKnessetSessions(): Promise<KnessetUpdate[]> {
         time_after: session.time,
         url: session.url,
         change_desc: `השעה שונתה מ-${prev.time} ל-${session.time}`,
-      });
-    }
-  }
-
-  // ── Detect CANCELLATIONS ──────────────────────────────────────────────────
-  // Case A: Session was stored as active, now API marks it cancelled
-  for (const session of liveCancelled) {
-    const prev = storedMap.get(session.id);
-    if (prev && prev.status === 'active') {
-      newUpdates.push({
-        session_id: session.id,
-        update_type: 'cancel',
-        committee: session.committee,
-        title: session.title,
-        day_name: session.dayName,
-        date: session.date,
-        time_before: prev.time,
-        time_after: '',
-        url: session.url,
-        change_desc: 'הישיבה בוטלה',
-      });
-    }
-  }
-
-  // Case B: Session was stored as active but disappeared from API entirely
-  const allLiveIds = new Set(all.map(s => s.id));
-  for (const prev of ((stored ?? []) as StoredSession[])) {
-    if (!allLiveIds.has(prev.id) && prev.status === 'active') {
-      newUpdates.push({
-        session_id: prev.id,
-        update_type: 'cancel',
-        committee: prev.committee,
-        title: prev.title,
-        day_name: prev.day_name,
-        date: prev.date,
-        time_before: prev.time,
-        time_after: '',
-        url: prev.url,
-        change_desc: 'הישיבה הוסרה מהלו"ז',
       });
     }
   }
