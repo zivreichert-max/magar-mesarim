@@ -163,6 +163,65 @@ export async function deleteClientRequest(id: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+// ─── manual_schedule_events ───────────────────────────────────────────────────
+
+export interface ManualScheduleEvent {
+  id: string;
+  week_id: string;
+  day: string;
+  time: string;
+  title: string;
+  summary: string;
+  detail: string;
+  source: string;
+  category: string;
+  color: string;
+}
+
+export function getCurrentWeekId(): string {
+  const now = new Date();
+  const sunday = new Date(now);
+  sunday.setDate(now.getDate() - now.getDay());
+  return sunday.toISOString().slice(0, 10);
+}
+
+export async function addManualScheduleEvent(
+  ev: Omit<ManualScheduleEvent, 'id' | 'week_id'>
+): Promise<ManualScheduleEvent> {
+  const { data, error } = await supabase
+    .from('manual_schedule_events')
+    .insert({ ...ev, week_id: getCurrentWeekId() })
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return data as ManualScheduleEvent;
+}
+
+export async function updateManualScheduleEvent(
+  id: string,
+  fields: Partial<Pick<ManualScheduleEvent, 'title' | 'summary' | 'detail' | 'source'>>
+): Promise<void> {
+  const { error } = await supabase.from('manual_schedule_events').update(fields).eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function getManualScheduleEvents(): Promise<ManualScheduleEvent[]> {
+  const { data, error } = await supabase
+    .from('manual_schedule_events')
+    .select('*')
+    .eq('week_id', getCurrentWeekId());
+  if (error) return [];
+  return (data ?? []) as ManualScheduleEvent[];
+}
+
+export async function clearOldManualEvents(): Promise<void> {
+  const { error } = await supabase
+    .from('manual_schedule_events')
+    .delete()
+    .neq('week_id', getCurrentWeekId());
+  if (error) throw new Error(error.message);
+}
+
 // ─── knesset_sessions ─────────────────────────────────────────────────────────
 
 export interface KnessetSessionRow {

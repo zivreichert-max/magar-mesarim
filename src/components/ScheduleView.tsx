@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { SCHEDULE, WEEK_TITLE, ScheduleEvent } from '@/data/schedule';
 import { TIMELINE, TimelineEvent } from '@/data/timeline';
-import { getScheduleCancellations, ScheduleCancellation } from '@/lib/supabase';
+import { getScheduleCancellations, ScheduleCancellation, getManualScheduleEvents, ManualScheduleEvent } from '@/lib/supabase';
 
 const STATIC_CATS = [
   { id: 'all',       label: 'הכל',            color: '#6b7280' },
@@ -11,6 +11,7 @@ const STATIC_CATS = [
   { id: 'gov',       label: 'ממשלה',          color: '#16a34a' },
   { id: 'ministers', label: 'ועדת שרים',      color: '#d97706' },
   { id: 'plenary',   label: 'מליאה',          color: '#0891b2' },
+  { id: 'knesset',   label: 'ועדות (מוסף)',   color: '#6b7280' },
 ];
 const STATIC_IDS = new Set(STATIC_CATS.map(c => c.id));
 const KNESSET_COLOR = '#6b7280';
@@ -104,12 +105,20 @@ export default function ScheduleView() {
   const [openEvent, setOpenEvent] = useState<number | null>(null);
   const [openTl, setOpenTl] = useState<number | null>(null);
   const [cancellations, setCancellations] = useState<ScheduleCancellation[]>([]);
+  const [manualEvents, setManualEvents] = useState<ManualScheduleEvent[]>([]);
 
   useEffect(() => {
     getScheduleCancellations().then(setCancellations).catch(() => {});
+    getManualScheduleEvents().then(setManualEvents).catch(() => {});
   }, []);
 
-  const filtered = SCHEDULE.filter(e => activeCat === 'all' || e.category === activeCat);
+  const manualAsSchedule: ScheduleEvent[] = manualEvents.map(m => ({
+    day: m.day, time: m.time, title: m.title, summary: m.summary,
+    detail: m.detail, source: m.source, category: m.category, color: m.color,
+  }));
+  const ALL_EVENTS = [...SCHEDULE, ...manualAsSchedule];
+
+  const filtered = ALL_EVENTS.filter(e => activeCat === 'all' || e.category === activeCat);
   const byDay = DAYS.map(day => ({
     day,
     events: filtered.filter(e => e.day.startsWith(day)),
@@ -168,7 +177,7 @@ export default function ScheduleView() {
               <div key={day} style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, borderBottom: '0.5px solid #e5e7eb', paddingBottom: 6, marginBottom: 6 }}>{day}</div>
                 {events.map(ev => {
-                  const gi = SCHEDULE.indexOf(ev);
+                  const gi = ALL_EVENTS.indexOf(ev);
                   const isOpen = openEvent === gi;
                   const hasDetail = !!(ev.summary || ev.detail);
                   const isCancelled = isCancelledBySchedule(ev, cancellations);

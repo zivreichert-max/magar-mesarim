@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { getAllKnessetUpdates, KnessetUpdate } from '@/lib/knessetSync';
-import { getWeeklyKnessetSessions, KnessetSessionRow, markKnessetUpdateInSchedule } from '@/lib/supabase';
+import { getWeeklyKnessetSessions, KnessetSessionRow, markKnessetUpdateInSchedule, ManualScheduleEvent } from '@/lib/supabase';
 import { SCHEDULE, ScheduleEvent } from '@/data/schedule';
+import AddToScheduleModal, { SessionInfo } from './AddToScheduleModal';
 
 const DAY_ORDER = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי'];
 const UPDATE_PRIORITY: Record<string, number> = { cancel: 3, change: 2, new: 1 };
@@ -36,6 +37,8 @@ export default function KnessetUpdates() {
   const [refreshing, setRefreshing] = useState(false);
   const [markingIds, setMarkingIds] = useState<Set<string>>(new Set());
   const [markErrors, setMarkErrors] = useState<Record<string, string>>({});
+  const [modalSession, setModalSession] = useState<SessionInfo | null>(null);
+  const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
 
   async function load() {
     try {
@@ -200,6 +203,22 @@ export default function KnessetUpdates() {
                       )}
                     </div>
 
+                    {/* Add to schedule button — for new sessions */}
+                    {update?.update_type === 'new' && !addedIds.has(session.id) && (
+                      <button type="button"
+                        onClick={() => setModalSession({ committee: session.committee, title: session.title, day_name: session.day_name, time: session.time })}
+                        style={{
+                          fontSize: 10, padding: '3px 8px', borderRadius: 4, fontFamily: 'inherit',
+                          cursor: 'pointer', border: '1px solid #0075C4', background: '#e6f1fb',
+                          color: '#0075C4', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap',
+                        }}>
+                        + הוסף ללו&quot;ז
+                      </button>
+                    )}
+                    {addedIds.has(session.id) && (
+                      <span style={{ fontSize: 10, color: '#16a34a', fontWeight: 600, flexShrink: 0 }}>✓ בלו&quot;ז</span>
+                    )}
+
                     {/* Mark button — only for cancelled sessions with a matching schedule event */}
                     {isCancelled && update && matchedEvent && (
                       <button type="button" disabled={isMarking}
@@ -226,6 +245,16 @@ export default function KnessetUpdates() {
       <div style={{ marginTop: 10, fontSize: 11, color: '#d1d5db', textAlign: 'center' }}>
         סורק כל שעתיים · ועדות כנסת בלבד · בג&quot;ץ/ממשלה — עדכון ידני
       </div>
+
+      {modalSession && (
+        <AddToScheduleModal
+          session={modalSession}
+          onClose={() => setModalSession(null)}
+          onSaved={(saved: ManualScheduleEvent) => {
+            setAddedIds(prev => new Set([...prev, sessions.find(s => s.committee === modalSession.committee && s.day_name === modalSession.day_name && s.time === modalSession.time)?.id ?? '']));
+          }}
+        />
+      )}
     </div>
   );
 }
