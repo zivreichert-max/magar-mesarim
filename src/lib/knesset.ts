@@ -1,5 +1,8 @@
 const KNESSET_API = 'https://knesset.gov.il/OdataV4/ParliamentInfo';
 
+// StatusID 193 = "מבוטלת" (cancelled)
+const CANCELLED_STATUS_ID = 193;
+
 export interface KnessetSession {
   id: string;
   committee: string;
@@ -8,6 +11,7 @@ export interface KnessetSession {
   date: string;
   time: string;
   url: string;
+  cancelled: boolean;
 }
 
 function getWeekRange(): { from: string; to: string } {
@@ -30,20 +34,20 @@ const DAY_NAMES: Record<number, string> = {
   3: 'יום רביעי', 4: 'יום חמישי', 5: 'יום שישי',
 };
 
+const FETCH_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+  'Referer': 'https://knesset.gov.il/',
+  'Accept': 'application/json,text/plain,*/*',
+  'Accept-Language': 'he-IL,he;q=0.9',
+};
+
 export async function fetchKnessetWeeklySessions(): Promise<KnessetSession[]> {
   const { from, to } = getWeekRange();
+  // Fetch ALL sessions (active + cancelled) so we can detect status changes
   const filter = `StartDate ge ${from}T00:00:00Z and StartDate le ${to}T23:59:59Z`;
-  const url = `${KNESSET_API}/KNS_CommitteeSession?$filter=${encodeURIComponent(filter)}&$expand=KNS_Committee&$orderby=StartDate&$top=100&$format=json`;
+  const url = `${KNESSET_API}/KNS_CommitteeSession?$filter=${encodeURIComponent(filter)}&$expand=KNS_Committee&$orderby=StartDate&$top=200&$format=json`;
 
-  const res = await fetch(url, {
-    cache: 'no-store',
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-      'Referer': 'https://knesset.gov.il/',
-      'Accept': 'application/json,text/plain,*/*',
-      'Accept-Language': 'he-IL,he;q=0.9',
-    },
-  });
+  const res = await fetch(url, { cache: 'no-store', headers: FETCH_HEADERS });
   if (!res.ok) throw new Error(`Knesset API error: ${res.status}`);
   const text = await res.text();
   if (!text.startsWith('{') && !text.startsWith('[')) {
@@ -59,18 +63,25 @@ export async function fetchKnessetWeeklySessions(): Promise<KnessetSession[]> {
     const timeStr = start.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
     const committee = item.KNS_Committee as Record<string, unknown> | undefined;
     const committeeName = (committee?.Name as string) ?? 'ועדה לא ידועה';
-    const sessionId = String(item.CommitteeSessionID ?? item.ID ?? item.Id ?? '');
+    const sessionId = String(item.Id ?? item.ID ?? item.CommitteeSessionID ?? '');
+    const isCancelled = (item.StatusID as number) === CANCELLED_STATUS_ID;
+
+    // Use the URL provided directly by the API
+    const sessionUrl = (item.SessionUrl as string) ?? (
+      sessionId
+        ? `https://main.knesset.gov.il/Activity/committees/Pages/AllCommitteesAgenda.aspx?Tab=3&ItemID=${sessionId}`
+        : 'https://main.knesset.gov.il'
+    );
 
     return {
       id: sessionId,
       committee: committeeName,
-      title: (item.Name as string) ?? (item.SessionName as string) ?? 'ישיבה',
+      title: committeeName, // API has no per-session title; committee name is the best identifier
       dayName: DAY_NAMES[dayNum] ?? '',
       date: dateStr,
       time: timeStr,
-      url: sessionId
-        ? `https://main.knesset.gov.il/Activity/committees/Pages/AllCommitteeAgenda.aspx?ItemID=${sessionId}`
-        : 'https://main.knesset.gov.il',
+      url: sessionUrl,
+      cancelled: isCancelled,
     };
   });
 }
