@@ -2,6 +2,26 @@
 import { useEffect, useState } from 'react';
 import { getRecentKnessetUpdates, KnessetUpdate } from '@/lib/knessetSync';
 import { markKnessetUpdateInSchedule } from '@/lib/supabase';
+import { SCHEDULE } from '@/data/schedule';
+
+function normalizeTime(t: string) {
+  if (!t) return '';
+  const [h, m] = t.split(':');
+  return `${h.padStart(2, '0')}:${m ?? '00'}`;
+}
+
+function findScheduleTitle(u: KnessetUpdate): string {
+  const ev = SCHEDULE.find(e =>
+    e.category === u.committee &&
+    e.day === u.day_name &&
+    normalizeTime(e.time) === normalizeTime(u.time_before)
+  );
+  if (!ev) return u.title;
+  // Strip leading "CommitteeName: " prefix if present
+  const prefix = u.committee + ':';
+  const t = ev.title.startsWith(prefix) ? ev.title.slice(prefix.length).trim() : ev.title;
+  return t || u.title;
+}
 
 export default function KnessetUpdates() {
   const [updates, setUpdates] = useState<KnessetUpdate[]>([]);
@@ -84,6 +104,7 @@ export default function KnessetUpdates() {
           {updates.map(u => {
             const cfg = typeConfig[u.update_type as keyof typeof typeConfig];
             const ago = getAgo(u.created_at);
+            const topic = findScheduleTitle(u);
             return (
               <div key={u.id} style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRight: `3px solid ${cfg.color}`, borderRadius: 6, padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                 <div style={{ width: 22, height: 22, borderRadius: '50%', background: cfg.bg, color: cfg.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>
@@ -94,9 +115,9 @@ export default function KnessetUpdates() {
                   <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.4 }}>
                     {u.committee}
                   </div>
-                  {u.title && u.title !== u.committee && (
+                  {topic && topic !== u.committee && (
                     <div style={{ fontSize: 12, color: '#374151', lineHeight: 1.4, marginTop: 1 }}>
-                      {u.title}
+                      {topic}
                     </div>
                   )}
                   <div style={{ fontSize: 11, color: '#6b7280', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
