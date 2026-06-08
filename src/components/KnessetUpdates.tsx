@@ -1,12 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { getRecentKnessetUpdates, KnessetUpdate } from '@/lib/knessetSync';
+import { markKnessetUpdateInSchedule } from '@/lib/supabase';
 
 export default function KnessetUpdates() {
   const [updates, setUpdates] = useState<KnessetUpdate[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastCheck, setLastCheck] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [markingIds, setMarkingIds] = useState<Set<string>>(new Set());
 
   async function load() {
     try {
@@ -23,6 +25,17 @@ export default function KnessetUpdates() {
     setLoading(false);
     await load();
     setRefreshing(false);
+  }
+
+  async function handleMarkInSchedule(u: KnessetUpdate) {
+    const newMarked = !u.marked_in_schedule;
+    setMarkingIds(prev => new Set([...prev, u.id]));
+    try {
+      await markKnessetUpdateInSchedule(u.id, newMarked);
+      setUpdates(prev => prev.map(x => x.id === u.id ? { ...x, marked_in_schedule: newMarked } : x));
+    } finally {
+      setMarkingIds(prev => { const s = new Set(prev); s.delete(u.id); return s; });
+    }
   }
 
   useEffect(() => { load(); }, []);
@@ -93,6 +106,25 @@ export default function KnessetUpdates() {
                   {u.change_desc && (
                     <div style={{ fontSize: 11, color: '#6b7280', background: '#f9fafb', borderRadius: 3, padding: '2px 7px', marginTop: 5, display: 'inline-block' }}>
                       {u.change_desc}
+                    </div>
+                  )}
+                  {u.update_type === 'cancel' && (
+                    <div style={{ marginTop: 6 }}>
+                      <button
+                        type="button"
+                        disabled={markingIds.has(u.id)}
+                        onClick={e => { e.stopPropagation(); handleMarkInSchedule(u); }}
+                        style={{
+                          fontSize: 11, padding: '3px 10px', borderRadius: 4, fontFamily: 'inherit',
+                          cursor: markingIds.has(u.id) ? 'default' : 'pointer',
+                          border: `1px solid ${u.marked_in_schedule ? '#16a34a' : '#6b7280'}`,
+                          background: u.marked_in_schedule ? '#dcfce7' : '#f9fafb',
+                          color: u.marked_in_schedule ? '#16a34a' : '#374151',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {markingIds.has(u.id) ? '...' : u.marked_in_schedule ? '✓ מסומן בלו"ז' : 'עדכן בלו"ז ←'}
+                      </button>
                     </div>
                   )}
                 </div>

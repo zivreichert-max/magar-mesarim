@@ -162,3 +162,29 @@ export async function deleteClientRequest(id: string): Promise<void> {
     .eq('id', id);
   if (error) throw new Error(error.message);
 }
+
+// ─── schedule cancellations (knesset_updates.marked_in_schedule) ──────────────
+
+export async function markKnessetUpdateInSchedule(id: string, marked: boolean): Promise<void> {
+  const { error } = await supabase
+    .from('knesset_updates')
+    .update({ marked_in_schedule: marked })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export interface ScheduleCancellation {
+  committee: string;
+  day_name: string;
+  time_before: string;
+}
+
+export async function getScheduleCancellations(): Promise<ScheduleCancellation[]> {
+  const { data, error } = await supabase
+    .from('knesset_updates')
+    .select('committee, day_name, time_before')
+    .eq('update_type', 'cancel')
+    .eq('marked_in_schedule', true);
+  if (error) return [];
+  return (data ?? []) as ScheduleCancellation[];
+}

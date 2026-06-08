@@ -14,6 +14,7 @@ export interface KnessetUpdate {
   url: string;
   change_desc: string;
   created_at: string;
+  marked_in_schedule?: boolean;
 }
 
 interface StoredSession {

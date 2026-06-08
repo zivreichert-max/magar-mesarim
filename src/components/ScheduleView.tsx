@@ -1,8 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SCHEDULE, WEEK_TITLE, ScheduleEvent } from '@/data/schedule';
 import { TIMELINE, TimelineEvent } from '@/data/timeline';
-import KnessetUpdates from '@/components/KnessetUpdates';
+import { getScheduleCancellations, ScheduleCancellation } from '@/lib/supabase';
 
 const STATIC_CATS = [
   { id: 'all',       label: 'הכל',            color: '#6b7280' },
@@ -74,12 +74,31 @@ function fmtDate(iso: string) {
 const TL_CATS = ['הכל', ...Array.from(new Set(TIMELINE.map(e => e.category)))];
 const SORTED_TIMELINE = [...TIMELINE].sort((a, b) => a.dateStart.localeCompare(b.dateStart));
 
-export default function ScheduleView({ role }: { role: 'full' | 'client' }) {
+function normalizeTime(t: string) {
+  if (!t) return '';
+  const [h, m] = t.split(':');
+  return `${h.padStart(2, '0')}:${(m ?? '00')}`;
+}
+
+function isCancelledBySchedule(ev: ScheduleEvent, cancellations: ScheduleCancellation[]) {
+  return cancellations.some(c =>
+    c.day_name === ev.day &&
+    normalizeTime(c.time_before) === normalizeTime(ev.time) &&
+    c.committee === ev.category
+  );
+}
+
+export default function ScheduleView() {
   const [subView, setSubView] = useState<'weekly' | 'timeline'>('weekly');
   const [activeCat, setActiveCat] = useState('all');
   const [tlCat, setTlCat] = useState('הכל');
   const [openEvent, setOpenEvent] = useState<number | null>(null);
   const [openTl, setOpenTl] = useState<number | null>(null);
+  const [cancellations, setCancellations] = useState<ScheduleCancellation[]>([]);
+
+  useEffect(() => {
+    getScheduleCancellations().then(setCancellations).catch(() => {});
+  }, []);
 
   const filtered = SCHEDULE.filter(e => activeCat === 'all' || e.category === activeCat);
   const byDay = DAYS.map(day => ({
@@ -143,17 +162,25 @@ export default function ScheduleView({ role }: { role: 'full' | 'client' }) {
                   const gi = SCHEDULE.indexOf(ev);
                   const isOpen = openEvent === gi;
                   const hasDetail = !!(ev.summary || ev.detail);
+                  const isCancelled = isCancelledBySchedule(ev, cancellations);
                   return (
                     <div key={gi}
-                      style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRight: `3px solid ${ev.color}`, borderRadius: 4, marginBottom: 5, overflow: 'hidden', cursor: hasDetail ? 'pointer' : 'default' }}
+                      style={{ background: isCancelled ? '#fff5f5' : '#fff', border: `0.5px solid ${isCancelled ? '#fca5a5' : '#e5e7eb'}`, borderRight: `3px solid ${isCancelled ? '#dc2626' : ev.color}`, borderRadius: 4, marginBottom: 5, overflow: 'hidden', cursor: hasDetail ? 'pointer' : 'default', opacity: isCancelled ? 0.75 : 1 }}
                       onClick={() => hasDetail && setOpenEvent(isOpen ? null : gi)}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px' }}>
                         {ev.time && <span style={{ fontSize: 11, color: '#9ca3af', minWidth: 38, paddingTop: 2, flexShrink: 0 }}>{ev.time}</span>}
                         <div style={{ flex: 1 }}>
-                          <div style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 2, marginBottom: 4, background: ev.color + '20', color: ev.color }}>
-                            {CATS.find(c => c.id === ev.category)?.label}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                            <div style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 2, background: ev.color + '20', color: ev.color }}>
+                              {CATS.find(c => c.id === ev.category)?.label}
+                            </div>
+                            {isCancelled && (
+                              <div style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 2, background: '#fee2e2', color: '#dc2626' }}>
+                                בוטל
+                              </div>
+                            )}
                           </div>
-                          <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.4 }}>{ev.title}</div>
+                          <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.4, textDecoration: isCancelled ? 'line-through' : 'none', color: isCancelled ? '#9ca3af' : 'inherit' }}>{ev.title}</div>
                         </div>
                         {hasDetail && <span style={{ color: '#0075C4', fontSize: 16, transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>›</span>}
                       </div>
@@ -193,7 +220,6 @@ export default function ScheduleView({ role }: { role: 'full' | 'client' }) {
               </div>
             ))}
           </div>
-          {role === 'full' && <KnessetUpdates />}
         </>
       ) : (
         <>
