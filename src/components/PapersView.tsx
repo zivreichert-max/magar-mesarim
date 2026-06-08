@@ -14,6 +14,7 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [sharedWith, setSharedWith] = useState<string[]>([]);
   const [allowedPaperIds, setAllowedPaperIds] = useState<number[] | null>(null);
+  const [shareError, setShareError] = useState<string | null>(null);
 
   function openPanel(paper: Paper) {
     setSelected(paper);
@@ -42,8 +43,15 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
     if (!selected) return;
     const isShared = sharedWith.includes(cid);
     setSharedWith(prev => isShared ? prev.filter(id => id !== cid) : [...prev, cid]);
-    if (isShared) await removePaperShare(selected.id, cid);
-    else await addPaperShare(selected.id, cid);
+    setShareError(null);
+    try {
+      if (isShared) await removePaperShare(selected.id, cid);
+      else await addPaperShare(selected.id, cid);
+    } catch (e) {
+      // Revert optimistic update on failure
+      setSharedWith(prev => isShared ? [...prev, cid] : prev.filter(id => id !== cid));
+      setShareError((e as Error).message);
+    }
   }
 
   const visible = role === 'full'
@@ -120,6 +128,11 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
             {role === 'full' && (
               <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 10 }}>לשתף עם:</div>
+                {shareError && (
+                  <div style={{ fontSize: 11, color: '#dc2626', marginBottom: 8, padding: '6px 10px', background: '#fee2e2', borderRadius: 4 }}>
+                    שגיאה: {shareError}
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {CLIENTS.map(c => {
                     const isActive = sharedWith.includes(c.id);

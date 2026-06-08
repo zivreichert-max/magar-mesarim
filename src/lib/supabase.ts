@@ -108,17 +108,19 @@ export async function getSharedPaperIds(clientId: string): Promise<number[]> {
 }
 
 export async function addPaperShare(paperId: number, clientId: string): Promise<void> {
-  await supabase
+  const { error } = await supabase
     .from('paper_shares')
     .insert({ paper_id: paperId, client_id: clientId });
+  if (error) throw new Error(error.message);
 }
 
 export async function removePaperShare(paperId: number, clientId: string): Promise<void> {
-  await supabase
+  const { error } = await supabase
     .from('paper_shares')
     .delete()
     .eq('paper_id', paperId)
     .eq('client_id', clientId);
+  if (error) throw new Error(error.message);
 }
 
 // ─── client_requests helpers ──────────────────────────────────────────────────
