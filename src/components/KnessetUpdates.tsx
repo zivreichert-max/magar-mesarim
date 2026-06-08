@@ -1,8 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { getRecentKnessetUpdates, KnessetUpdate } from '@/lib/knessetSync';
-import { markKnessetUpdateInSchedule } from '@/lib/supabase';
-import { SCHEDULE } from '@/data/schedule';
+import { getAllKnessetUpdates, KnessetUpdate } from '@/lib/knessetSync';
+import { getWeeklyKnessetSessions, KnessetSessionRow, markKnessetUpdateInSchedule } from '@/lib/supabase';
+
+const DAY_ORDER = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי'];
+const UPDATE_PRIORITY: Record<string, number> = { cancel: 3, change: 2, new: 1 };
 
 function normalizeTime(t: string) {
   if (!t) return '';
@@ -10,30 +12,23 @@ function normalizeTime(t: string) {
   return `${h.padStart(2, '0')}:${m ?? '00'}`;
 }
 
-function findScheduleTitle(u: KnessetUpdate): string {
-  const ev = SCHEDULE.find(e =>
-    e.category === u.committee &&
-    e.day === u.day_name &&
-    normalizeTime(e.time) === normalizeTime(u.time_before)
-  );
-  if (!ev) return u.title;
-  // Strip leading "CommitteeName: " prefix if present
-  const prefix = u.committee + ':';
-  const t = ev.title.startsWith(prefix) ? ev.title.slice(prefix.length).trim() : ev.title;
-  return t || u.title;
-}
-
 export default function KnessetUpdates() {
+  const [sessions, setSessions] = useState<KnessetSessionRow[]>([]);
   const [updates, setUpdates] = useState<KnessetUpdate[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastCheck, setLastCheck] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [markingIds, setMarkingIds] = useState<Set<string>>(new Set());
+  const [markErrors, setMarkErrors] = useState<Record<string, string>>({});
 
   async function load() {
     try {
-      const data = await getRecentKnessetUpdates();
-      setUpdates(data);
+      const [sessionData, updateData] = await Promise.all([
+        getWeeklyKnessetSessions(),
+        getAllKnessetUpdates(),
+      ]);
+      setSessions(sessionData);
+      setUpdates(updateData);
       setLastCheck(new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }));
     } finally {
       setLoading(false);
@@ -42,122 +37,165 @@ export default function KnessetUpdates() {
 
   async function manualRefresh() {
     setRefreshing(true);
-    setLoading(false);
     await load();
     setRefreshing(false);
   }
 
-  async function handleMarkInSchedule(u: KnessetUpdate) {
-    const newMarked = !u.marked_in_schedule;
-    setMarkingIds(prev => new Set([...prev, u.id]));
+  async function handleMark(updateId: string, currentMarked: boolean) {
+    const newMarked = !currentMarked;
+    setMarkingIds(prev => new Set([...prev, updateId]));
+    setMarkErrors(prev => { const e = { ...prev }; delete e[updateId]; return e; });
     try {
-      await markKnessetUpdateInSchedule(u.id, newMarked);
-      setUpdates(prev => prev.map(x => x.id === u.id ? { ...x, marked_in_schedule: newMarked } : x));
+      await markKnessetUpdateInSchedule(updateId, newMarked);
+      setUpdates(prev => prev.map(u => u.id === updateId ? { ...u, marked_in_schedule: newMarked } : u));
+    } catch (e) {
+      setMarkErrors(prev => ({ ...prev, [updateId]: (e as Error).message }));
     } finally {
-      setMarkingIds(prev => { const s = new Set(prev); s.delete(u.id); return s; });
+      setMarkingIds(prev => { const s = new Set(prev); s.delete(updateId); return s; });
     }
   }
 
   useEffect(() => { load(); }, []);
 
-  const typeConfig = {
-    new:    { label: 'נוספה',  color: '#16a34a', bg: '#dcfce7', icon: '+' },
-    cancel: { label: 'בוטלה', color: '#dc2626', bg: '#fee2e2', icon: '✕' },
-    change: { label: 'שונה',   color: '#d97706', bg: '#fef3c7', icon: '!' },
-  };
+  // Build map: session_id → highest-priority update
+  const updateMap = new Map<string, KnessetUpdate>();
+  for (const u of updates) {
+    const existing = updateMap.get(u.session_id);
+    if (!existing || (UPDATE_PRIORITY[u.update_type] ?? 0) > (UPDATE_PRIORITY[existing.update_type] ?? 0)) {
+      updateMap.set(u.session_id, u);
+    }
+  }
+
+  // Group by day, sort by time within each day
+  const byDay = DAY_ORDER.map(day => ({
+    day,
+    sessions: sessions
+      .filter(s => s.day_name === day)
+      .sort((a, b) => normalizeTime(a.time).localeCompare(normalizeTime(b.time))),
+  })).filter(d => d.sessions.length > 0);
+
+  const cancelCount = sessions.filter(s => s.status === 'cancelled').length;
 
   if (loading) return null;
 
   return (
     <div style={{ marginTop: 28, padding: '0 24px 80px', direction: 'rtl', fontFamily: "'Heebo', sans-serif" }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: refreshing ? '#d97706' : '#16a34a' }} />
-          <span style={{ fontSize: 13, fontWeight: 600 }}>עדכוני כנסת אוטומטיים</span>
-          {lastCheck && (
-            <span style={{ fontSize: 11, color: '#9ca3af' }}>עדכון אחרון: {lastCheck}</span>
-          )}
+          <span style={{ fontSize: 13, fontWeight: 600 }}>ועדות כנסת השבוע</span>
+          {lastCheck && <span style={{ fontSize: 11, color: '#9ca3af' }}>עדכון: {lastCheck}</span>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {updates.length > 0 && (
-            <span style={{ background: '#e6f1fb', color: '#0c447c', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10 }}>
-              {updates.length} עדכונים
+          {cancelCount > 0 && (
+            <span style={{ background: '#fee2e2', color: '#dc2626', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10 }}>
+              {cancelCount} ביטולים
             </span>
           )}
-          <button
-            type="button"
-            onClick={manualRefresh}
-            disabled={refreshing}
-            style={{ fontSize: 11, padding: '4px 10px', borderRadius: 4, fontFamily: 'inherit', cursor: refreshing ? 'default' : 'pointer', border: '1px solid #e5e7eb', background: '#fff' }}
-          >
+          <button type="button" onClick={manualRefresh} disabled={refreshing}
+            style={{ fontSize: 11, padding: '4px 10px', borderRadius: 4, fontFamily: 'inherit', cursor: refreshing ? 'default' : 'pointer', border: '1px solid #e5e7eb', background: '#fff' }}>
             {refreshing ? '...' : '↻ רענן'}
           </button>
         </div>
       </div>
 
-      {/* Updates */}
-      {updates.length === 0 ? (
-        <div style={{ fontSize: 12, color: '#9ca3af', padding: '12px 0' }}>אין שינויים ב-48 השעות האחרונות</div>
+      {byDay.length === 0 ? (
+        <div style={{ fontSize: 12, color: '#9ca3af', padding: '12px 0' }}>אין נתונים לשבוע זה</div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-          {updates.map(u => {
-            const cfg = typeConfig[u.update_type as keyof typeof typeConfig];
-            const ago = getAgo(u.created_at);
-            const topic = findScheduleTitle(u);
-            return (
-              <div key={u.id} style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRight: `3px solid ${cfg.color}`, borderRadius: 6, padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <div style={{ width: 22, height: 22, borderRadius: '50%', background: cfg.bg, color: cfg.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>
-                  {cfg.icon}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: cfg.color, marginBottom: 3 }}>{cfg.label}</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.4 }}>
-                    {u.committee}
-                  </div>
-                  {topic && topic !== u.committee && (
-                    <div style={{ fontSize: 12, color: '#374151', lineHeight: 1.4, marginTop: 1 }}>
-                      {topic}
+        byDay.map(({ day, sessions: daySessions }) => (
+          <div key={day} style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, borderBottom: '0.5px solid #e5e7eb', paddingBottom: 5, marginBottom: 6, color: '#111' }}>
+              {day}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {daySessions.map(session => {
+                const isCancelled = session.status === 'cancelled';
+                const update = updateMap.get(session.id);
+                const isMarked = update?.marked_in_schedule ?? false;
+                const isMarking = update ? markingIds.has(update.id) : false;
+                const markErr = update ? markErrors[update.id] : undefined;
+
+                return (
+                  <div key={session.id} style={{
+                    background: isCancelled ? '#fff8f8' : '#fff',
+                    border: `0.5px solid ${isCancelled ? '#fca5a5' : '#e5e7eb'}`,
+                    borderRight: `3px solid ${isCancelled ? '#dc2626' : '#9ca3af'}`,
+                    borderRadius: 5,
+                    padding: '8px 12px',
+                    display: 'flex',
+                    gap: 10,
+                    alignItems: 'flex-start',
+                  }}>
+                    {/* Time */}
+                    <span style={{ fontSize: 11, color: '#9ca3af', minWidth: 38, flexShrink: 0, paddingTop: 2, direction: 'ltr' }}>
+                      {session.time || '—'}
+                    </span>
+
+                    {/* Content */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: 13, fontWeight: 600, lineHeight: 1.4,
+                        color: isCancelled ? '#9ca3af' : '#111',
+                        textDecoration: isCancelled ? 'line-through' : 'none',
+                      }}>
+                        {session.committee}
+                      </div>
+                      {session.title && (
+                        <div style={{
+                          fontSize: 12, lineHeight: 1.4, marginTop: 1,
+                          color: isCancelled ? '#bbb' : '#374151',
+                          textDecoration: isCancelled ? 'line-through' : 'none',
+                        }}>
+                          {session.title}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                        {isCancelled && (
+                          <span style={{ fontSize: 9, fontWeight: 700, background: '#fee2e2', color: '#dc2626', padding: '1px 6px', borderRadius: 3 }}>בוטלה</span>
+                        )}
+                        {update?.update_type === 'new' && (
+                          <span style={{ fontSize: 9, fontWeight: 700, background: '#dcfce7', color: '#16a34a', padding: '1px 6px', borderRadius: 3 }}>חדשה</span>
+                        )}
+                        {update?.update_type === 'change' && (
+                          <span style={{ fontSize: 9, fontWeight: 700, background: '#fef3c7', color: '#d97706', padding: '1px 6px', borderRadius: 3 }}>
+                            {update.change_desc}
+                          </span>
+                        )}
+                        <a href={session.url} target="_blank" rel="noopener noreferrer"
+                          style={{ fontSize: 10, color: '#0075C4', textDecoration: 'none', fontWeight: 600 }}>
+                          ↗ ישיבה
+                        </a>
+                      </div>
+                      {markErr && (
+                        <div style={{ fontSize: 11, color: '#dc2626', marginTop: 3 }}>שגיאה: {markErr}</div>
+                      )}
+                      {isMarked && !markErr && (
+                        <div style={{ fontSize: 10, color: '#16a34a', marginTop: 3 }}>✓ מסומן בלו"ז — עבור לטאב הלו"ז לראות</div>
+                      )}
                     </div>
-                  )}
-                  <div style={{ fontSize: 11, color: '#6b7280', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <span>{u.day_name} {u.date}</span>
-                    {u.time_after && <span>· {u.time_after}</span>}
-                    <span>·</span>
-                    <span>{ago}</span>
-                    <a href={u.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ color: '#0075C4', fontWeight: 600, fontSize: 11, textDecoration: 'none' }}>
-                      ↗ דף הישיבה
-                    </a>
-                  </div>
-                  {u.change_desc && (
-                    <div style={{ fontSize: 11, color: '#6b7280', background: '#f9fafb', borderRadius: 3, padding: '2px 7px', marginTop: 5, display: 'inline-block' }}>
-                      {u.change_desc}
-                    </div>
-                  )}
-                  {u.update_type === 'cancel' && (
-                    <div style={{ marginTop: 6 }}>
-                      <button
-                        type="button"
-                        disabled={markingIds.has(u.id)}
-                        onClick={e => { e.stopPropagation(); handleMarkInSchedule(u); }}
+
+                    {/* Mark button — only for cancelled sessions that have an update row */}
+                    {isCancelled && update && (
+                      <button type="button" disabled={isMarking}
+                        onClick={() => handleMark(update.id, isMarked)}
                         style={{
-                          fontSize: 11, padding: '3px 10px', borderRadius: 4, fontFamily: 'inherit',
-                          cursor: markingIds.has(u.id) ? 'default' : 'pointer',
-                          border: `1px solid ${u.marked_in_schedule ? '#16a34a' : '#6b7280'}`,
-                          background: u.marked_in_schedule ? '#dcfce7' : '#f9fafb',
-                          color: u.marked_in_schedule ? '#16a34a' : '#374151',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {markingIds.has(u.id) ? '...' : u.marked_in_schedule ? '✓ מסומן בלו"ז' : 'עדכן בלו"ז ←'}
+                          fontSize: 10, padding: '3px 8px', borderRadius: 4, fontFamily: 'inherit',
+                          cursor: isMarking ? 'default' : 'pointer',
+                          border: `1px solid ${isMarked ? '#16a34a' : '#d1d5db'}`,
+                          background: isMarked ? '#dcfce7' : '#f9fafb',
+                          color: isMarked ? '#16a34a' : '#374151',
+                          fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap',
+                        }}>
+                        {isMarking ? '...' : isMarked ? '✓ בלו"ז' : 'עדכן לו"ז'}
                       </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))
       )}
 
       <div style={{ marginTop: 10, fontSize: 11, color: '#d1d5db', textAlign: 'center' }}>
@@ -165,14 +203,4 @@ export default function KnessetUpdates() {
       </div>
     </div>
   );
-}
-
-function getAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 2) return 'עכשיו';
-  if (mins < 60) return `לפני ${mins} דקות`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `לפני ${hours} שעות`;
-  return `לפני ${Math.floor(hours / 24)} ימים`;
 }

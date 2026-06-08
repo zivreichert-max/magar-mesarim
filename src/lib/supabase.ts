@@ -163,6 +163,24 @@ export async function deleteClientRequest(id: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+// ─── knesset_sessions ─────────────────────────────────────────────────────────
+
+export interface KnessetSessionRow {
+  id: string;
+  committee: string;
+  title: string;
+  day_name: string;
+  date: string;
+  time: string;
+  url: string;
+  status: string;
+}
+
+export async function getWeeklyKnessetSessions(): Promise<KnessetSessionRow[]> {
+  const { data } = await supabase.from('knesset_sessions').select('*');
+  return (data ?? []) as KnessetSessionRow[];
+}
+
 // ─── schedule cancellations (knesset_updates.marked_in_schedule) ──────────────
 
 export async function markKnessetUpdateInSchedule(id: string, marked: boolean): Promise<void> {

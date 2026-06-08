@@ -144,3 +144,11 @@ export async function getRecentKnessetUpdates(): Promise<KnessetUpdate[]> {
     .limit(50);
   return (data ?? []) as KnessetUpdate[];
 }
+
+export async function getAllKnessetUpdates(): Promise<KnessetUpdate[]> {
+  const { data } = await supabase
+    .from('knesset_updates')
+    .select('*')
+    .order('created_at', { ascending: false });
+  return (data ?? []) as KnessetUpdate[];
+}
