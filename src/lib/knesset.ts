@@ -73,10 +73,13 @@ export async function fetchKnessetWeeklySessions(): Promise<KnessetSession[]> {
         : 'https://main.knesset.gov.il'
     );
 
+    // Note field sometimes contains the discussion topic
+    const note = ((item.Note as string) ?? '').trim().split('\n')[0].trim();
+
     return {
       id: sessionId,
       committee: committeeName,
-      title: committeeName, // API has no per-session title; committee name is the best identifier
+      title: note || '', // empty when API has no topic; display layer handles this
       dayName: DAY_NAMES[dayNum] ?? '',
       date: dateStr,
       time: timeStr,

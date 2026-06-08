@@ -45,6 +45,7 @@ export async function syncKnessetSessions(): Promise<KnessetUpdate[]> {
       .map((u: { session_id: string }) => u.session_id)
   );
 
+  const isFirstRun = (stored ?? []).length === 0;
   const newUpdates: Omit<KnessetUpdate, 'id' | 'created_at'>[] = [];
 
   // ── ALL currently-cancelled sessions → ensure a cancel update exists ────────
@@ -66,8 +67,8 @@ export async function syncKnessetSessions(): Promise<KnessetUpdate[]> {
     }
   }
 
-  // ── Active sessions: detect NEW and TIME CHANGES vs stored ──────────────────
-  for (const session of liveActive) {
+  // ── Active sessions: detect NEW and TIME CHANGES — skip on first run ────────
+  if (!isFirstRun) for (const session of liveActive) {
     const prev = storedMap.get(session.id);
     if (!prev || prev.status === 'cancelled') {
       // New or reactivated — only report if not seen as "new" before

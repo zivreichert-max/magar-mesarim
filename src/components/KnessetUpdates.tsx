@@ -79,7 +79,7 @@ export default function KnessetUpdates() {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: cfg.color, marginBottom: 3 }}>{cfg.label}</div>
                   <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.4, marginBottom: 3 }}>
-                    {u.committee} — {u.title}
+                    {u.committee}{u.title && u.title !== u.committee ? ` — ${u.title}` : ''}
                   </div>
                   <div style={{ fontSize: 11, color: '#6b7280', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                     <span>{u.day_name} {u.date}</span>
