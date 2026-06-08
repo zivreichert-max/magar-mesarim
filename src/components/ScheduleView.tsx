@@ -48,8 +48,7 @@ function buildGcalUrl(ev: ScheduleEvent): string {
     endDt   = `${dateStr}T${String(Math.floor(endMins/60)).padStart(2,'0')}${String(endMins%60).padStart(2,'0')}00`;
   }
 
-  const catName = CATS.find(c => c.id === ev.category)?.label ?? ev.category;
-  const title   = encodeURIComponent(`[${catName}] ${ev.title}`);
+  const title   = encodeURIComponent(ev.title);
 
   const base = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}`;
   return startDt && endDt ? `${base}&dates=${startDt}/${endDt}` : base;
@@ -159,7 +158,7 @@ export default function ScheduleView({ role }: { role: 'full' | 'client' }) {
                         {hasDetail && <span style={{ color: '#0075C4', fontSize: 16, transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>›</span>}
                       </div>
                       {isOpen && hasDetail && (
-                        <div style={{ borderTop: '0.5px solid #e5e7eb', padding: '10px 14px', background: '#fafbff' }}>
+                        <div className="animate-fade-up" style={{ borderTop: '0.5px solid #e5e7eb', padding: '10px 14px', background: '#fafbff' }}>
                           {ev.summary && <div style={{ marginBottom: 8 }}>
                             <div style={{ fontSize: 10, fontWeight: 700, color: '#0075C4', marginBottom: 4, letterSpacing: '0.06em' }}>תקציר</div>
                             <div style={{ fontSize: 13, lineHeight: 1.7, color: '#374151' }}>{ev.summary}</div>
