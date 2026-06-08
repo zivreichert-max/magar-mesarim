@@ -66,12 +66,10 @@ export async function fetchKnessetWeeklySessions(): Promise<KnessetSession[]> {
     const sessionId = String(item.Id ?? item.ID ?? item.CommitteeSessionID ?? '');
     const isCancelled = (item.StatusID as number) === CANCELLED_STATUS_ID;
 
-    // Use the URL provided directly by the API
-    const sessionUrl = ((item.SessionUrl as string) ?? '').replace('http://', 'https://') || (
-      sessionId
-        ? `https://main.knesset.gov.il/Activity/committees/Pages/AllCommitteesAgenda.aspx?Tab=3&ItemID=${sessionId}`
-        : 'https://main.knesset.gov.il'
-    );
+    const committeeId = (item.CommitteeID as number) ?? (committee?.Id as number) ?? '';
+    const sessionUrl = committeeId && sessionId
+      ? `https://main.knesset.gov.il/APPS/committees/${committeeId}/sessions/${sessionId}`
+      : 'https://main.knesset.gov.il';
 
     // Note field sometimes contains the discussion topic
     const note = ((item.Note as string) ?? '').trim().split('\n')[0].trim();
