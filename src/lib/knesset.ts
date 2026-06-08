@@ -40,7 +40,11 @@ export async function fetchKnessetWeeklySessions(): Promise<KnessetSession[]> {
     headers: { 'User-Agent': 'Mozilla/5.0 (compatible; magar-mesarim-bot/1.0)' },
   });
   if (!res.ok) throw new Error(`Knesset API error: ${res.status}`);
-  const data = await res.json();
+  const text = await res.text();
+  if (!text.startsWith('{') && !text.startsWith('[')) {
+    throw new Error(`Knesset API returned non-JSON (${res.status}): ${text.slice(0, 200)}`);
+  }
+  const data = JSON.parse(text);
   const items: Record<string, unknown>[] = data.value ?? [];
 
   return items.map((item) => {
