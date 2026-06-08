@@ -35,7 +35,10 @@ export async function fetchKnessetWeeklySessions(): Promise<KnessetSession[]> {
   const filter = `StartDate ge ${from}T00:00:00Z and StartDate le ${to}T23:59:59Z`;
   const url = `${KNESSET_API}/KNS_CommitteeSession?$filter=${encodeURIComponent(filter)}&$expand=KNS_Committee&$orderby=StartDate&$top=100&$format=json`;
 
-  const res = await fetch(url, { cache: 'no-store' });
+  const res = await fetch(url, {
+    cache: 'no-store',
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; magar-mesarim-bot/1.0)' },
+  });
   if (!res.ok) throw new Error(`Knesset API error: ${res.status}`);
   const data = await res.json();
   const items: Record<string, unknown>[] = data.value ?? [];
