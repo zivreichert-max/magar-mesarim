@@ -14,6 +14,7 @@ import RequestButton from '@/components/RequestButton';
 import ScheduleView from '@/components/ScheduleView';
 import ClientRequestsView from '@/components/ClientRequestsView';
 import PapersView from '@/components/PapersView';
+import KnessetUpdates from '@/components/KnessetUpdates';
 import { getSharedMessageIds } from '@/lib/supabase';
 
 type AppState = 'password' | 'name' | 'ready';
@@ -23,6 +24,7 @@ const VIEW_TITLES: Record<string, string> = {
   schedule: 'לו"ז שבועי',
   requests: 'בקשות',
   papers:   'ניירות עמדה',
+  updates:  'עדכונים אוטומטיים',
 };
 
 export default function Home() {
@@ -34,7 +36,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<Topic | 'הכל'>('הכל');
   const [search, setSearch] = useState('');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [activeView, setActiveView] = useState<'messages' | 'schedule' | 'requests' | 'papers'>('messages');
+  const [activeView, setActiveView] = useState<'messages' | 'schedule' | 'requests' | 'papers' | 'updates'>('messages');
 
   // On mount, check if name is already stored
   useEffect(() => {
@@ -168,6 +170,21 @@ export default function Home() {
         >
           ניירות עמדה
         </button>
+        {role === 'full' && (
+          <button
+            type="button"
+            onClick={() => setActiveView('updates')}
+            style={{
+              padding: '12px 20px', fontSize: 14, fontWeight: 600,
+              border: 'none', background: 'none', cursor: 'pointer',
+              borderBottom: activeView === 'updates' ? '2px solid #0075C4' : '2px solid transparent',
+              color: activeView === 'updates' ? '#0075C4' : '#6b7280',
+              fontFamily: 'inherit', touchAction: 'manipulation', marginBottom: -2,
+            }}
+          >
+            עדכונים אוטומטיים
+          </button>
+        )}
       </div>
 
       {activeView === 'messages' ? (
@@ -207,11 +224,12 @@ export default function Home() {
           </main>
         </>
       ) : activeView === 'schedule' ? (
-        <ScheduleView role={role} />
+        <ScheduleView />
       ) : null}
 
       {activeView === 'requests' && role === 'full' && <ClientRequestsView />}
       {activeView === 'papers' && <PapersView role={role} clientId={activeClient?.id} />}
+      {activeView === 'updates' && role === 'full' && <KnessetUpdates />}
 
       <DetailPanel
         message={selectedMessage}
