@@ -208,8 +208,8 @@ export default function KnessetUpdates() {
                       )}
                     </div>
 
-                    {/* Add to schedule button — for new sessions */}
-                    {update?.update_type === 'new' && !addedIds.has(session.id) && (
+                    {/* Add to schedule button — for all non-cancelled sessions */}
+                    {!isCancelled && !addedIds.has(session.id) && (
                       <button type="button"
                         onClick={() => setModalSession({ committee: session.committee, title: session.title, day_name: session.day_name, time: session.time })}
                         style={{
