@@ -31,6 +31,33 @@ export default function AddToScheduleModal({ session, onClose, onSaved }: Props)
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  function buildPrompt(): string {
+    return `אתה כותב פריט לו"ז לאתר "זמן בחירות" של "בונים מחדש". כתוב תקציר, הרחבה וסימוכין לפי המתודולוגיה הבאה:
+
+— תקציר: פסקה אחת, 3–5 משפטים. מסביר מה הדיון, למה הוא חשוב, ומה הזווית המרכזית למעקב. ספציפי ולא כללי.
+— הרחבה: 2–4 פסקאות קצרות. פסקה 1 — רקע עובדתי. פסקה 2 — המחלוקת/הבעיה. פסקה 3 — נקודת המעקב.
+— סימוכין: 1–3 מקורות. סדר עדיפות: המכון הישראלי לדמוקרטיה (נושאים חוקתיים/משפטיים/דמוקרטיים), מרכז המחקר והמידע של הכנסת (נתונים/תקציב), אתר הכנסת, תקשורת כלכלית-משפטית איכותית.
+
+סגנון: קצר, חד, נגיש, לא אקדמי. מזהה את המחלוקת הפוליטית-ציבורית אך נשען על עובדות. מותר מסגור ביקורתי כשיש בסיס עובדתי ברור (החלשת שומרי סף, פגיעה בשוויון, פוליטיזציה, תקציבים סקטוריאליים, עקיפת בג"ץ).
+
+כללי זהירות: אל תמציא מידע. אל תטען שיש נייר עמדה של המכון הישראלי לדמוקרטיה אם לא מצאת כזה. אם אין מספיק מידע — כתוב "סביר שהדיון יתמקד..." או "בשלב זה לא אותר מקור רשמי". תמיד סיים את ההרחבה בנקודת מעקב או במשמעות הציבורית.
+
+פרטי הדיון:
+גוף: ${session.committee}
+נושא: ${session.title || session.committee}
+יום: ${session.day_name}
+שעה: ${session.time}
+
+חפש בחומרים גלויים על הדיון הזה (אתר הכנסת, ניירות עמדה, תקשורת) וכתוב את שלושת החלקים: תקציר, הרחבה וסימוכין.`;
+  }
+
+  function copyPrompt() {
+    navigator.clipboard.writeText(buildPrompt());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  }
 
   async function generateAI() {
     setGenerating(true);
@@ -111,6 +138,27 @@ export default function AddToScheduleModal({ session, onClose, onSaved }: Props)
           <div>
             <label style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', display: 'block', marginBottom: 4 }}>כותרת</label>
             <input value={title} onChange={e => setTitle(e.target.value)} style={inputStyle} />
+          </div>
+
+          {/* אפשרות חינמית — העתקת פרומפט לצ'אט */}
+          <div style={{ background: '#f9fafb', border: '0.5px solid #e5e7eb', borderRadius: 8, padding: '12px 14px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 8 }}>
+              אפשרות חינמית — דרך הצ&#39;אט
+            </div>
+            <button
+              type="button"
+              onClick={copyPrompt}
+              style={{
+                width: '100%', padding: '9px', background: copied ? '#16a34a' : '#0075C4',
+                color: '#fff', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              {copied ? '✓ הועתק! הדבק בצ\'אט וכתוב את הטיוטה' : '📋 העתק פרומפט מוכן'}
+            </button>
+            <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 6, lineHeight: 1.5 }}>
+              הדבק בצ&#39;אט (Claude/ChatGPT) → קבל טיוטה → הדבק חזרה בשדות למטה
+            </div>
           </div>
 
           {/* AI button */}
