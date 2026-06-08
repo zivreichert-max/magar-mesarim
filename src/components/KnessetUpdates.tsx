@@ -134,7 +134,7 @@ export default function KnessetUpdates() {
                 const isMarked = update?.marked_in_schedule ?? false;
                 const isMarking = update ? markingIds.has(update.id) : false;
                 const markErr = update ? markErrors[update.id] : undefined;
-                const matchedEvent = isCancelled ? findMatchingScheduleEvent(session) : null;
+                const matchedEvent = findMatchingScheduleEvent(session);
 
                 return (
                   <div key={session.id} style={{
@@ -205,6 +205,14 @@ export default function KnessetUpdates() {
                       )}
                       {isMarked && !markErr && matchedEvent && (
                         <div style={{ fontSize: 10, color: '#16a34a', marginTop: 3 }}>✓ מסומן בלו"ז: {matchedEvent.title}</div>
+                      )}
+                      {!isCancelled && matchedEvent && (
+                        <div style={{ fontSize: 10, color: '#0075C4', marginTop: 4, background: '#eff6ff', borderRadius: 3, padding: '2px 6px', display: 'inline-block' }}>
+                          קיים בלו"ז: <span style={{ fontWeight: 600 }}>{matchedEvent.title}</span>
+                        </div>
+                      )}
+                      {!isCancelled && !matchedEvent && (
+                        <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 4 }}>לא נמצא בלו"ז שלך</div>
                       )}
                     </div>
 
