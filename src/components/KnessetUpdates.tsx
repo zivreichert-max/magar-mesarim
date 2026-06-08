@@ -138,9 +138,9 @@ export default function KnessetUpdates() {
 
                 return (
                   <div key={session.id} style={{
-                    background: isCancelled ? '#fff8f8' : '#fff',
+                    background: isCancelled ? '#fff8f8' : session.session_type === 'plenary' ? '#f0f9ff' : '#fff',
                     border: `0.5px solid ${isCancelled ? '#fca5a5' : '#e5e7eb'}`,
-                    borderRight: `3px solid ${isCancelled ? '#dc2626' : '#9ca3af'}`,
+                    borderRight: `3px solid ${isCancelled ? '#dc2626' : session.session_type === 'plenary' ? '#0891b2' : '#9ca3af'}`,
                     borderRadius: 5,
                     padding: '8px 12px',
                     display: 'flex',
@@ -154,6 +154,11 @@ export default function KnessetUpdates() {
 
                     {/* Content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
+                      {session.session_type === 'plenary' && (
+                        <div style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '1px 6px', borderRadius: 3, background: '#e0f2fe', color: '#0891b2', marginBottom: 3 }}>
+                          מליאה
+                        </div>
+                      )}
                       <div style={{
                         fontSize: 13, fontWeight: 600, lineHeight: 1.4,
                         color: isCancelled ? '#9ca3af' : '#111',

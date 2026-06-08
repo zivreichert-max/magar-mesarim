@@ -233,6 +233,7 @@ export interface KnessetSessionRow {
   time: string;
   url: string;
   status: string;
+  session_type?: string;
 }
 
 export async function getWeeklyKnessetSessions(): Promise<KnessetSessionRow[]> {
