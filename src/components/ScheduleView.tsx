@@ -98,6 +98,17 @@ function isCancelledBySchedule(ev: ScheduleEvent, cancellations: ScheduleCancell
   );
 }
 
+const MONTH_TABS = [
+  { num: 6,  label: 'יוני' },
+  { num: 7,  label: 'יולי' },
+  { num: 8,  label: 'אוגוסט' },
+  { num: 9,  label: 'ספטמבר' },
+  { num: 10, label: 'אוקטובר' },
+];
+
+function evMonth(e: TimelineEvent) { return parseInt(e.dateStart.slice(5, 7)); }
+function inMonthTab(e: TimelineEvent, m: number) { return m === 6 ? evMonth(e) <= 6 : evMonth(e) === m; }
+
 export default function ScheduleView() {
   const [subView, setSubView] = useState<'weekly' | 'timeline'>('weekly');
   const [activeCat, setActiveCat] = useState('all');
@@ -109,6 +120,10 @@ export default function ScheduleView() {
   const [selectedWeekDay, setSelectedWeekDay] = useState<string>(() => {
     const todayName = DAYS[new Date().getDay()];
     return todayName ?? DAYS[0];
+  });
+  const [selectedMonth, setSelectedMonth] = useState<number>(() => {
+    const m = new Date().getMonth() + 1;
+    return Math.max(6, Math.min(10, m));
   });
 
   useEffect(() => {
@@ -145,7 +160,9 @@ export default function ScheduleView() {
 
   const filteredForDay = filtered.filter(e => e.day.startsWith(selectedWeekDay));
 
-  const tlFiltered = SORTED_TIMELINE.filter(e => tlCat === 'הכל' || e.category === tlCat);
+  const tlFiltered = SORTED_TIMELINE.filter(e =>
+    inMonthTab(e, selectedMonth) && (tlCat === 'הכל' || e.category === tlCat)
+  );
 
   return (
     <div style={{ direction: 'rtl', fontFamily: "'Heebo', sans-serif" }}>
@@ -295,6 +312,26 @@ export default function ScheduleView() {
                 );
               })}
             </div>
+          </div>
+          {/* Month tab bar */}
+          <div style={{ display: 'flex', background: '#f0f4f9', borderBottom: '2px solid #dde3ed', overflowX: 'auto', direction: 'rtl' }}>
+            {MONTH_TABS.map(({ num, label }) => {
+              const isSel = selectedMonth === num;
+              const count = SORTED_TIMELINE.filter(e => inMonthTab(e, num)).length;
+              return (
+                <button key={num} type="button" onClick={() => setSelectedMonth(num)}
+                  style={{
+                    padding: '10px 16px', minWidth: 76, textAlign: 'center',
+                    background: isSel ? '#1e3a7b' : 'transparent',
+                    color: isSel ? '#fff' : '#1e3a7b',
+                    border: 'none', borderLeft: '1px solid #dde3ed',
+                    cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, touchAction: 'manipulation',
+                  }}>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>{label}</div>
+                  <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>{count} אירועים</div>
+                </button>
+              );
+            })}
           </div>
           <div style={{ padding: '16px 24px 80px' }}>
             {tlFiltered.length === 0 && (

@@ -14,19 +14,18 @@ export interface KnessetSession {
   cancelled: boolean;
 }
 
+// Week boundaries anchored to Israel wall-clock time (server may run in UTC;
+// toISOString() on local midnight shifts the date back a day)
 function getWeekRange(): { from: string; to: string } {
   const now = new Date();
-  const day = now.getDay();
-  const sunday = new Date(now);
-  sunday.setDate(now.getDate() - day);
-  sunday.setHours(0, 0, 0, 0);
-  const friday = new Date(sunday);
-  friday.setDate(sunday.getDate() + 6);
-  friday.setHours(23, 59, 59, 0);
-  return {
-    from: sunday.toISOString().slice(0, 10),
-    to: friday.toISOString().slice(0, 10),
-  };
+  const israelNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+  const sunday = new Date(israelNow);
+  sunday.setDate(israelNow.getDate() - israelNow.getDay());
+  const saturday = new Date(sunday);
+  saturday.setDate(sunday.getDate() + 6);
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return { from: fmt(sunday), to: fmt(saturday) };
 }
 
 const DAY_NAMES: Record<number, string> = {

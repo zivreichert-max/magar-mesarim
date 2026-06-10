@@ -182,7 +182,9 @@ export function getCurrentWeekId(): string {
   const now = new Date();
   const sunday = new Date(now);
   sunday.setDate(now.getDate() - now.getDay());
-  return sunday.toISOString().slice(0, 10);
+  // Local date parts — toISOString() is UTC and would shift the week key
+  // back a day when called between midnight and ~03:00 Israel time
+  return `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
 }
 
 export async function addManualScheduleEvent(
@@ -222,6 +224,26 @@ export async function clearOldManualEvents(): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+// ─── cbs_price_data ──────────────────────────────────────────────────────────
+
+export interface CbsPriceRow {
+  code_id: number;
+  name: string;
+  category: string;
+  cumulative_change: number;
+  latest_period: string;
+  updated_at: string;
+  price_base?: number;
+  price_latest?: number;
+  unit?: string;
+}
+
+export async function getCbsPriceData(): Promise<CbsPriceRow[]> {
+  const { data, error } = await supabase.from('cbs_price_data').select('*');
+  if (error) return [];
+  return (data ?? []) as CbsPriceRow[];
+}
+
 // ─── knesset_sessions ─────────────────────────────────────────────────────────
 
 export interface KnessetSessionRow {
@@ -234,6 +256,7 @@ export interface KnessetSessionRow {
   url: string;
   status: string;
   session_type?: string;
+  last_seen?: string;
 }
 
 export async function getWeeklyKnessetSessions(): Promise<KnessetSessionRow[]> {
