@@ -15,16 +15,18 @@ import ScheduleView from '@/components/ScheduleView';
 import ClientRequestsView from '@/components/ClientRequestsView';
 import PapersView from '@/components/PapersView';
 import KnessetUpdates from '@/components/KnessetUpdates';
+import PriceCalc from '@/components/PriceCalc';
 import { getSharedMessageIds } from '@/lib/supabase';
 
 type AppState = 'password' | 'name' | 'ready';
 
 const VIEW_TITLES: Record<string, string> = {
-  messages: 'מסרים',
-  schedule: 'לו"ז שבועי',
-  requests: 'בקשות',
-  papers:   'ניירות עמדה',
-  updates:  'עדכונים אוטומטיים',
+  messages:   'מסרים',
+  schedule:   'לו"ז שבועי',
+  requests:   'בקשות',
+  papers:     'ניירות עמדה',
+  updates:    'עדכונים אוטומטיים',
+  calculator: 'מחשבון התייקרויות',
 };
 
 export default function Home() {
@@ -36,7 +38,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<Topic | 'הכל'>('הכל');
   const [search, setSearch] = useState('');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [activeView, setActiveView] = useState<'messages' | 'schedule' | 'requests' | 'papers' | 'updates'>('messages');
+  const [activeView, setActiveView] = useState<'messages' | 'schedule' | 'requests' | 'papers' | 'updates' | 'calculator'>('messages');
 
   // On mount, check if name is already stored
   useEffect(() => {
@@ -185,6 +187,19 @@ export default function Home() {
             עדכונים אוטומטיים
           </button>
         )}
+        <button
+          type="button"
+          onClick={() => setActiveView('calculator')}
+          style={{
+            padding: '12px 20px', fontSize: 14, fontWeight: 600,
+            border: 'none', background: 'none', cursor: 'pointer',
+            borderBottom: activeView === 'calculator' ? '2px solid #0075C4' : '2px solid transparent',
+            color: activeView === 'calculator' ? '#0075C4' : '#6b7280',
+            fontFamily: 'inherit', touchAction: 'manipulation', marginBottom: -2,
+          }}
+        >
+          מחשבונים
+        </button>
       </div>
 
       {activeView === 'messages' ? (
@@ -230,6 +245,7 @@ export default function Home() {
       {activeView === 'requests' && role === 'full' && <ClientRequestsView />}
       {activeView === 'papers' && <PapersView role={role} clientId={activeClient?.id} />}
       {activeView === 'updates' && role === 'full' && <KnessetUpdates />}
+      {activeView === 'calculator' && <PriceCalc />}
 
       <DetailPanel
         message={selectedMessage}
