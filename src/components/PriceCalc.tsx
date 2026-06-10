@@ -7,12 +7,25 @@ import { getCbsPriceData, CbsPriceRow } from '@/lib/supabase';
 // (codes 12xxxx, % only). The מזון tab shows priced products only, because
 // the CPI food sub-indices (קפה, קקאו...) duplicate the Excel products.
 const TABS: { label: string; cats: string[]; pricedOnly?: boolean }[] = [
-  { label: 'מזון',          cats: ['מזון'], pricedOnly: true },
-  { label: 'ירקות ופירות',  cats: ['ירקות ופירות'] },
-  { label: 'תחבורה',        cats: ['דלק ותחבורה', 'תחבורה'] },
-  { label: 'דיור וחשמל',    cats: ['דיור / חשמל'] },
-  { label: 'בריאות',        cats: ['בריאות'] },
+  { label: 'מוצרי מזון',          cats: ['מזון'], pricedOnly: true },
+  { label: 'ירקות ופירות',        cats: ['ירקות ופירות'] },
+  { label: 'הוצאה על תחבורה',     cats: ['דלק ותחבורה', 'תחבורה'] },
+  { label: 'הוצאה על דיור וחשמל', cats: ['דיור / חשמל'] },
+  { label: 'הוצאה על בריאות',     cats: ['בריאות'] },
 ];
+
+// "אפריל/2026" → "אפר׳ 26" for the compact table column header
+const MONTH_SHORT: Record<string, string> = {
+  'ינואר': 'ינו׳', 'פברואר': 'פבר׳', 'מרס': 'מרס', 'אפריל': 'אפר׳',
+  'מאי': 'מאי', 'יוני': 'יוני', 'יולי': 'יולי', 'אוגוסט': 'אוג׳',
+  'ספטמבר': 'ספט׳', 'אוקטובר': 'אוק׳', 'נובמבר': 'נוב׳', 'דצמבר': 'דצמ׳',
+};
+function shortPeriod(p: string): string {
+  const [m, y] = p.split('/');
+  return `${MONTH_SHORT[m] ?? m} ${y ? y.slice(2) : ''}`.trim();
+}
+
+const BASE_PERIOD = 'דצמבר/2022';
 
 const CBS_SOURCE_URL = 'https://www.cbs.gov.il/he/Statistics/Pages/Generators/Time-Series-DataBank.aspx?level_1=7&level_2=40';
 
@@ -42,15 +55,28 @@ export default function PriceCalc() {
 
   const tab = TABS.find(t => t.label === selectedTab) ?? TABS[0];
   const catRows = rows
-    .filter(r => tab.cats.includes(r.category) && (!tab.pricedOnly || r.price_base != null))
+    .filter(r =>
+      tab.cats.includes(r.category) &&
+      (!tab.pricedOnly || r.price_base != null) &&
+      // a row whose latest data IS the Dec-2022 base has nothing to compare —
+      // it would show a misleading +0.0%
+      r.latest_period !== BASE_PERIOD
+    )
     .sort((a, b) => b.cumulative_change - a.cumulative_change);
 
   const top10  = catRows.filter(r => r.cumulative_change >= 0).slice(0, 10);
   const drops  = catRows.filter(r => r.cumulative_change < 0).sort((a, b) => a.cumulative_change - b.cumulative_change);
   const maxPct = Math.max(...top10.map(r => r.cumulative_change), 1);
 
-  const indexOnly    = catRows.length > 0 && catRows.every(r => r.price_base == null);
-  const latestPeriod = catRows[0]?.latest_period ?? '';
+  const indexOnly = catRows.length > 0 && catRows.every(r => r.price_base == null);
+
+  // The latest CBS publication period shown in this tab (most common one);
+  // rows lagging behind it get a per-row period label
+  const periodCounts = new Map<string, number>();
+  for (const r of catRows) {
+    if (r.latest_period) periodCounts.set(r.latest_period, (periodCounts.get(r.latest_period) ?? 0) + 1);
+  }
+  const latestPeriod = [...periodCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? '';
   const updatedDate  = catRows.reduce<string>((max, r) => (r.updated_at > max ? r.updated_at : max), '');
   const updatedStr   = updatedDate ? new Date(updatedDate).toLocaleDateString('he-IL') : '';
 
@@ -79,7 +105,7 @@ export default function PriceCalc() {
               מחשבון ההתייקרויות
             </div>
             <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.6 }}>
-              שינוי מחיר מצטבר — דצמבר 2022{latestPeriod ? ` לעומת ${latestPeriod}` : ''}
+              שינוי מחיר מצטבר — דצמבר 2022{latestPeriod ? ` לעומת ${latestPeriod} (פרסום הלמ״ס האחרון)` : ''}
             </div>
           </div>
 
@@ -138,8 +164,8 @@ export default function PriceCalc() {
                 }}>
                   <span style={{ textAlign: 'center' }}>#</span>
                   <span>מוצר</span>
-                  <span style={{ textAlign: 'center' }}>דצ׳ 22</span>
-                  <span style={{ textAlign: 'center' }}>עכשיו</span>
+                  <span style={{ textAlign: 'center' }}>דצמ׳ 22</span>
+                  <span style={{ textAlign: 'center' }}>{latestPeriod ? shortPeriod(latestPeriod) : 'אחרון'}</span>
                   <span style={{ textAlign: 'left', direction: 'ltr' }}>שינוי</span>
                 </div>
 
@@ -184,6 +210,11 @@ export default function PriceCalc() {
                         fontVariantNumeric: 'tabular-nums', direction: 'ltr',
                       }}>
                         {latest != null ? `${latest}₪` : '—'}
+                        {row.latest_period && row.latest_period !== latestPeriod && (
+                          <span style={{ display: 'block', fontSize: 9, color: '#9ca3af', direction: 'rtl' }}>
+                            נכון ל{shortPeriod(row.latest_period)}
+                          </span>
+                        )}
                       </span>
                       <span style={{
                         fontSize: 13, fontWeight: 700, color,
