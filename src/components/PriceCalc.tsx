@@ -27,7 +27,8 @@ function shortPeriod(p: string): string {
 
 const BASE_PERIOD = 'דצמבר/2022';
 
-const CBS_SOURCE_URL = 'https://www.cbs.gov.il/he/Statistics/Pages/Generators/Time-Series-DataBank.aspx?level_1=7&level_2=40';
+// מחולל מחירים ומדדי מחירים — מכסה גם מחירים ממוצעים וגם מדד המחירים לצרכן
+const CBS_SOURCE_URL = 'https://www.cbs.gov.il/he/Statistics/Pages/%D7%9E%D7%97%D7%95%D7%9C%D7%9C%D7%99%D7%9D/%D7%9E%D7%97%D7%95%D7%9C%D7%9C-%D7%9E%D7%97%D7%99%D7%A8%D7%99%D7%9D.aspx';
 
 const EXTERNAL_LINKS = [
   { label: 'נתוני פשיעה ורצח בחברה הערבית', url: 'https://rassed.nalcci.org/dashboard/violence' },
@@ -275,7 +276,7 @@ export default function PriceCalc() {
               rel="noopener noreferrer"
               style={{ color: '#2077BB', textDecoration: 'none', fontWeight: 600 }}
             >
-              למקור בלמ&quot;ס — מחירים ממוצעים ומדד המחירים לצרכן ↗
+              למקור בלמ&quot;ס — מחולל מחירים ומדדי מחירים ↗
             </a>
           </div>
         </div>
