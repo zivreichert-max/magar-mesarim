@@ -162,14 +162,18 @@ export default function KnessetUpdates() {
   const dateMap = WEEK_DATE_MAPS[weekView];
   const weekSessions = sessions.filter(s => sessionWeek(s) === weekView);
 
+  // A day counts as having content if it has sessions OR gov items OR timeline
+  // events — checking sessions alone would bounce the selection off days whose
+  // tab exists only because of gov/timeline content
+  const dayHasContent = (d: string) =>
+    weekSessions.some(s => s.day_name === d) ||
+    govItemsForDay(govItems, d, dateMap).length > 0 ||
+    timelineForDay(dateMap[d] ?? '').length > 0;
+
   useEffect(() => { load(); loadGovAgenda(); }, []);
   useEffect(() => {
-    if (!weekSessions.some(s => s.day_name === selectedDay)) {
-      const first = WORK_DAYS.find(d =>
-        weekSessions.some(s => s.day_name === d) ||
-        govItemsForDay(govItems, d, dateMap).length > 0 ||
-        timelineForDay(dateMap[d] ?? '').length > 0
-      );
+    if (!dayHasContent(selectedDay)) {
+      const first = WORK_DAYS.find(dayHasContent);
       if (first) setSelectedDay(first);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
