@@ -7,20 +7,21 @@ import { TIMELINE, TimelineEvent } from '@/data/timeline';
 import AddToScheduleModal, { SessionInfo } from './AddToScheduleModal';
 import type { GovAgendaItem } from '@/app/api/gov-agenda/route';
 
-const WORK_DAYS = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי'];
-const DAY_ORDER = [...WORK_DAYS, 'יום שישי'];
+const WORK_DAYS = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי'];
 const UPDATE_PRIORITY: Record<string, number> = { cancel: 3, change: 2, new: 1 };
 
-// Compute YYYY-MM-DD for each work day of the current week.
+type WeekView = 'current' | 'next';
+
+// Compute YYYY-MM-DD for each work day of the requested week (0 = current, 1 = next).
 // Uses local date parts — toISOString() is UTC and shifts the date back
 // a day between midnight and ~03:00 Israel time.
 function localIso(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
-function getWeekDateMap(): Record<string, string> {
+function getWeekDateMap(weekOffset: number): Record<string, string> {
   const now = new Date();
   const sunday = new Date(now);
-  sunday.setDate(now.getDate() - now.getDay());
+  sunday.setDate(now.getDate() - now.getDay() + weekOffset * 7);
   const map: Record<string, string> = {};
   WORK_DAYS.forEach((name, i) => {
     const d = new Date(sunday);
@@ -29,20 +30,29 @@ function getWeekDateMap(): Record<string, string> {
   });
   return map;
 }
-const WEEK_DATE_MAP = getWeekDateMap();
+const WEEK_DATE_MAPS: Record<WeekView, Record<string, string>> = {
+  current: getWeekDateMap(0),
+  next: getWeekDateMap(1),
+};
 
-// "11.6"-style display date expected for each day of the current week —
-// used to drop stale knesset_sessions rows left over from previous weeks
-const WEEK_DISPLAY_DATE: Record<string, string> = Object.fromEntries(
-  Object.entries(WEEK_DATE_MAP).map(([day, iso]) => {
-    const [, m, d] = iso.split('-');
-    return [day, `${Number(d)}.${Number(m)}`];
-  })
-);
+// "11.6"-style display date expected for each day of each week —
+// a session's day+date pins it to a week; rows from older weeks match neither
+const toDisplayMap = (m: Record<string, string>): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(m).map(([day, iso]) => {
+      const [, mo, d] = iso.split('-');
+      return [day, `${Number(d)}.${Number(mo)}`];
+    })
+  );
+const WEEK_DISPLAY_DATES: Record<WeekView, Record<string, string>> = {
+  current: toDisplayMap(WEEK_DATE_MAPS.current),
+  next: toDisplayMap(WEEK_DATE_MAPS.next),
+};
 
-function isCurrentWeekSession(s: KnessetSessionRow): boolean {
-  const expected = WEEK_DISPLAY_DATE[s.day_name];
-  return expected !== undefined && s.date === expected;
+function sessionWeek(s: KnessetSessionRow): WeekView | null {
+  if (WEEK_DISPLAY_DATES.current[s.day_name] === s.date) return 'current';
+  if (WEEK_DISPLAY_DATES.next[s.day_name] === s.date) return 'next';
+  return null;
 }
 
 function isoToDisplay(iso: string) {
@@ -80,8 +90,8 @@ function timelineForDay(isoDate: string): TimelineEvent[] {
 }
 
 // Gov agenda items whose meeting date exactly matches the given week-day ISO date
-function govItemsForDay(items: GovAgendaItem[], dayName: string): GovAgendaItem[] {
-  const isoDate = WEEK_DATE_MAP[dayName];
+function govItemsForDay(items: GovAgendaItem[], dayName: string, dateMap: Record<string, string>): GovAgendaItem[] {
+  const isoDate = dateMap[dayName];
   if (!isoDate) return [];
   return items.filter(item => item.meetingDate === isoDate);
 }
@@ -99,6 +109,7 @@ export default function KnessetUpdates() {
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [selectedDay, setSelectedDay] = useState<string>(() => WORK_DAYS[new Date().getDay()] ?? WORK_DAYS[0]);
   const [govItems, setGovItems] = useState<GovAgendaItem[]>([]);
+  const [weekView, setWeekView] = useState<WeekView>('current');
 
   async function load() {
     try {
@@ -106,7 +117,7 @@ export default function KnessetUpdates() {
         getWeeklyKnessetSessions(),
         getAllKnessetUpdates(),
       ]);
-      setSessions(sessionData.filter(isCurrentWeekSession));
+      setSessions(sessionData.filter(s => sessionWeek(s) !== null));
       setUpdates(updateData);
       const newest = sessionData.reduce<string>((max, s) => (s.last_seen && s.last_seen > max ? s.last_seen : max), '');
       setLastSync(newest);
@@ -146,17 +157,23 @@ export default function KnessetUpdates() {
     }
   }
 
+  // "next week" is a planning view — there is no manual לו"ז to compare against yet
+  const isPlanning = weekView === 'next';
+  const dateMap = WEEK_DATE_MAPS[weekView];
+  const weekSessions = sessions.filter(s => sessionWeek(s) === weekView);
+
   useEffect(() => { load(); loadGovAgenda(); }, []);
   useEffect(() => {
-    if (!sessions.some(s => s.day_name === selectedDay)) {
-      const first = DAY_ORDER.find(d =>
-        sessions.some(s => s.day_name === d) ||
-        govItemsForDay(govItems, d).length > 0 ||
-        timelineForDay(WEEK_DATE_MAP[d] ?? '').length > 0
+    if (!weekSessions.some(s => s.day_name === selectedDay)) {
+      const first = WORK_DAYS.find(d =>
+        weekSessions.some(s => s.day_name === d) ||
+        govItemsForDay(govItems, d, dateMap).length > 0 ||
+        timelineForDay(dateMap[d] ?? '').length > 0
       );
       if (first) setSelectedDay(first);
     }
-  }, [sessions, govItems, selectedDay]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessions, govItems, selectedDay, weekView]);
 
   // Build map: session_id → highest-priority update
   const updateMap = new Map<string, KnessetUpdate>();
@@ -170,25 +187,26 @@ export default function KnessetUpdates() {
   // Days that have any content (sessions OR gov items OR timeline events)
   const availableDays = WORK_DAYS
     .map(day => {
-      const isoDate = WEEK_DATE_MAP[day] ?? '';
-      const hasSessions = sessions.some(s => s.day_name === day);
-      const hasGov = govItemsForDay(govItems, day).length > 0;
+      const isoDate = dateMap[day] ?? '';
+      const hasSessions = weekSessions.some(s => s.day_name === day);
+      const hasGov = govItemsForDay(govItems, day, dateMap).length > 0;
       const hasTimeline = isoDate ? timelineForDay(isoDate).length > 0 : false;
       if (!hasSessions && !hasGov && !hasTimeline) return null;
       // prefer session date for display, fall back to computed
-      const sessionDate = sessions.find(s => s.day_name === day)?.date;
+      const sessionDate = weekSessions.find(s => s.day_name === day)?.date;
       return { day, date: sessionDate ?? (isoDate ? isoToDisplay(isoDate) : '') };
     })
     .filter((d): d is { day: string; date: string } => d !== null);
 
-  const cancelCount = sessions.filter(s => s.status === 'cancelled').length;
-  const notInScheduleCount = sessions.filter(s => s.status !== 'cancelled' && !findMatchingScheduleEvent(s)).length;
-  const displaySessions = sessions
+  const cancelCount = weekSessions.filter(s => s.status === 'cancelled').length;
+  const notInScheduleCount = isPlanning ? 0
+    : weekSessions.filter(s => s.status !== 'cancelled' && !findMatchingScheduleEvent(s)).length;
+  const displaySessions = weekSessions
     .filter(s => s.day_name === selectedDay)
     .sort((a, b) => normalizeTime(a.time).localeCompare(normalizeTime(b.time)));
 
-  const dayGovItems = govItemsForDay(govItems, selectedDay);
-  const dayTimelineEvents = timelineForDay(WEEK_DATE_MAP[selectedDay] ?? '');
+  const dayGovItems = govItemsForDay(govItems, selectedDay, dateMap);
+  const dayTimelineEvents = timelineForDay(dateMap[selectedDay] ?? '');
 
   if (loading) return null;
 
@@ -198,7 +216,7 @@ export default function KnessetUpdates() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: refreshing ? '#d97706' : '#16a34a' }} />
-          <span style={{ fontSize: 13, fontWeight: 600 }}>ועדות כנסת + ממשלה השבוע</span>
+          <span style={{ fontSize: 13, fontWeight: 600 }}>{isPlanning ? 'ועדות כנסת + ממשלה — שבוע הבא' : 'ועדות כנסת + ממשלה השבוע'}</span>
           {lastCheck && <span style={{ fontSize: 11, color: '#9ca3af' }}>עדכון: {lastCheck}</span>}
           {lastSync && (() => {
             const ageHours = (Date.now() - new Date(lastSync).getTime()) / 3600000;
@@ -235,6 +253,32 @@ export default function KnessetUpdates() {
         </div>
       </div>
 
+      {/* Week toggle: current week / next week (planning) */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        {(['current', 'next'] as WeekView[]).map(w => {
+          const isSel = weekView === w;
+          const range = `${WEEK_DISPLAY_DATES[w]['יום ראשון']}–${WEEK_DISPLAY_DATES[w]['יום שישי']}`;
+          return (
+            <button key={w} type="button" onClick={() => setWeekView(w)}
+              style={{
+                padding: '6px 14px', borderRadius: 6, fontFamily: 'inherit', cursor: 'pointer',
+                border: `1.5px solid ${isSel ? '#1e3a7b' : '#d1d5db'}`,
+                background: isSel ? '#1e3a7b' : '#fff',
+                color: isSel ? '#fff' : '#374151',
+                fontSize: 12, fontWeight: 700,
+              }}>
+              {w === 'current' ? 'השבוע הנוכחי' : 'שבוע הבא'}
+              <span style={{ fontWeight: 400, fontSize: 10, marginRight: 6, opacity: 0.8, direction: 'ltr', display: 'inline-block' }}>{range}</span>
+            </button>
+          );
+        })}
+        {isPlanning && (
+          <span style={{ fontSize: 11, color: '#7c3aed', background: '#faf5ff', border: '1px solid #ddd6fe', padding: '3px 10px', borderRadius: 10 }}>
+            מצב תכנון — כל הישיבות שפורסמו לשבוע הבא, ללא השוואה ללו&quot;ז
+          </span>
+        )}
+      </div>
+
       {/* Day tab bar */}
       {availableDays.length > 1 && (
         <div style={{ display: 'flex', background: '#f0f4f9', borderBottom: '2px solid #dde3ed', overflowX: 'auto', margin: '0 -24px 14px', direction: 'rtl' }}>
@@ -258,7 +302,9 @@ export default function KnessetUpdates() {
       )}
 
       {availableDays.length === 0 ? (
-        <div style={{ fontSize: 12, color: '#9ca3af', padding: '12px 0' }}>אין נתונים לשבוע זה</div>
+        <div style={{ fontSize: 12, color: '#9ca3af', padding: '12px 0' }}>
+          {isPlanning ? 'טרם פורסמו ישיבות לשבוע הבא — הריצו סנכרון (sync-knesset.mjs)' : 'אין נתונים לשבוע זה'}
+        </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
 
@@ -338,7 +384,7 @@ export default function KnessetUpdates() {
             const isMarked = update?.marked_in_schedule ?? false;
             const isMarking = update ? markingIds.has(update.id) : false;
             const markErr = update ? markErrors[update.id] : undefined;
-            const matchedEvent = findMatchingScheduleEvent(session);
+            const matchedEvent = isPlanning ? null : findMatchingScheduleEvent(session);
 
             return (
               <div key={session.id} style={{
@@ -415,13 +461,13 @@ export default function KnessetUpdates() {
                       קיים בלו&quot;ז: <span style={{ fontWeight: 600 }}>{matchedEvent.title}</span>
                     </div>
                   )}
-                  {!isCancelled && !matchedEvent && (
+                  {!isCancelled && !matchedEvent && !isPlanning && (
                     <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 4 }}>לא נמצא בלו&quot;ז שלך</div>
                   )}
                 </div>
 
-                {/* Add to schedule button */}
-                {!isCancelled && !addedIds.has(session.id) && (
+                {/* Add to schedule button — current week only (modal saves into the current week_id) */}
+                {!isCancelled && !isPlanning && !addedIds.has(session.id) && (
                   <button type="button"
                     onClick={() => setModalSession({ committee: session.committee, title: session.title, day_name: session.day_name, time: session.time })}
                     style={{
