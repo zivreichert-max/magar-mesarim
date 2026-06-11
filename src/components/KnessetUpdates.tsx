@@ -112,10 +112,19 @@ export default function KnessetUpdates() {
   const [weekView, setWeekView] = useState<WeekView>('current');
   const [copiedPromptId, setCopiedPromptId] = useState<string>('');
 
+  // Full date incl. year ("16.06.2026") — the stored "16.6" lacks the year,
+  // which the AI prompt needs to pin the exact session
+  function fullDateOf(session: KnessetSessionRow): string {
+    const iso = WEEK_DATE_MAPS[sessionWeek(session) ?? 'current'][session.day_name];
+    if (!iso) return session.date;
+    const [y, m, d] = iso.split('-');
+    return `${d}.${m}.${y}`;
+  }
+
   function copySessionPrompt(session: KnessetSessionRow) {
     navigator.clipboard.writeText(buildSessionPrompt({
       committee: session.committee, title: session.title,
-      day_name: session.day_name, time: session.time,
+      day_name: session.day_name, date: fullDateOf(session), time: session.time,
     }));
     setCopiedPromptId(session.id);
     setTimeout(() => setCopiedPromptId(''), 2500);
@@ -498,7 +507,7 @@ export default function KnessetUpdates() {
                 {/* Add to schedule button — current week only (modal saves into the current week_id) */}
                 {!isCancelled && !isPlanning && !addedIds.has(session.id) && (
                   <button type="button"
-                    onClick={() => setModalSession({ committee: session.committee, title: session.title, day_name: session.day_name, time: session.time })}
+                    onClick={() => setModalSession({ committee: session.committee, title: session.title, day_name: session.day_name, date: fullDateOf(session), time: session.time })}
                     style={{
                       fontSize: 10, padding: '3px 8px', borderRadius: 4, fontFamily: 'inherit',
                       cursor: 'pointer', border: '1px solid #0075C4', background: '#e6f1fb',

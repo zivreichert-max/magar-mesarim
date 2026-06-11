@@ -6,6 +6,7 @@ export interface SessionInfo {
   committee: string;
   title: string;
   day_name: string;
+  date: string; // full date incl. year, e.g. "16.06.2026" — helps AI pin the exact session
   time: string;
 }
 
@@ -40,6 +41,7 @@ export function buildSessionPrompt(session: SessionInfo): string {
 גוף: ${session.committee}
 נושא: ${session.title || session.committee}
 יום: ${session.day_name}
+תאריך: ${session.date}
 שעה: ${session.time}
 
 חפש בחומרים גלויים על הדיון הזה (אתר הכנסת, ניירות עמדה, תקשורת) וכתוב את שלושת החלקים: תקציר, הרחבה וסימוכין.`;
