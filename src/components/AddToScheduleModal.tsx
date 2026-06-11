@@ -23,18 +23,10 @@ const textareaStyle: React.CSSProperties = {
   ...inputStyle, resize: 'vertical', lineHeight: 1.6,
 };
 
-export default function AddToScheduleModal({ session, onClose, onSaved }: Props) {
-  const [title, setTitle] = useState(session.title || session.committee);
-  const [summary, setSummary] = useState('');
-  const [detail, setDetail] = useState('');
-  const [source, setSource] = useState('');
-  const [generating, setGenerating] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [copied, setCopied] = useState(false);
-
-  function buildPrompt(): string {
-    return `אתה כותב פריט לו"ז לאתר "זמן בחירות" של "בונים מחדש". כתוב תקציר, הרחבה וסימוכין לפי המתודולוגיה הבאה:
+// Shared with KnessetUpdates — the next-week planning view offers the same
+// copy-prompt action without opening the modal
+export function buildSessionPrompt(session: SessionInfo): string {
+  return `אתה כותב פריט לו"ז לאתר "זמן בחירות" של "בונים מחדש". כתוב תקציר, הרחבה וסימוכין לפי המתודולוגיה הבאה:
 
 — תקציר: פסקה אחת, 3–5 משפטים. מסביר מה הדיון, למה הוא חשוב, ומה הזווית המרכזית למעקב. ספציפי ולא כללי.
 — הרחבה: 2–4 פסקאות קצרות. פסקה 1 — רקע עובדתי. פסקה 2 — המחלוקת/הבעיה. פסקה 3 — נקודת המעקב.
@@ -51,10 +43,20 @@ export default function AddToScheduleModal({ session, onClose, onSaved }: Props)
 שעה: ${session.time}
 
 חפש בחומרים גלויים על הדיון הזה (אתר הכנסת, ניירות עמדה, תקשורת) וכתוב את שלושת החלקים: תקציר, הרחבה וסימוכין.`;
-  }
+}
+
+export default function AddToScheduleModal({ session, onClose, onSaved }: Props) {
+  const [title, setTitle] = useState(session.title || session.committee);
+  const [summary, setSummary] = useState('');
+  const [detail, setDetail] = useState('');
+  const [source, setSource] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   function copyPrompt() {
-    navigator.clipboard.writeText(buildPrompt());
+    navigator.clipboard.writeText(buildSessionPrompt(session));
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   }

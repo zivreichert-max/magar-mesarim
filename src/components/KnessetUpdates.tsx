@@ -4,7 +4,7 @@ import { getAllKnessetUpdates, KnessetUpdate } from '@/lib/knessetSync';
 import { getWeeklyKnessetSessions, KnessetSessionRow, markKnessetUpdateInSchedule, ManualScheduleEvent } from '@/lib/supabase';
 import { SCHEDULE, ScheduleEvent } from '@/data/schedule';
 import { TIMELINE, TimelineEvent } from '@/data/timeline';
-import AddToScheduleModal, { SessionInfo } from './AddToScheduleModal';
+import AddToScheduleModal, { SessionInfo, buildSessionPrompt } from './AddToScheduleModal';
 import type { GovAgendaItem } from '@/app/api/gov-agenda/route';
 
 const WORK_DAYS = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי'];
@@ -110,6 +110,16 @@ export default function KnessetUpdates() {
   const [selectedDay, setSelectedDay] = useState<string>(() => WORK_DAYS[new Date().getDay()] ?? WORK_DAYS[0]);
   const [govItems, setGovItems] = useState<GovAgendaItem[]>([]);
   const [weekView, setWeekView] = useState<WeekView>('current');
+  const [copiedPromptId, setCopiedPromptId] = useState<string>('');
+
+  function copySessionPrompt(session: KnessetSessionRow) {
+    navigator.clipboard.writeText(buildSessionPrompt({
+      committee: session.committee, title: session.title,
+      day_name: session.day_name, time: session.time,
+    }));
+    setCopiedPromptId(session.id);
+    setTimeout(() => setCopiedPromptId(''), 2500);
+  }
 
   async function load() {
     try {
@@ -469,6 +479,21 @@ export default function KnessetUpdates() {
                     <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 4 }}>לא נמצא בלו&quot;ז שלך</div>
                   )}
                 </div>
+
+                {/* Planning view: copy the AI prompt for drafting next week's לו"ז entry */}
+                {!isCancelled && isPlanning && (
+                  <button type="button"
+                    onClick={() => copySessionPrompt(session)}
+                    style={{
+                      fontSize: 10, padding: '3px 8px', borderRadius: 4, fontFamily: 'inherit',
+                      cursor: 'pointer', fontWeight: 600, flexShrink: 0, whiteSpace: 'nowrap',
+                      border: `1px solid ${copiedPromptId === session.id ? '#16a34a' : '#7c3aed'}`,
+                      background: copiedPromptId === session.id ? '#dcfce7' : '#faf5ff',
+                      color: copiedPromptId === session.id ? '#16a34a' : '#7c3aed',
+                    }}>
+                    {copiedPromptId === session.id ? '✓ הועתק' : '📋 פרומפט'}
+                  </button>
+                )}
 
                 {/* Add to schedule button — current week only (modal saves into the current week_id) */}
                 {!isCancelled && !isPlanning && !addedIds.has(session.id) && (
