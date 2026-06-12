@@ -21,7 +21,10 @@ function localIso(d: Date): string {
 function getWeekDateMap(weekOffset: number): Record<string, string> {
   const now = new Date();
   const sunday = new Date(now);
-  sunday.setDate(now.getDate() - now.getDay() + weekOffset * 7);
+  // From Friday the work week is over — anchor "current week" to the upcoming
+  // Sunday, so Fri/Sat already show the week being planned
+  const rollover = now.getDay() >= 5 ? 7 : 0;
+  sunday.setDate(now.getDate() - now.getDay() + rollover + weekOffset * 7);
   const map: Record<string, string> = {};
   WORK_DAYS.forEach((name, i) => {
     const d = new Date(sunday);

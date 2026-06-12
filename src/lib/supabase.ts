@@ -181,7 +181,9 @@ export interface ManualScheduleEvent {
 export function getCurrentWeekId(): string {
   const now = new Date();
   const sunday = new Date(now);
-  sunday.setDate(now.getDate() - now.getDay());
+  // From Friday the work week is over — manual schedule events belong to the
+  // upcoming week (matches the docx rollover and KnessetUpdates week anchoring)
+  sunday.setDate(now.getDate() - now.getDay() + (now.getDay() >= 5 ? 7 : 0));
   // Local date parts — toISOString() is UTC and would shift the week key
   // back a day when called between midnight and ~03:00 Israel time
   return `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;

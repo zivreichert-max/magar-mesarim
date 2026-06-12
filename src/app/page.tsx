@@ -29,6 +29,18 @@ const VIEW_TITLES: Record<string, string> = {
   calculator: 'מחשבון התייקרויות',
 };
 
+type ViewId = 'messages' | 'schedule' | 'requests' | 'papers' | 'updates' | 'calculator';
+
+// Order matters: first = rightmost tab (RTL)
+const TABS: { id: ViewId; label: string; fullOnly?: boolean }[] = [
+  { id: 'schedule',   label: 'לו"ז' },
+  { id: 'updates',    label: 'עדכונים אוטומטיים', fullOnly: true },
+  { id: 'papers',     label: 'ניירות עמדה' },
+  { id: 'messages',   label: 'מסרים' },
+  { id: 'requests',   label: 'בקשות', fullOnly: true },
+  { id: 'calculator', label: 'מחשבונים' },
+];
+
 export default function Home() {
   const [appState, setAppState] = useState<AppState>('password');
   const [authorName, setAuthorName] = useState('');
@@ -38,7 +50,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<Topic | 'הכל'>('הכל');
   const [search, setSearch] = useState('');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [activeView, setActiveView] = useState<'messages' | 'schedule' | 'requests' | 'papers' | 'updates' | 'calculator'>('messages');
+  const [activeView, setActiveView] = useState<ViewId>('messages');
 
   // On mount, check if name is already stored
   useEffect(() => {
@@ -115,91 +127,23 @@ export default function Home() {
         background: '#fff', borderBottom: '2px solid #e5e7eb',
         display: 'flex', padding: '0 24px',
       }}>
-        <button
-          type="button"
-          onClick={() => setActiveView('messages')}
-          style={{
-            padding: '12px 20px', fontSize: 14, fontWeight: 600,
-            border: 'none', background: 'none', cursor: 'pointer',
-            borderBottom: activeView === 'messages' ? '2px solid #0075C4' : '2px solid transparent',
-            color: activeView === 'messages' ? '#0075C4' : '#6b7280',
-            fontFamily: 'inherit', touchAction: 'manipulation',
-            marginBottom: -2,
-          }}
-        >
-          מסרים
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveView('schedule')}
-          style={{
-            padding: '12px 20px', fontSize: 14, fontWeight: 600,
-            border: 'none', background: 'none', cursor: 'pointer',
-            borderBottom: activeView === 'schedule' ? '2px solid #0075C4' : '2px solid transparent',
-            color: activeView === 'schedule' ? '#0075C4' : '#6b7280',
-            fontFamily: 'inherit', touchAction: 'manipulation',
-            marginBottom: -2,
-          }}
-        >
-          לו&quot;ז
-        </button>
-        {role === 'full' && (
+        {TABS.filter(tab => !tab.fullOnly || role === 'full').map(tab => (
           <button
+            key={tab.id}
             type="button"
-            onClick={() => setActiveView('requests')}
+            onClick={() => setActiveView(tab.id)}
             style={{
               padding: '12px 20px', fontSize: 14, fontWeight: 600,
               border: 'none', background: 'none', cursor: 'pointer',
-              borderBottom: activeView === 'requests' ? '2px solid #0075C4' : '2px solid transparent',
-              color: activeView === 'requests' ? '#0075C4' : '#6b7280',
+              borderBottom: activeView === tab.id ? '2px solid #0075C4' : '2px solid transparent',
+              color: activeView === tab.id ? '#0075C4' : '#6b7280',
               fontFamily: 'inherit', touchAction: 'manipulation',
               marginBottom: -2,
             }}
           >
-            בקשות
+            {tab.label}
           </button>
-        )}
-        <button
-          type="button"
-          onClick={() => setActiveView('papers')}
-          style={{
-            padding: '12px 20px', fontSize: 14, fontWeight: 600,
-            border: 'none', background: 'none', cursor: 'pointer',
-            borderBottom: activeView === 'papers' ? '2px solid #0075C4' : '2px solid transparent',
-            color: activeView === 'papers' ? '#0075C4' : '#6b7280',
-            fontFamily: 'inherit', touchAction: 'manipulation', marginBottom: -2,
-          }}
-        >
-          ניירות עמדה
-        </button>
-        {role === 'full' && (
-          <button
-            type="button"
-            onClick={() => setActiveView('updates')}
-            style={{
-              padding: '12px 20px', fontSize: 14, fontWeight: 600,
-              border: 'none', background: 'none', cursor: 'pointer',
-              borderBottom: activeView === 'updates' ? '2px solid #0075C4' : '2px solid transparent',
-              color: activeView === 'updates' ? '#0075C4' : '#6b7280',
-              fontFamily: 'inherit', touchAction: 'manipulation', marginBottom: -2,
-            }}
-          >
-            עדכונים אוטומטיים
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={() => setActiveView('calculator')}
-          style={{
-            padding: '12px 20px', fontSize: 14, fontWeight: 600,
-            border: 'none', background: 'none', cursor: 'pointer',
-            borderBottom: activeView === 'calculator' ? '2px solid #0075C4' : '2px solid transparent',
-            color: activeView === 'calculator' ? '#0075C4' : '#6b7280',
-            fontFamily: 'inherit', touchAction: 'manipulation', marginBottom: -2,
-          }}
-        >
-          מחשבונים
-        </button>
+        ))}
       </div>
 
       {activeView === 'messages' ? (
