@@ -81,6 +81,10 @@
 .calTopic { font-size: 11px; color: #4b5563; line-height: 1.4; margin-bottom: 5px; }
 .calPaper { font-size: 10px; color: #0075C4; font-weight: 600; }
 .calPaper.empty { color: #cbd5e1; }
+.calItemClickable { cursor: pointer; transition: background 0.12s; }
+.calItemClickable:hover { background: #e6f1fb; }
+.calPaperBtn { font-size: 10px; color: #0075C4; font-weight: 600; background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; }
+.calPaperBtn:hover { text-decoration: underline; }
 .calEmpty { font-size: 11px; color: #cbd5e1; text-align: center; padding: 16px 0; font-style: italic; }
 
 .introContinue { text-align: center; padding: 40px 0 20px; }

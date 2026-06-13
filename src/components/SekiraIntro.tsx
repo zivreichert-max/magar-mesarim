@@ -1,13 +1,46 @@
 'use client';
+import { useEffect, useRef } from 'react';
 import { SEKIRA_WEEK, SEKIRA_PARLIAMENTARY, SEKIRA_MEDIA } from '@/data/sekira';
+import { paperForEvent } from './SekiraView';
+import { Paper } from '@/data/papers';
 import styles from './Sekira.module.css';
 
 // First-entry onboarding overlay. Self-contained: sits above the app after the
-// password gate; "כניסה"/"דלג" calls onEnter() which removes it. Paper links
-// here are visual only — linking lives in the in-app סקירה tab.
-export default function SekiraIntro({ onEnter }: { onEnter: () => void }) {
+// password gate. "כניסה"/"דלג" calls onEnter(); clicking a paper link enters the
+// app and opens that paper via onOpenPaper.
+export default function SekiraIntro({ onEnter, onOpenPaper }: {
+  onEnter: () => void;
+  onOpenPaper: (p: Paper) => void;
+}) {
+  const introRef = useRef<HTMLDivElement>(null);
+
+  // Arrow keys / PageUp-Down move between slides (in addition to scroll-snap).
+  // RTL: forward = Down/Left, back = Up/Right.
+  useEffect(() => {
+    const NEXT = ['ArrowDown', 'ArrowLeft', 'PageDown'];
+    const PREV = ['ArrowUp', 'ArrowRight', 'PageUp'];
+    function onKey(e: KeyboardEvent) {
+      const el = introRef.current;
+      if (!el) return;
+      if (![...NEXT, ...PREV].includes(e.key)) return;
+      e.preventDefault();
+      const h = el.clientHeight;
+      const total = el.querySelectorAll('section').length;
+      const cur = Math.round(el.scrollTop / h);
+      const target = NEXT.includes(e.key) ? Math.min(cur + 1, total - 1) : Math.max(cur - 1, 0);
+      el.scrollTo({ top: target * h, behavior: 'smooth' });
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  function goToSection(i: number) {
+    const el = introRef.current;
+    if (el) el.scrollTo({ top: i * el.clientHeight, behavior: 'smooth' });
+  }
+
   return (
-    <div className={styles.intro}>
+    <div className={styles.intro} ref={introRef}>
       <button type="button" className={styles.btnSkip} onClick={onEnter}>דלג ←</button>
 
       {/* Hero */}
@@ -16,7 +49,9 @@ export default function SekiraIntro({ onEnter }: { onEnter: () => void }) {
         <h1 className={styles.heroH1}>סקירה שבועית</h1>
         <div className={styles.heroSub}>בחירות 2026 · בונים מחדש</div>
         <div className={styles.heroWeek}>{SEKIRA_WEEK}</div>
-        <div className={styles.scrollHint}><span>גלול למטה</span><span style={{ fontSize: 18 }}>↓</span></div>
+        <div className={styles.scrollHint} onClick={() => goToSection(1)} style={{ cursor: 'pointer' }}>
+          <span>גלול או הקש חיצים</span><span style={{ fontSize: 18 }}>↓</span>
+        </div>
       </section>
 
       {/* Parliamentary — calendar grid */}
@@ -26,7 +61,7 @@ export default function SekiraIntro({ onEnter }: { onEnter: () => void }) {
             <span className={styles.arenaTag}>חלק א&apos;</span>
             <div className={styles.arenaTitle}>הזירה הפרלמנטרית</div>
             <div className={styles.arenaDesc} style={{ margin: '0 auto' }}>
-              מה צפוי השבוע בוועדות הכנסת. בתוך האתר, לחיצה על כל נושא מובילה לנייר העמדה שלנו.
+              מה צפוי השבוע בוועדות הכנסת. לחיצה על נושא עם נייר עמדה מובילה לנייר שלנו.
             </div>
           </div>
           <div className={styles.calGrid}>
@@ -37,13 +72,21 @@ export default function SekiraIntro({ onEnter }: { onEnter: () => void }) {
                   {d.events.length === 0 ? (
                     <div className={styles.calEmpty}>—</div>
                   ) : d.events.map((ev, ei) => (
-                    <div key={ei} className={styles.calItem}>
+                    <div
+                      key={ei}
+                      className={`${styles.calItem} ${ev.hasPaper ? styles.calItemClickable : ''}`}
+                      onClick={ev.hasPaper ? () => onOpenPaper(paperForEvent(ev)) : undefined}
+                    >
                       <div className={styles.calTime}>{ev.time || '—'}</div>
                       <div className={styles.calCommittee}>{ev.committee}</div>
                       <div className={styles.calTopic}>{ev.topic}</div>
-                      <div className={`${styles.calPaper} ${ev.hasPaper ? '' : styles.empty}`}>
-                        {ev.hasPaper ? 'נייר עמדה ↗' : 'טרם הוכן'}
-                      </div>
+                      {ev.hasPaper ? (
+                        <button type="button" className={styles.calPaperBtn} onClick={() => onOpenPaper(paperForEvent(ev))}>
+                          נייר עמדה ↗
+                        </button>
+                      ) : (
+                        <div className={`${styles.calPaper} ${styles.empty}`}>טרם הוכן</div>
+                      )}
                     </div>
                   ))}
                 </div>

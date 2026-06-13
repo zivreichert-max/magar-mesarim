@@ -89,6 +89,14 @@ export default function Home() {
     setActiveView('papers');
   }
 
+  // Same, but from the intro overlay — also dismiss the intro into the app
+  function openPaperFromIntro(p: Paper) {
+    markIntroSeen();
+    setIntroDone(true);
+    openPaper(p);
+    window.scrollTo(0, 0);
+  }
+
   // When client role becomes ready, fetch allowed message IDs
   useEffect(() => {
     if (appState === 'ready' && role === 'client' && activeClient) {
@@ -149,7 +157,7 @@ export default function Home() {
   if (appState === 'name') return <NamePrompt onName={handleName} />;
 
   // First-entry onboarding overlay — sits above the app; "כניסה"/"דלג" reveals it
-  if (!introDone) return <SekiraIntro onEnter={enterFromIntro} />;
+  if (!introDone) return <SekiraIntro onEnter={enterFromIntro} onOpenPaper={openPaperFromIntro} />;
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
