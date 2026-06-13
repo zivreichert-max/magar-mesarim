@@ -1,0 +1,106 @@
+/* ===== Shared sekira styles — ported from the approved demos ===== */
+/* sharp-grid (tab parliamentary) = sekira-sharp-grid.html */
+/* intro + cal-grid + topic blocks = sekira-demo-calendar.html */
+
+.wrap { direction: rtl; font-family: 'Heebo', sans-serif; }
+
+.heading { text-align: center; margin-bottom: 6px; }
+.heading h1 { font-size: 24px; font-weight: 900; color: #0c447c; }
+.headingSub { font-size: 13px; color: #6b7280; margin-top: 4px; margin-bottom: 20px; }
+
+.sectionIntro { font-size: 13px; color: #6b7280; margin-bottom: 18px; line-height: 1.6; max-width: 640px; }
+
+/* sub-tabs (tab view) */
+.subTabs { display: flex; gap: 8px; margin-bottom: 22px; max-width: 520px; }
+.subTab { flex: 1; padding: 11px; font-size: 14px; font-weight: 700; border: 1px solid #e5e7eb;
+  background: #fff; border-radius: 8px; cursor: pointer; font-family: inherit; color: #6b7280; transition: all 0.15s; }
+.subTab.active { background: #0075C4; color: #fff; border-color: #0075C4; }
+
+/* ====== SHARP GRID (tab parliamentary, NIF-style) ====== */
+.sharpGrid {
+  background: #1f2937; padding: 10px; border-radius: 12px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+}
+.sharpCol { background: #fff; border-radius: 8px; padding: 18px 16px; min-height: 220px; }
+.sharpFiller { background: transparent; }
+.sharpDay { text-align: center; border-bottom: 2px solid #0075C4; padding-bottom: 10px; margin-bottom: 14px; }
+.sharpDayName { font-size: 17px; font-weight: 900; color: #111827; }
+.sharpDayDate { font-size: 12px; color: #6b7280; margin-top: 2px; }
+.sharpSub { font-size: 12px; font-weight: 700; color: #0075C4; margin-bottom: 12px; }
+.sharpItem { margin-bottom: 16px; }
+.sharpItemHead { font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 3px; }
+.sharpItemHead .time { color: #0075C4; }
+.sharpItemTopic { font-size: 12px; line-height: 1.5; color: #4b5563; margin-bottom: 4px; }
+.sharpPaper {
+  display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600;
+  color: #0075C4; text-decoration: none; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit;
+}
+.sharpPaper:hover { text-decoration: underline; }
+.sharpPaper.empty { color: #94a3b8; cursor: default; }
+.sharpEmpty { font-size: 12px; color: #cbd5e1; text-align: center; padding: 30px 0; font-style: italic; }
+
+/* ====== TOPIC BLOCKS (media, both views) ====== */
+.topicBlock {
+  background: #fff; border: 0.5px solid #e5e7eb; border-right: 3px solid #2077BB;
+  border-radius: 6px; padding: 14px 16px; margin-bottom: 10px;
+}
+.topicName { font-size: 14px; font-weight: 700; color: #2077BB; margin-bottom: 8px; }
+.topicPoint { font-size: 13px; line-height: 1.6; color: #374151; padding-right: 14px; position: relative; margin-bottom: 5px; }
+.topicPoint::before { content: '•'; position: absolute; right: 0; color: #2077BB; }
+.topicEmpty { font-size: 12px; color: #cbd5e1; font-style: italic; }
+
+/* ============ INTRO SEQUENCE (overlay) ============ */
+.intro { position: fixed; inset: 0; z-index: 1000; background: #fff; overflow-y: auto; scroll-snap-type: y mandatory; }
+.introSection { min-height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column;
+  justify-content: center; padding: 40px 24px; position: relative; }
+.introHero { background: linear-gradient(135deg, #0c447c 0%, #0075C4 100%); color: #fff; text-align: center; align-items: center; }
+.logoBox { width: 64px; height: 64px; border: 2.5px solid #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 900; line-height: 1.1; text-align: center; margin-bottom: 28px; animation: fadeUp 0.8s ease both; }
+.heroH1 { font-size: 44px; font-weight: 900; margin-bottom: 12px; animation: fadeUp 0.8s ease 0.15s both; }
+.heroSub { font-size: 17px; opacity: 0.9; font-weight: 300; animation: fadeUp 0.8s ease 0.3s both; }
+.heroWeek { font-size: 14px; opacity: 0.75; margin-top: 6px; animation: fadeUp 0.8s ease 0.4s both; }
+.scrollHint { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); font-size: 12px; opacity: 0.7;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; animation: bounce 2s infinite; }
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(8px);} }
+
+.arenaTag { display: inline-block; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: #0075C4;
+  border: 1.5px solid #0075C4; border-radius: 20px; padding: 5px 18px; margin-bottom: 20px; }
+.arenaTitle { font-size: 32px; font-weight: 900; margin-bottom: 8px; color: #111827; }
+.arenaDesc { font-size: 15px; color: #6b7280; margin-bottom: 28px; max-width: 520px; }
+.introContent { max-width: 1000px; margin: 0 auto; width: 100%; }
+.introContent.narrow { max-width: 640px; }
+
+/* ===== CALENDAR GRID (intro parliamentary) ===== */
+.calGrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.calCol { background: #fff; border: 0.5px solid #e5e7eb; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+.calHead { background: #0075C4; color: #fff; font-size: 13px; font-weight: 700; text-align: center; padding: 8px; }
+.calBody { padding: 8px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.calItem { background: #f9fafb; border-right: 3px solid #0075C4; border-radius: 4px; padding: 8px 9px; }
+.calTime { font-size: 11px; font-weight: 700; color: #0075C4; margin-bottom: 3px; }
+.calCommittee { font-size: 11px; font-weight: 700; color: #111827; margin-bottom: 2px; }
+.calTopic { font-size: 11px; color: #4b5563; line-height: 1.4; margin-bottom: 5px; }
+.calPaper { font-size: 10px; color: #0075C4; font-weight: 600; }
+.calPaper.empty { color: #cbd5e1; }
+.calEmpty { font-size: 11px; color: #cbd5e1; text-align: center; padding: 16px 0; font-style: italic; }
+
+.introContinue { text-align: center; padding: 40px 0 20px; }
+.btnContinue { background: #0075C4; color: #fff; border: none; padding: 14px 40px; font-size: 15px; font-weight: 700;
+  border-radius: 8px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+.btnContinue:hover { background: #0c447c; }
+.btnSkip { position: fixed; top: 20px; left: 20px; z-index: 1001; background: rgba(255,255,255,0.15); color: #fff;
+  border: 1px solid rgba(255,255,255,0.3); padding: 7px 16px; font-size: 12px; border-radius: 20px; cursor: pointer;
+  font-family: inherit; backdrop-filter: blur(4px); }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== MOBILE ===== */
+@media (max-width: 760px) {
+  .sharpGrid { grid-template-columns: 1fr; }
+  .sharpFiller { display: none; }
+  .calGrid { grid-template-columns: 1fr; }
+  .calCol { flex-direction: row; }
+  .calHead { min-width: 70px; display: flex; align-items: center; justify-content: center; }
+  .calBody { flex: 1; }
+  .arenaTitle { font-size: 26px; }
+  .heroH1 { font-size: 34px; }
+}

@@ -7,9 +7,12 @@ import { getSharesForPaper, addPaperShare, removePaperShare, getSharedPaperIds }
 interface PapersViewProps {
   role: string;
   clientId?: string;
+  // When set (e.g. from the סקירה tab), open this paper's panel immediately.
+  externalPaper?: Paper | null;
+  onExternalConsumed?: () => void;
 }
 
-export default function PapersView({ role, clientId }: PapersViewProps) {
+export default function PapersView({ role, clientId, externalPaper, onExternalConsumed }: PapersViewProps) {
   const [selected, setSelected] = useState<Paper | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [sharedWith, setSharedWith] = useState<string[]>([]);
@@ -32,6 +35,15 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
       getSharedPaperIds(clientId).then(ids => setAllowedPaperIds(ids));
     }
   }, [role, clientId]);
+
+  // Open a paper requested from another tab (e.g. סקירה → נייר עמדה)
+  useEffect(() => {
+    if (externalPaper) {
+      openPanel(externalPaper);
+      onExternalConsumed?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalPaper]);
 
   // When a paper is selected (full role): load its sharing state from Supabase
   useEffect(() => {
@@ -84,9 +96,11 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
           <div style={{ background: '#0075C4', padding: '20px', flexShrink: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '2px 8px', borderRadius: 2, display: 'inline-block', marginBottom: 8 }}>
-                  {selected.tag}
-                </div>
+                {selected.tag && (
+                  <div style={{ fontSize: 9, fontWeight: 700, background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '2px 8px', borderRadius: 2, display: 'inline-block', marginBottom: 8 }}>
+                    {selected.tag}
+                  </div>
+                )}
                 <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', lineHeight: 1.4 }}>
                   {selected.title}
                 </div>
@@ -118,14 +132,23 @@ export default function PapersView({ role, clientId }: PapersViewProps) {
               </div>
             ))}
 
-            {/* Bottom line */}
-            <div style={{ background: '#e6f1fb', border: '0.5px solid #93c5fd', borderRadius: 4, padding: '14px 16px' }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#0c447c', letterSpacing: '0.08em', marginBottom: 6 }}>שורה תחתונה</div>
-              <div style={{ fontSize: 13, lineHeight: 1.7, color: '#1e40af', fontWeight: 500 }}>{selected.bottomLine}</div>
-            </div>
+            {/* Empty placeholder — paper not written yet (opened from סקירה) */}
+            {selected.sections.length === 0 && !selected.bottomLine && (
+              <div style={{ fontSize: 13, lineHeight: 1.7, color: '#6b7280', background: '#f3f4f6', borderRadius: 4, padding: '16px 18px' }}>
+                טרם הוכן נייר עמדה מלא לנושא זה. הנושא מסומן לקראת כתיבה.
+              </div>
+            )}
 
-            {/* Share — full role only */}
-            {role === 'full' && (
+            {/* Bottom line */}
+            {selected.bottomLine && (
+              <div style={{ background: '#e6f1fb', border: '0.5px solid #93c5fd', borderRadius: 4, padding: '14px 16px' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#0c447c', letterSpacing: '0.08em', marginBottom: 6 }}>שורה תחתונה</div>
+                <div style={{ fontSize: 13, lineHeight: 1.7, color: '#1e40af', fontWeight: 500 }}>{selected.bottomLine}</div>
+              </div>
+            )}
+
+            {/* Share — full role only, real papers only (not empty placeholders) */}
+            {role === 'full' && selected.id > 0 && (
               <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 10 }}>לשתף עם:</div>
                 {shareError && (

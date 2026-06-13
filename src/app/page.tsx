@@ -16,11 +16,15 @@ import ClientRequestsView from '@/components/ClientRequestsView';
 import PapersView from '@/components/PapersView';
 import KnessetUpdates from '@/components/KnessetUpdates';
 import PriceCalc from '@/components/PriceCalc';
+import SekiraView from '@/components/SekiraView';
+import SekiraIntro from '@/components/SekiraIntro';
+import { Paper } from '@/data/papers';
 import { getSharedMessageIds } from '@/lib/supabase';
 
 type AppState = 'password' | 'name' | 'ready';
 
 const VIEW_TITLES: Record<string, string> = {
+  sekira:     'סקירה',
   messages:   'מסרים',
   schedule:   'לו"ז שבועי',
   requests:   'בקשות',
@@ -29,10 +33,11 @@ const VIEW_TITLES: Record<string, string> = {
   calculator: 'מחשבון התייקרויות',
 };
 
-type ViewId = 'messages' | 'schedule' | 'requests' | 'papers' | 'updates' | 'calculator';
+type ViewId = 'sekira' | 'messages' | 'schedule' | 'requests' | 'papers' | 'updates' | 'calculator';
 
-// Order matters: first = rightmost tab (RTL)
+// Order matters: first = rightmost tab (RTL). סקירה is the natural entry point.
 const TABS: { id: ViewId; label: string; fullOnly?: boolean }[] = [
+  { id: 'sekira',     label: 'סקירה' },
   { id: 'schedule',   label: 'לו"ז' },
   { id: 'updates',    label: 'עדכונים אוטומטיים', fullOnly: true },
   { id: 'papers',     label: 'ניירות עמדה' },
@@ -40,6 +45,16 @@ const TABS: { id: ViewId; label: string; fullOnly?: boolean }[] = [
   { id: 'requests',   label: 'בקשות', fullOnly: true },
   { id: 'calculator', label: 'מחשבונים' },
 ];
+
+// First-entry intro flag — NOT localStorage (unsupported here); cookie with a
+// graceful fallback (if cookies are blocked, the intro simply shows each entry).
+const INTRO_COOKIE = 'sekira_intro_seen';
+function hasSeenIntro(): boolean {
+  try { return document.cookie.includes(`${INTRO_COOKIE}=1`); } catch { return false; }
+}
+function markIntroSeen() {
+  try { document.cookie = `${INTRO_COOKIE}=1; path=/; max-age=${60 * 60 * 24 * 30}`; } catch { /* ignore */ }
+}
 
 export default function Home() {
   const [appState, setAppState] = useState<AppState>('password');
@@ -50,14 +65,29 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<Topic | 'הכל'>('הכל');
   const [search, setSearch] = useState('');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [activeView, setActiveView] = useState<ViewId>('messages');
+  const [activeView, setActiveView] = useState<ViewId>('sekira');
+  const [introDone, setIntroDone] = useState(false);
+  const [paperToOpen, setPaperToOpen] = useState<Paper | null>(null);
 
-  // On mount, check if name is already stored
+  // On mount, check if name is already stored + whether intro was already seen
   useEffect(() => {
     Promise.resolve(localStorage.getItem('author_name')).then(stored => {
       if (stored) setAuthorName(stored);
     });
+    if (hasSeenIntro()) setIntroDone(true);
   }, []);
+
+  function enterFromIntro() {
+    markIntroSeen();
+    setIntroDone(true);
+    window.scrollTo(0, 0);
+  }
+
+  // Open a position paper from the סקירה tab → switch to ניירות עמדה and open it
+  function openPaper(p: Paper) {
+    setPaperToOpen(p);
+    setActiveView('papers');
+  }
 
   // When client role becomes ready, fetch allowed message IDs
   useEffect(() => {
@@ -118,6 +148,9 @@ export default function Home() {
   if (appState === 'password') return <PasswordGate onUnlock={handleUnlock} />;
   if (appState === 'name') return <NamePrompt onName={handleName} />;
 
+  // First-entry onboarding overlay — sits above the app; "כניסה"/"דלג" reveals it
+  if (!introDone) return <SekiraIntro onEnter={enterFromIntro} />;
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       <Header count={filtered.length} total={role === 'client' ? (allowedMessageIds?.length ?? 0) : MESSAGES.length} role={role} activeClient={activeClient} viewTitle={VIEW_TITLES[activeView]} />
@@ -145,6 +178,8 @@ export default function Home() {
           </button>
         ))}
       </div>
+
+      {activeView === 'sekira' && <SekiraView onOpenPaper={openPaper} />}
 
       {activeView === 'messages' ? (
         <>
@@ -187,7 +222,14 @@ export default function Home() {
       ) : null}
 
       {activeView === 'requests' && role === 'full' && <ClientRequestsView />}
-      {activeView === 'papers' && <PapersView role={role} clientId={activeClient?.id} />}
+      {activeView === 'papers' && (
+        <PapersView
+          role={role}
+          clientId={activeClient?.id}
+          externalPaper={paperToOpen}
+          onExternalConsumed={() => setPaperToOpen(null)}
+        />
+      )}
       {activeView === 'updates' && role === 'full' && <KnessetUpdates />}
       {activeView === 'calculator' && <PriceCalc />}
 
