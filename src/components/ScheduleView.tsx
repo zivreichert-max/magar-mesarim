@@ -5,6 +5,15 @@ import { TIMELINE, TimelineEvent } from '@/data/timeline';
 import { getScheduleCancellations, ScheduleCancellation, getManualScheduleEvents, ManualScheduleEvent } from '@/lib/supabase';
 import styles from './ScheduleTable.module.css';
 
+// Row accent within the white/blue/black palette (presentation only — the
+// distinct per-category colors in schedule.ts data are kept, just not shown here)
+const ACCENT: Record<string, string> = {
+  bgz: '#0075C4', events: '#1e3a7b', gov: '#0c447c', ministers: '#2077BB', plenary: '#0075C4',
+};
+function accentFor(category: string): string {
+  return ACCENT[category] ?? '#0075C4';
+}
+
 // Strip the leading institution/committee name from a title so the table's
 // "topic" column shows just the subject (the institution is its own column)
 function topicOf(e: ScheduleEvent): string {
@@ -218,9 +227,8 @@ export default function ScheduleView() {
         <>
           {/* Masthead */}
           <div className={styles.masthead}>
-            <div className={styles.kicker}>זמן בחירות · בונים מחדש</div>
             <h1 className={styles.title}>{WEEK_TITLE}</h1>
-            <div className={styles.sub}>סדר היום השבועי — כנסת · ממשלה · בג&quot;ץ</div>
+            <div className={styles.sub}>סדר היום השבועי · בונים מחדש</div>
           </div>
 
           {/* Filters: category pills + day selector */}
@@ -230,10 +238,10 @@ export default function ScheduleView() {
                 <button key={cat.id} type="button" onClick={() => setActiveCat(cat.id)}
                   style={{
                     padding: '4px 12px', fontSize: 12, fontWeight: 600,
-                    border: `1px solid ${cat.color}`,
-                    background: activeCat === cat.id ? cat.color : 'transparent',
-                    color: activeCat === cat.id ? '#fff' : cat.color,
-                    borderRadius: 2, cursor: 'pointer', fontFamily: 'inherit', touchAction: 'manipulation',
+                    border: '1px solid #0075C4',
+                    background: activeCat === cat.id ? '#0075C4' : 'transparent',
+                    color: activeCat === cat.id ? '#fff' : '#0075C4',
+                    borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit', touchAction: 'manipulation',
                   }}>{cat.label}</button>
               ))}
             </div>
@@ -294,7 +302,7 @@ export default function ScheduleView() {
                       ].filter(Boolean).join(' ');
                       return (
                         <div key={gi} className={rowCls}
-                          style={{ ['--c' as string]: isCancelled ? '#dc2626' : ev.color } as React.CSSProperties}
+                          style={{ ['--c' as string]: isCancelled ? '#dc2626' : accentFor(ev.category) } as React.CSSProperties}
                           onClick={() => hasDetail && setOpenEvent(isOpen ? null : gi)}>
                           <div className={`${styles.cTime} ${ev.time ? '' : styles.cTimeNone}`}>{ev.time || '—'}</div>
                           <div className={styles.cInst}>
