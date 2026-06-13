@@ -3,6 +3,16 @@ import { useState, useEffect } from 'react';
 import { SCHEDULE, WEEK_TITLE, ScheduleEvent } from '@/data/schedule';
 import { TIMELINE, TimelineEvent } from '@/data/timeline';
 import { getScheduleCancellations, ScheduleCancellation, getManualScheduleEvents, ManualScheduleEvent } from '@/lib/supabase';
+import styles from './ScheduleTable.module.css';
+
+// Strip the leading institution/committee name from a title so the table's
+// "topic" column shows just the subject (the institution is its own column)
+function topicOf(e: ScheduleEvent): string {
+  const m = e.title.match(/^([^:–]{2,70}?)\s*[:–]\s+([\s\S]+)$/) ||
+            e.title.match(/^([^-]{2,70}?)\s+-\s+([\s\S]+)$/);
+  if (m && /ועד|וועד|בג"ץ|בג״ץ|מליא/.test(m[1])) return m[2].trim();
+  return e.title;
+}
 
 const STATIC_CATS = [
   { id: 'all',       label: 'הכל',            color: '#6b7280' },
@@ -28,13 +38,30 @@ const DAY_OFFSET: Record<string, number> = {
   'יום ראשון': 0, 'יום שני': 1, 'יום שלישי': 2, 'יום רביעי': 3, 'יום חמישי': 4,
 };
 
-function buildGcalUrl(ev: ScheduleEvent): string {
-  // WEEK_TITLE format: 'לו"ז 07-11.06' → startDay=07, month=06
-  let dateStr = '';
-  const m = WEEK_TITLE.match(/(\d{1,2})-\d{1,2}\.(\d{2})(?:\.(\d{4}))?/);
+// First (Sunday) date of the week, parsed from WEEK_TITLE.
+// Supports the current "14.06-19.06" / "14.06.2026-19.06" format and the
+// legacy "07-11.06" format. Returns null if the title is unparseable.
+function weekSunday(): Date | null {
+  // new: dd.mm[.yyyy] before the dash
+  let m = WEEK_TITLE.match(/(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?\s*[-–]/);
   if (m) {
-    const year = m[3] ?? String(new Date().getFullYear());
-    const base = new Date(`${year}-${m[2]}-${m[1].padStart(2, '0')}`);
+    const year = m[3] ? parseInt(m[3]) : new Date().getFullYear();
+    return new Date(year, parseInt(m[2]) - 1, parseInt(m[1]));
+  }
+  // legacy: dd-dd.mm[.yyyy]
+  m = WEEK_TITLE.match(/(\d{1,2})-\d{1,2}\.(\d{1,2})(?:\.(\d{4}))?/);
+  if (m) {
+    const year = m[3] ? parseInt(m[3]) : new Date().getFullYear();
+    return new Date(year, parseInt(m[2]) - 1, parseInt(m[1]));
+  }
+  return null;
+}
+
+function buildGcalUrl(ev: ScheduleEvent): string {
+  let dateStr = '';
+  const sunday = weekSunday();
+  if (sunday) {
+    const base = new Date(sunday);
     base.setDate(base.getDate() + (DAY_OFFSET[ev.day] ?? 0));
     dateStr = `${base.getFullYear()}${String(base.getMonth() + 1).padStart(2, '0')}${String(base.getDate()).padStart(2, '0')}`;
   }
@@ -117,10 +144,8 @@ export default function ScheduleView() {
   const [openTl, setOpenTl] = useState<number | null>(null);
   const [cancellations, setCancellations] = useState<ScheduleCancellation[]>([]);
   const [manualEvents, setManualEvents] = useState<ManualScheduleEvent[]>([]);
-  const [selectedWeekDay, setSelectedWeekDay] = useState<string>(() => {
-    const todayName = DAYS[new Date().getDay()];
-    return todayName ?? DAYS[0];
-  });
+  // 'all' shows every day stacked (default); a day name filters to that day only
+  const [selectedWeekDay, setSelectedWeekDay] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<number>(() => {
     const m = new Date().getMonth() + 1;
     return Math.max(6, Math.min(10, m));
@@ -138,27 +163,27 @@ export default function ScheduleView() {
   const ALL_EVENTS = [...SCHEDULE, ...manualAsSchedule];
 
   const filtered = ALL_EVENTS.filter(e => activeCat === 'all' || e.category === activeCat);
-  const byDay = DAYS.map(day => ({
-    day,
-    events: filtered.filter(e => e.day.startsWith(day)),
-  })).filter(d => d.events.length > 0);
 
-  // Dates per day derived from WEEK_TITLE (e.g. 'לו"ז 07-11.06')
+  // Days (ראשון–חמישי) that have at least one event under the current category filter
+  const daysWithEvents = DAYS.filter(day => filtered.some(e => e.day.startsWith(day)));
+
+  // Which day-sections to render: 'all' → every populated day; else just the picked one
+  const visibleDays = selectedWeekDay === 'all'
+    ? daysWithEvents
+    : daysWithEvents.filter(d => d === selectedWeekDay);
+
+  // Dates per day derived from WEEK_TITLE (supports "14.06-19.06" and legacy "07-11.06")
   const weekDates: Record<string, string> = (() => {
     const result: Record<string, string> = {};
-    const m = WEEK_TITLE.match(/(\d{1,2})-\d{1,2}\.(\d{2})(?:\.(\d{4}))?/);
-    if (!m) return result;
-    const year = parseInt(m[3] ?? String(new Date().getFullYear()));
-    const month = parseInt(m[2]) - 1;
-    const startDay = parseInt(m[1]);
+    const sunday = weekSunday();
+    if (!sunday) return result;
     DAYS.forEach(day => {
-      const d = new Date(year, month, startDay + (DAY_OFFSET[day] ?? 0));
+      const d = new Date(sunday);
+      d.setDate(sunday.getDate() + (DAY_OFFSET[day] ?? 0));
       result[day] = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
     });
     return result;
   })();
-
-  const filteredForDay = filtered.filter(e => e.day.startsWith(selectedWeekDay));
 
   const tlFiltered = SORTED_TIMELINE.filter(e =>
     inMonthTab(e, selectedMonth) && (tlCat === 'הכל' || e.category === tlCat)
@@ -191,9 +216,15 @@ export default function ScheduleView() {
 
       {subView === 'weekly' ? (
         <>
-          {/* Week title + category filter */}
-          <div style={{ background: '#fff', borderBottom: '0.5px solid #e5e7eb', padding: '10px 24px' }}>
-            <div style={{ fontSize: 12, color: '#0075C4', fontWeight: 600, marginBottom: 8 }}>{WEEK_TITLE}</div>
+          {/* Masthead */}
+          <div className={styles.masthead}>
+            <div className={styles.kicker}>זמן בחירות · בונים מחדש</div>
+            <h1 className={styles.title}>{WEEK_TITLE}</h1>
+            <div className={styles.sub}>סדר היום השבועי — כנסת · ממשלה · בג&quot;ץ</div>
+          </div>
+
+          {/* Filters: category pills + day selector */}
+          <div style={{ background: '#fff', borderBottom: '0.5px solid #e5e7eb', padding: '12px 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {CATS.map(cat => (
                 <button key={cat.id} type="button" onClick={() => setActiveCat(cat.id)}
@@ -206,89 +237,110 @@ export default function ScheduleView() {
                   }}>{cat.label}</button>
               ))}
             </div>
-          </div>
-          {/* Day tab bar */}
-          <div style={{ display: 'flex', background: '#f0f4f9', borderBottom: '2px solid #dde3ed', overflowX: 'auto', direction: 'rtl' }}>
-            {byDay.map(({ day }) => {
-              const isSel = selectedWeekDay === day;
-              return (
-                <button key={day} type="button" onClick={() => setSelectedWeekDay(day)}
-                  style={{
-                    padding: '10px 16px', minWidth: 76, textAlign: 'center',
-                    background: isSel ? '#1e3a7b' : 'transparent',
-                    color: isSel ? '#fff' : '#1e3a7b',
-                    border: 'none', borderLeft: '1px solid #dde3ed',
-                    cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
-                  }}>
-                  <div style={{ fontSize: 13, fontWeight: 700 }}>{day.replace('יום ', '')}</div>
-                  <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>{weekDates[day] ?? ''}</div>
-                </button>
-              );
-            })}
+            {/* Day filter — "הכל" (default) shows every day stacked */}
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {['all', ...daysWithEvents].map(day => {
+                const isSel = selectedWeekDay === day;
+                const label = day === 'all' ? 'כל השבוע' : day.replace('יום ', '');
+                return (
+                  <button key={day} type="button" onClick={() => setSelectedWeekDay(day)}
+                    style={{
+                      padding: '5px 13px', fontSize: 12, fontWeight: 700, borderRadius: 4,
+                      border: `1.5px solid ${isSel ? '#1e3a7b' : '#d1d5db'}`,
+                      background: isSel ? '#1e3a7b' : '#fff',
+                      color: isSel ? '#fff' : '#374151',
+                      cursor: 'pointer', fontFamily: 'inherit', touchAction: 'manipulation',
+                    }}>
+                    {label}
+                    {day !== 'all' && weekDates[day] && (
+                      <span style={{ fontWeight: 400, fontSize: 10, marginInlineStart: 5, opacity: 0.8, direction: 'ltr', display: 'inline-block' }}>{weekDates[day]}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <div style={{ padding: '16px 24px 80px' }}>
-            {filteredForDay.length === 0 && (
+          <div style={{ padding: '8px 24px 80px' }}>
+            {visibleDays.length === 0 && (
               <div style={{ textAlign: 'center', padding: 48, color: '#9ca3af' }}>אין אירועים בסינון זה</div>
             )}
-            {filteredForDay.map(ev => {
-                  const gi = ALL_EVENTS.indexOf(ev);
-                  const isOpen = openEvent === gi;
-                  const hasDetail = !!(ev.summary || ev.detail);
-                  const isCancelled = isCancelledBySchedule(ev, cancellations);
-                  return (
-                    <div key={gi}
-                      style={{ background: isCancelled ? '#fff5f5' : '#fff', border: `0.5px solid ${isCancelled ? '#fca5a5' : '#e5e7eb'}`, borderRight: `3px solid ${isCancelled ? '#dc2626' : ev.color}`, borderRadius: 4, marginBottom: 5, overflow: 'hidden', cursor: hasDetail ? 'pointer' : 'default', opacity: isCancelled ? 0.75 : 1 }}
-                      onClick={() => hasDetail && setOpenEvent(isOpen ? null : gi)}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px' }}>
-                        {ev.time && <span style={{ fontSize: 11, color: '#9ca3af', minWidth: 38, paddingTop: 2, flexShrink: 0 }}>{ev.time}</span>}
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                            <div style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 2, background: ev.color + '20', color: ev.color }}>
-                              {CATS.find(c => c.id === ev.category)?.label}
-                            </div>
-                            {isCancelled && (
-                              <div style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 2, background: '#fee2e2', color: '#dc2626' }}>
-                                בוטל
-                              </div>
-                            )}
-                          </div>
-                          <div style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.4, textDecoration: isCancelled ? 'line-through' : 'none', color: isCancelled ? '#9ca3af' : 'inherit' }}>{ev.title}</div>
-                        </div>
-                        {hasDetail && <span style={{ color: '#0075C4', fontSize: 16, transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>›</span>}
-                      </div>
-                      {isOpen && hasDetail && (
-                        <div className="animate-fade-up" style={{ borderTop: '0.5px solid #e5e7eb', padding: '10px 14px', background: '#fafbff' }}>
-                          {ev.summary && <div style={{ marginBottom: 8 }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: '#0075C4', marginBottom: 4, letterSpacing: '0.06em' }}>תקציר</div>
-                            <div style={{ fontSize: 13, lineHeight: 1.7, color: '#374151' }}>{ev.summary}</div>
-                          </div>}
-                          {ev.detail && <div>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: '#0075C4', marginBottom: 4, letterSpacing: '0.06em' }}>הרחבה</div>
-                            <div style={{ fontSize: 12, lineHeight: 1.75, color: '#555', whiteSpace: 'pre-wrap' }}>{ev.detail}</div>
-                          </div>}
-                          {ev.url && (
-                            <a href={ev.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-                              style={{ display: 'inline-block', marginTop: 8, fontSize: 12, color: '#0075C4' }}>
-                              לקישור המקור ›
-                            </a>
-                          )}
-                          <div style={{ borderTop: '0.5px solid #e5e7eb', paddingTop: 10, marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                            <span style={{ fontSize: 11, color: '#9ca3af' }}>משך משוער: 90 דקות</span>
-                            <a
-                              href={buildGcalUrl(ev)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={e => e.stopPropagation()}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: '#0075C4', color: '#fff', borderRadius: 4, fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: 'inherit' }}
-                            >
-                              📅 הוסף ליומן
-                            </a>
-                          </div>
-                        </div>
-                      )}
+            {visibleDays.map(day => {
+              const dayEvents = filtered.filter(e => e.day.startsWith(day));
+              return (
+                <section key={day} className={styles.day}>
+                  <div className={styles.dayhead}>
+                    <h2>{day}</h2>
+                    <span className={styles.dayDate}>{weekDates[day] ?? ''}</span>
+                    <span className={styles.dayCount}>{dayEvents.length} פריטים</span>
+                  </div>
+                  <div className={styles.tbl}>
+                    <div className={styles.thead}>
+                      <div>שעה</div><div>מוסד</div><div>נושא ותקציר</div><div />
                     </div>
-                  );
+                    {dayEvents.map(ev => {
+                      const gi = ALL_EVENTS.indexOf(ev);
+                      const isOpen = openEvent === gi;
+                      const hasDetail = !!(ev.summary || ev.detail);
+                      const isCancelled = isCancelledBySchedule(ev, cancellations);
+                      const instLabel = CATS.find(c => c.id === ev.category)?.label ?? ev.category;
+                      const topic = topicOf(ev);
+                      const urls = (ev.url ?? '').split('\n').map(s => s.trim()).filter(Boolean);
+                      const rowCls = [
+                        styles.row,
+                        isOpen ? styles.open : '',
+                        hasDetail ? '' : styles.noexp,
+                        isCancelled ? styles.cancelled : '',
+                      ].filter(Boolean).join(' ');
+                      return (
+                        <div key={gi} className={rowCls}
+                          style={{ ['--c' as string]: isCancelled ? '#dc2626' : ev.color } as React.CSSProperties}
+                          onClick={() => hasDetail && setOpenEvent(isOpen ? null : gi)}>
+                          <div className={`${styles.cTime} ${ev.time ? '' : styles.cTimeNone}`}>{ev.time || '—'}</div>
+                          <div className={styles.cInst}>
+                            <span className={styles.dot} />{instLabel}
+                            {isCancelled && <span className={styles.badge}>בוטל</span>}
+                          </div>
+                          <div className={styles.cTopic}>
+                            <div className={styles.tt}>{topic}</div>
+                            {ev.summary && <div className={styles.sm}>{ev.summary}</div>}
+                          </div>
+                          <div className={styles.cX}><span className={styles.chev}>›</span></div>
+
+                          {hasDetail && (
+                            <div className={styles.panel}><div><div className={styles.panelIn}>
+                              {ev.summary && <>
+                                <div className={styles.lbl}>תקציר</div>
+                                <p>{ev.summary}</p>
+                              </>}
+                              {ev.detail && <>
+                                <div className={styles.lbl}>הרחבה</div>
+                                <p>{ev.detail}</p>
+                              </>}
+                              {urls.length > 0 && <>
+                                <div className={styles.lbl}>מקורות</div>
+                                <div className={styles.links}>
+                                  {urls.map((u, k) => (
+                                    <a key={k} href={u} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>
+                                      ↗ {u.replace(/^https?:\/\//, '').split('/')[0]}
+                                    </a>
+                                  ))}
+                                </div>
+                              </>}
+                              <div className={styles.panelFoot}>
+                                <span>משך משוער: 90 דקות</span>
+                                <a className={styles.gcal} href={buildGcalUrl(ev)} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+                                  📅 הוסף ליומן
+                                </a>
+                              </div>
+                            </div></div></div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
             })}
           </div>
         </>
