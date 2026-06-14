@@ -123,6 +123,29 @@
   font-size: 12px; font-weight: 700; padding: 7px 14px; border-radius: 4px; text-decoration: none; font-family: inherit;
 }
 
+/* ===== Timeline (אירועים בולטים) table — reuses .panel/.chev/.cX/.open ===== */
+.tlTable { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; }
+.tlHead {
+  display: grid; grid-template-columns: 96px 132px 1fr 44px;
+  background: #f1f5f9; font-size: 10px; font-weight: 700; color: #6b7280; letter-spacing: 0.06em;
+}
+.tlHead > div { padding: 8px 12px; }
+.tlRow {
+  display: grid; grid-template-columns: 96px 132px 1fr 44px; align-items: start;
+  border-top: 1px solid #e5e7eb; position: relative; cursor: pointer; transition: background 0.12s;
+}
+.tlRow:first-of-type { border-top: none; }
+.tlRow::before { content: ''; position: absolute; inset-inline-start: 0; top: 0; bottom: 0; width: 3px; background: var(--c); }
+.tlRow:hover { background: #f8fafc; }
+.tlRow > div { padding: 11px 12px; }
+.tlDate { font-size: 12.5px; font-weight: 700; color: #0075C4; direction: ltr; text-align: right; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.tlCat { font-size: 11px; font-weight: 700; color: #1e3a7b; }
+.tlTitle { font-size: 13px; font-weight: 600; color: #111827; line-height: 1.4; }
+.tlSnippet {
+  font-size: 12px; color: #6b7280; line-height: 1.5; margin-top: 3px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
 @keyframes rowRise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 640px) {
@@ -133,4 +156,11 @@
   .row > .cTopic { grid-column: 1; }
   .row > .cX { grid-column: 2; grid-row: 1 / 4; }
   .panel { grid-column: 1 / -1; }
+
+  .tlHead { display: none; }
+  .tlRow { grid-template-columns: 1fr 40px; }
+  .tlRow > .tlDate { grid-column: 1; padding-bottom: 0; }
+  .tlRow > .tlCat { grid-column: 1; padding-top: 2px; padding-bottom: 0; }
+  .tlRow > .tlMain { grid-column: 1; }
+  .tlRow > .cX { grid-column: 2; grid-row: 1 / 4; }
 }

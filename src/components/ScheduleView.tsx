@@ -102,12 +102,6 @@ const TL_COLORS: Record<string, string> = {
 };
 function tlColor(cat: string) { return TL_COLORS[cat] ?? '#9ca3af'; }
 
-const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-function fmtDate(iso: string) {
-  const parts = iso.split('-');
-  return `${parseInt(parts[2])} ב${MONTHS[parseInt(parts[1])]}`;
-}
-
 const TL_CATS = ['הכל', ...Array.from(new Set(TIMELINE.map(e => e.category)))];
 const SORTED_TIMELINE = [...TIMELINE].sort((a, b) => a.dateStart.localeCompare(b.dateStart));
 
@@ -393,56 +387,49 @@ export default function ScheduleView() {
               );
             })}
           </div>
-          <div style={{ padding: '16px 24px 80px' }}>
-            {tlFiltered.length === 0 && (
+          <div style={{ padding: '12px 24px 80px' }}>
+            {tlFiltered.length === 0 ? (
               <div style={{ textAlign: 'center', padding: 48, color: '#9ca3af' }}>אין אירועים בסינון זה</div>
-            )}
-            {tlFiltered.map((ev, idx) => {
-              const isOpen = openTl === idx;
-              const hasDetail = !!(ev.detail);
-              const color = tlColor(ev.category);
-              const isEstimate = ev.importance === 'הערכה';
-              const daySpan = ev.dateEnd && ev.dateEnd !== ev.dateStart
-                ? Math.round((new Date(ev.dateEnd).getTime() - new Date(ev.dateStart).getTime()) / 86400000)
-                : 0;
-              const isWindow = daySpan > 20;
-              return (
-                <div key={idx}
-                  style={{ background: isWindow ? color + '08' : '#fff', border: isWindow ? `1px solid ${color}40` : '0.5px solid #e5e7eb', borderRight: `3px solid ${color}`, borderRadius: 4, marginBottom: 5, overflow: 'hidden', cursor: hasDetail ? 'pointer' : 'default' }}
-                  onClick={() => hasDetail && setOpenTl(isOpen ? null : idx)}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px' }}>
-                    <div style={{ flexShrink: 0, textAlign: 'center', minWidth: 52 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: isWindow ? color : '#111', lineHeight: 1.2 }}>{fmtDate(ev.dateStart)}</div>
-                      {ev.dateEnd && ev.dateEnd !== ev.dateStart && (
-                        <div style={{ fontSize: 10, color: isWindow ? color : '#9ca3af', fontWeight: isWindow ? 600 : 400 }}>–{fmtDate(ev.dateEnd)}</div>
-                      )}
-                      {isWindow && <div style={{ fontSize: 8, fontWeight: 700, color, letterSpacing: '0.05em', marginTop: 2 }}>חלון</div>}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                        <div style={{ display: 'inline-block', fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 2, background: color + '20', color }}>{ev.category}</div>
-                        {isEstimate && <div style={{ fontSize: 9, color: '#9ca3af', fontWeight: 500 }}>הערכה</div>}
+            ) : (
+              <div className={styles.tlTable}>
+                <div className={styles.tlHead}><div>תאריך</div><div>קטגוריה</div><div>אירוע</div><div /></div>
+                {tlFiltered.map((ev, idx) => {
+                  const isOpen = openTl === idx;
+                  const hasDetail = !!ev.detail;
+                  const compact = (iso: string) => { const p = iso.split('-'); return `${+p[2]}.${+p[1]}`; };
+                  const dateLabel = ev.dateEnd && ev.dateEnd !== ev.dateStart
+                    ? `${compact(ev.dateStart)}–${compact(ev.dateEnd)}` : compact(ev.dateStart);
+                  const isEstimate = ev.importance === 'הערכה';
+                  const rowCls = [styles.tlRow, isOpen ? styles.open : '', hasDetail ? '' : styles.noexp].filter(Boolean).join(' ');
+                  return (
+                    <div key={idx} className={rowCls}
+                      style={{ ['--c' as string]: '#0075C4' } as React.CSSProperties}
+                      onClick={() => hasDetail && setOpenTl(isOpen ? null : idx)}>
+                      <div className={styles.tlDate}>{dateLabel}</div>
+                      <div className={styles.tlCat}>
+                        {ev.category}{isEstimate && <span style={{ fontWeight: 400, color: '#9ca3af' }}> · הערכה</span>}
                       </div>
-                      <div style={{ fontSize: isWindow ? 14 : 13, fontWeight: isWindow ? 700 : 500, lineHeight: 1.4 }}>{ev.title}</div>
-                    </div>
-                    {hasDetail && <span style={{ color: '#0075C4', fontSize: 16, transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>›</span>}
-                    {ev.url && !hasDetail && (
-                      <a href={ev.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-                        style={{ fontSize: 11, color: '#0075C4', flexShrink: 0 }}>קישור</a>
-                    )}
-                  </div>
-                  {isOpen && hasDetail && (
-                    <div style={{ borderTop: '0.5px solid #e5e7eb', padding: '10px 14px', background: '#fafbff' }}>
-                      <div style={{ fontSize: 13, lineHeight: 1.7, color: '#374151' }}>{ev.detail}</div>
-                      {ev.url && (
-                        <a href={ev.url} target="_blank" rel="noreferrer"
-                          style={{ display: 'inline-block', marginTop: 8, fontSize: 12, color: '#0075C4' }}>לקישור המקור ›</a>
+                      <div className={styles.tlMain}>
+                        <div className={styles.tlTitle}>{ev.title}</div>
+                        {ev.detail && <div className={styles.tlSnippet}>{ev.detail}</div>}
+                      </div>
+                      <div className={styles.cX}><span className={styles.chev}>›</span></div>
+
+                      {hasDetail && (
+                        <div className={styles.panel}><div><div className={styles.panelIn}>
+                          <p>{ev.detail}</p>
+                          {ev.url && (
+                            <div className={styles.links}>
+                              <a href={ev.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>↗ מקור</a>
+                            </div>
+                          )}
+                        </div></div></div>
                       )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
         </>
       )}
