@@ -109,7 +109,10 @@ export default function SekiraIntro({ onEnter, onOpenPaper }: {
               {t.points.length === 0 ? (
                 <div className={styles.topicEmpty}>יתעדכן בהמשך</div>
               ) : t.points.map((p, j) => (
-                <div key={j} className={styles.topicPoint}>{p}</div>
+                <div key={j} className={styles.topicPoint}>
+                  {p.text}
+                  {p.url && <a href={p.url} target="_blank" rel="noreferrer" className={styles.topicLink}>צפו ↗</a>}
+                </div>
               ))}
             </div>
           ))}

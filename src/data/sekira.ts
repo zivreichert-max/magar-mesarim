@@ -105,19 +105,20 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
   },
 ];
 
-export interface SekiraTopic { topic: string; points: string[]; }
+export interface SekiraPoint { text: string; url?: string; }
+export interface SekiraTopic { topic: string; points: SekiraPoint[]; }
 
 export const SEKIRA_MEDIA: SekiraTopic[] = [
   {
     topic: `ביטחוני-מדיני`,
     points: [
-      `הסכם צפוי בין ארה"ב לאיראן — המו"מ בקו הסיום, וושינגטון מצפה לחתימה בימים הקרובים.`,
+      { text: `הסכם צפוי בין ארה"ב לאיראן — המו"מ בקו הסיום, וושינגטון מצפה לחתימה בימים הקרובים.` },
     ],
   },
   {
     topic: `פוליטי`,
     points: [
-      `הפריימריז בליכוד: נתניהו מקדם ועדה מסדרת במקום פריימריז — מהלך שמבקר המפלגה קבע שאינו חוקי.`,
+      { text: `הפריימריז בליכוד: נתניהו מקדם ועדה מסדרת במקום פריימריז — מהלך שמבקר המפלגה קבע שאינו חוקי.` },
     ],
   },
   {
@@ -129,8 +130,10 @@ export const SEKIRA_MEDIA: SekiraTopic[] = [
     points: [],
   },
   {
-    topic: `חינוך`,
-    points: [],
+    topic: `ניטור שיח בימין`,
+    points: [
+      { text: `קמפיין הימין "אם לא נתעורר — ככה זה ייגמר": בהלה מתרחיש שבו ממשלת בנט-איזנקוט סוגרת את ערוץ 14 ועוצרת על התבטאויות ברשת.`, url: `https://www.facebook.com/reel/1292864122883836/` },
+    ],
   },
   {
     topic: `עולמי`,
