@@ -105,33 +105,50 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
   },
 ];
 
-export interface SekiraHighlight { date: string; title: string; detail: string; }
+export interface SekiraHighlight { date: string; category: string; title: string; detail: string; url?: string; }
 
 export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
   {
-    date: `13–24.06`,
-    title: `שנה למבצע "עם כלביא" — מלחמת 12 הימים מול איראן`,
-    detail: `המלחמה הראשונה מול איראן (13.6–24.6.2025)`,
+    date: `13.06–24.06`,
+    category: `יום שנה`,
+    title: `שנה למבצע 'עם כלביא' / מלחמת 12 הימים מול איראן`,
+    detail: `המלחמה הראשונה מול איראן החלה 13.6.2025, הפסקת אש 24.6.2025`,
+    url: `https://he.wikipedia.org/wiki/מבצע_עם_כלביא`,
   },
   {
     date: `14.06`,
+    category: `גיאופוליטי`,
     title: `יום הולדת 80 לדונלד טראמפ`,
     detail: `נולד 14.6.1946`,
+    url: `https://en.wikipedia.org/wiki/Donald_Trump`,
   },
   {
     date: `14.06`,
+    category: `יום שנה`,
     title: `19 שנה להשתלטות חמאס על רצועת עזה`,
     detail: `ההשתלטות הושלמה באמצע יוני 2007`,
+    url: `https://he.wikipedia.org/wiki/השתלטות_חמאס_על_רצועת_עזה`,
   },
   {
     date: `15.06`,
+    category: `גיאופוליטי`,
     title: `פסגת G7`,
-    detail: ``,
+    detail: `לפי הדיווח ברויטרס, בכיר בממשל אמר כי כחלק מפסגת ה-G7, נשיא ארצות הברית צפוי להיפגש עם מנהיגי מדינות ערביות, כולל מצרים, איחוד האמירויות וקטר, על מנת לדון במאמצים לסיום המלחמה מול איראן. עם זאת, הבכיר הדגיש כי נתניהו אינו צפוי לקחת חלק בשיחות הללו לצד טראמפ`,
+    url: `https://www.kan.org.il/content/kan-news/global/1053069/`,
+  },
+  {
+    date: `15.06–07.07`,
+    category: `גיאופוליטי`,
+    title: `המושב ה-62 של מועצת זכויות האדם של האו"ם`,
+    detail: `לפי האג'נדה, ידון "מצב זכויות האדם בפלסטין וטריטוריות ערביות נוספות תחת כיבוש". הדיונים במועצה עשויים להשפיע על הלחץ הדיפלומטי והמשפטי סביב ישראל, המלחמה בעזה, חמאס, והזירה הפלסטינית בכלל.`,
+    url: `https://www.linkedin.com/pulse/human-rights-council-hold-62nd-session-unhumanrightscouncil-cixge`,
   },
   {
     date: `17.06`,
-    title: `פד — החלטת ריבית`,
-    detail: ``,
+    category: `כלכלי`,
+    title: `פד - ריבית`,
+    detail: `המועד הבא שבו הפד יחליט על הריבית הוא בישיבת ה־FOMC הקרובה: שלישי–רביעי, 16–17 ביוני 2026. ההודעה על ההחלטה תפורסם ביום רביעי, 17 ביוני 2026 בשעה 14:00 שעון מזרח ארה״ב, כלומר בערך 21:00 שעון ישראל. מסיבת העיתונאים מתוכננת ל־14:30 שעון מזרח ארה״ב, כלומר 21:30 בישראל.`,
+    url: `https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm`,
   },
 ];
 

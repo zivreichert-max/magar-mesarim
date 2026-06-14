@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import { SEKIRA_WEEK, SEKIRA_PARLIAMENTARY, SEKIRA_HIGHLIGHTS, SEKIRA_MEDIA } from '@/data/sekira';
+import { SEKIRA_WEEK, SEKIRA_PARLIAMENTARY, SEKIRA_MEDIA } from '@/data/sekira';
 import { paperForEvent } from './SekiraView';
 import { Paper } from '@/data/papers';
+import SekiraHighlights from './SekiraHighlights';
 import styles from './Sekira.module.css';
 
 // First-entry onboarding overlay. Self-contained: sits above the app after the
@@ -106,15 +107,7 @@ export default function SekiraIntro({ onEnter, onOpenPaper }: {
               על ציר הזמן השבוע — ימי שנה, אירועים גאופוליטיים וכלכליים.
             </div>
           </div>
-          <div className={styles.evGrid}>
-            {SEKIRA_HIGHLIGHTS.map((h, i) => (
-              <div key={i} className={styles.evCard}>
-                {h.date && <div className={styles.evDate}>{h.date}</div>}
-                <div className={styles.evTitle}>{h.title}</div>
-                {h.detail && <div className={styles.evDetail}>{h.detail}</div>}
-              </div>
-            ))}
-          </div>
+          <SekiraHighlights />
         </div>
       </section>
 

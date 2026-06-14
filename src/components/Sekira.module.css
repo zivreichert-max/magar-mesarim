@@ -53,6 +53,44 @@
 .evTitle { font-size: 14px; font-weight: 700; color: #111827; line-height: 1.4; margin-bottom: 5px; }
 .evDetail { font-size: 12px; color: #6b7280; line-height: 1.5; }
 
+/* ====== HIGHLIGHTS TABLE (לו"ז-style, white/blue) ====== */
+.hlTable { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; }
+.hlHead {
+  display: grid; grid-template-columns: 92px 120px 1fr 40px;
+  background: #f1f5f9; font-size: 10px; font-weight: 700; color: #6b7280; letter-spacing: 0.06em;
+}
+.hlHead > div { padding: 8px 12px; }
+.hlRow {
+  display: grid; grid-template-columns: 92px 120px 1fr 40px; align-items: start;
+  border-top: 1px solid #e5e7eb; position: relative; cursor: pointer; transition: background 0.12s;
+}
+.hlRow:first-of-type { border-top: none; }
+.hlRow::before { content: ''; position: absolute; inset-inline-start: 0; top: 0; bottom: 0; width: 3px; background: #0075C4; }
+.hlRow:hover { background: #f8fafc; }
+.hlRow > div { padding: 11px 12px; }
+.hlNoexp { cursor: default; }
+.hlDate { font-size: 13px; font-weight: 700; color: #0075C4; direction: ltr; text-align: right; font-variant-numeric: tabular-nums; }
+.hlCat { font-size: 11px; font-weight: 700; color: #1e3a7b; }
+.hlTitle { font-size: 13px; font-weight: 600; color: #111827; line-height: 1.4; }
+.hlSnippet {
+  font-size: 12px; color: #6b7280; line-height: 1.5; margin-top: 3px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.hlX { align-self: center; text-align: center; }
+.hlChev {
+  display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px;
+  border-radius: 50%; border: 1px solid #e5e7eb; color: #0075C4; font-size: 13px; transition: transform 0.25s, background 0.15s;
+}
+.hlOpen .hlChev { transform: rotate(90deg); background: #0075C4; color: #fff; border-color: #0075C4; }
+.hlNoexp .hlChev { visibility: hidden; }
+.hlPanel { grid-column: 1 / -1; display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.28s ease; }
+.hlOpen .hlPanel { grid-template-rows: 1fr; }
+.hlPanel > div { overflow: hidden; }
+.hlPanelIn { border-top: 1px solid #e5e7eb; background: #eff6ff; padding: 13px 16px; margin: 0 -12px -11px; }
+.hlPanelIn p { margin: 0; font-size: 13px; line-height: 1.8; color: #374151; white-space: pre-wrap; }
+.hlLink { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 700; color: #0075C4; text-decoration: none; }
+.hlLink:hover { text-decoration: underline; }
+
 /* ====== TOPIC BLOCKS (media, both views) ====== */
 .topicBlock {
   background: #fff; border: 0.5px solid #e5e7eb; border-right: 3px solid #2077BB;
@@ -118,6 +156,13 @@
   .sharpGrid { grid-template-columns: 1fr; }
   .sharpFiller { display: none; }
   .evGrid { grid-template-columns: 1fr; }
+  .hlHead { display: none; }
+  .hlRow { grid-template-columns: 1fr 40px; }
+  .hlRow > .hlDate { grid-column: 1; padding-bottom: 0; }
+  .hlRow > .hlCat { grid-column: 1; padding-top: 2px; padding-bottom: 0; }
+  .hlRow > .hlMain { grid-column: 1; }
+  .hlRow > .hlX { grid-column: 2; grid-row: 1 / 4; }
+  .hlPanel { grid-column: 1 / -1; }
   .calGrid { grid-template-columns: 1fr; }
   .calCol { flex-direction: row; }
   .calHead { min-width: 70px; display: flex; align-items: center; justify-content: center; }

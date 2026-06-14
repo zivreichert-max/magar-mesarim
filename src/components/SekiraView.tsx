@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { SEKIRA_WEEK, SEKIRA_PARLIAMENTARY, SEKIRA_HIGHLIGHTS, SEKIRA_MEDIA, SekiraEvent } from '@/data/sekira';
+import { SEKIRA_WEEK, SEKIRA_PARLIAMENTARY, SEKIRA_MEDIA, SekiraEvent } from '@/data/sekira';
 import { PAPERS, Paper } from '@/data/papers';
+import SekiraHighlights from './SekiraHighlights';
 import styles from './Sekira.module.css';
 
 const MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
@@ -107,16 +108,8 @@ export default function SekiraView({ onOpenPaper }: { onOpenPaper: (p: Paper) =>
         </>
       ) : arena === 'events' ? (
         <>
-          <div className={styles.sectionIntro}>האירועים הבולטים על ציר הזמן השבוע — ימי שנה, אירועים גאופוליטיים וכלכליים.</div>
-          <div className={styles.evGrid}>
-            {SEKIRA_HIGHLIGHTS.map((h, i) => (
-              <div key={i} className={styles.evCard}>
-                {h.date && <div className={styles.evDate}>{h.date}</div>}
-                <div className={styles.evTitle}>{h.title}</div>
-                {h.detail && <div className={styles.evDetail}>{h.detail}</div>}
-              </div>
-            ))}
-          </div>
+          <div className={styles.sectionIntro}>האירועים הבולטים על ציר הזמן השבוע — ימי שנה, אירועים גאופוליטיים וכלכליים. לחיצה על שורה פותחת פירוט ומקור.</div>
+          <SekiraHighlights />
         </>
       ) : (
         <>
