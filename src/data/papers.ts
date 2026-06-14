@@ -10,6 +10,9 @@ export interface Paper {
     items?: string[];
   }[];
   bottomLine: string;
+  // Source PDF filename in OneDrive…/ניירות עמדה שבועיים (top level). Links the
+  // paper to its file so check-papers.py can flag new/removed PDFs. Not rendered.
+  sourceFile?: string;
 }
 
 // Source of truth for position papers shown on the site. Mirrors the current
@@ -50,6 +53,7 @@ export const PAPERS: Paper[] = [
       },
     ],
     bottomLine: 'מתן חסינות לגוטליב יהווה הכשר לניהול מאבקים פוליטיים על גבם של הלוחמים. שמירה על סודיות זהותם של לוחמים היא אפוד המגן שלהם — ואת זה אסור לכנסת לאפשר.',
+    sourceFile: 'מסרים - חסינות גוטליב (3).pdf',
   },
   {
     id: 3,
@@ -91,5 +95,6 @@ export const PAPERS: Paper[] = [
       },
     ],
     bottomLine: 'השאלה אינה אם לאכוף הסתה ואלימות ברשת — אלא כיצד, על מי, ואילו מרחבים מופקרים. אכיפה בררנית פוגעת בחופש הביטוי ומסכנת את הדיון הציבורי דווקא בשנת בחירות. נדרשת תשתית עובדתית על שוויוניות האכיפה ועל הבלמים שנותרו במערכת.',
+    sourceFile: 'הכנה לדיון בוועדה לענייני ביקורת המדינה – אכיפה בררנית של עבריינות במרחב המקוון והסכנה לשיח הציבורי בשנת בחירות.pdf',
   },
 ];
