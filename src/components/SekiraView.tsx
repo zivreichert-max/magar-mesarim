@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { SEKIRA_WEEK, SEKIRA_PARLIAMENTARY, SEKIRA_MEDIA, SekiraEvent } from '@/data/sekira';
+import { SEKIRA_WEEK, SEKIRA_PARLIAMENTARY, SEKIRA_HIGHLIGHTS, SEKIRA_MEDIA, SekiraEvent } from '@/data/sekira';
 import { PAPERS, Paper } from '@/data/papers';
 import styles from './Sekira.module.css';
 
@@ -45,7 +45,7 @@ export function paperForEvent(ev: SekiraEvent): Paper {
 }
 
 export default function SekiraView({ onOpenPaper }: { onOpenPaper: (p: Paper) => void }) {
-  const [arena, setArena] = useState<'parl' | 'media'>('parl');
+  const [arena, setArena] = useState<'parl' | 'events' | 'media'>('parl');
   const dates = weekDates();
 
   // Pad the 3-column grid so the last row stays aligned
@@ -61,6 +61,9 @@ export default function SekiraView({ onOpenPaper }: { onOpenPaper: (p: Paper) =>
       <div className={styles.subTabs}>
         <button type="button" className={`${styles.subTab} ${arena === 'parl' ? styles.active : ''}`} onClick={() => setArena('parl')}>
           זירה פרלמנטרית
+        </button>
+        <button type="button" className={`${styles.subTab} ${arena === 'events' ? styles.active : ''}`} onClick={() => setArena('events')}>
+          אירועים בולטים
         </button>
         <button type="button" className={`${styles.subTab} ${arena === 'media' ? styles.active : ''}`} onClick={() => setArena('media')}>
           זירה תקשורתית
@@ -99,6 +102,19 @@ export default function SekiraView({ onOpenPaper }: { onOpenPaper: (p: Paper) =>
             ))}
             {Array.from({ length: fillers }).map((_, i) => (
               <div key={`f${i}`} className={`${styles.sharpCol} ${styles.sharpFiller}`} />
+            ))}
+          </div>
+        </>
+      ) : arena === 'events' ? (
+        <>
+          <div className={styles.sectionIntro}>האירועים הבולטים על ציר הזמן השבוע — ימי שנה, אירועים גאופוליטיים וכלכליים.</div>
+          <div className={styles.evGrid}>
+            {SEKIRA_HIGHLIGHTS.map((h, i) => (
+              <div key={i} className={styles.evCard}>
+                {h.date && <div className={styles.evDate}>{h.date}</div>}
+                <div className={styles.evTitle}>{h.title}</div>
+                {h.detail && <div className={styles.evDetail}>{h.detail}</div>}
+              </div>
             ))}
           </div>
         </>

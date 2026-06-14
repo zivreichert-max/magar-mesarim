@@ -105,6 +105,36 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
   },
 ];
 
+export interface SekiraHighlight { date: string; title: string; detail: string; }
+
+export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
+  {
+    date: `13–24.06`,
+    title: `שנה למבצע "עם כלביא" — מלחמת 12 הימים מול איראן`,
+    detail: `המלחמה הראשונה מול איראן (13.6–24.6.2025)`,
+  },
+  {
+    date: `14.06`,
+    title: `יום הולדת 80 לדונלד טראמפ`,
+    detail: `נולד 14.6.1946`,
+  },
+  {
+    date: `14.06`,
+    title: `19 שנה להשתלטות חמאס על רצועת עזה`,
+    detail: `ההשתלטות הושלמה באמצע יוני 2007`,
+  },
+  {
+    date: `15.06`,
+    title: `פסגת G7`,
+    detail: ``,
+  },
+  {
+    date: `17.06`,
+    title: `פד — החלטת ריבית`,
+    detail: ``,
+  },
+];
+
 export interface SekiraPoint { text: string; url?: string; }
 export interface SekiraTopic { topic: string; points: SekiraPoint[]; }
 

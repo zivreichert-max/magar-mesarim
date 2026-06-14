@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import { SEKIRA_WEEK, SEKIRA_PARLIAMENTARY, SEKIRA_MEDIA } from '@/data/sekira';
+import { SEKIRA_WEEK, SEKIRA_PARLIAMENTARY, SEKIRA_HIGHLIGHTS, SEKIRA_MEDIA } from '@/data/sekira';
 import { paperForEvent } from './SekiraView';
 import { Paper } from '@/data/papers';
 import styles from './Sekira.module.css';
@@ -96,10 +96,32 @@ export default function SekiraIntro({ onEnter, onOpenPaper }: {
         </div>
       </section>
 
-      {/* Media — topic blocks */}
+      {/* Highlights — notable events */}
       <section className={styles.introSection} style={{ background: '#f9fafb' }}>
+        <div className={styles.introContent}>
+          <div style={{ textAlign: 'center', marginBottom: 28 }}>
+            <span className={styles.arenaTag}>חלק ב&apos;</span>
+            <div className={styles.arenaTitle}>אירועים בולטים</div>
+            <div className={styles.arenaDesc} style={{ margin: '0 auto' }}>
+              על ציר הזמן השבוע — ימי שנה, אירועים גאופוליטיים וכלכליים.
+            </div>
+          </div>
+          <div className={styles.evGrid}>
+            {SEKIRA_HIGHLIGHTS.map((h, i) => (
+              <div key={i} className={styles.evCard}>
+                {h.date && <div className={styles.evDate}>{h.date}</div>}
+                <div className={styles.evTitle}>{h.title}</div>
+                {h.detail && <div className={styles.evDetail}>{h.detail}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Media — topic blocks */}
+      <section className={styles.introSection} style={{ background: '#fff' }}>
         <div className={`${styles.introContent} ${styles.narrow}`}>
-          <span className={styles.arenaTag} style={{ color: '#2077BB', borderColor: '#2077BB' }}>חלק ב&apos;</span>
+          <span className={styles.arenaTag} style={{ color: '#2077BB', borderColor: '#2077BB' }}>חלק ג&apos;</span>
           <div className={styles.arenaTitle}>הזירה התקשורתית</div>
           <div className={styles.arenaDesc}>הסיפורים המרכזיים על סדר היום הציבורי — מחולק לפי נושאים.</div>
 

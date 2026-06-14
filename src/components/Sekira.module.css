@@ -39,6 +39,20 @@
 .sharpPaper.empty { color: #94a3b8; cursor: default; }
 .sharpEmpty { font-size: 12px; color: #cbd5e1; text-align: center; padding: 30px 0; font-style: italic; }
 
+/* ====== HIGHLIGHTS (notable events) — sharp grid of event cards ====== */
+.evGrid {
+  background: #1f2937; padding: 10px; border-radius: 12px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+}
+.evCard { background: #fff; border-radius: 8px; padding: 16px; }
+.evDate {
+  display: inline-block; font-size: 12px; font-weight: 700; color: #fff;
+  background: #0075C4; border-radius: 4px; padding: 2px 10px; margin-bottom: 8px;
+  direction: ltr; font-variant-numeric: tabular-nums;
+}
+.evTitle { font-size: 14px; font-weight: 700; color: #111827; line-height: 1.4; margin-bottom: 5px; }
+.evDetail { font-size: 12px; color: #6b7280; line-height: 1.5; }
+
 /* ====== TOPIC BLOCKS (media, both views) ====== */
 .topicBlock {
   background: #fff; border: 0.5px solid #e5e7eb; border-right: 3px solid #2077BB;
@@ -103,6 +117,7 @@
 @media (max-width: 760px) {
   .sharpGrid { grid-template-columns: 1fr; }
   .sharpFiller { display: none; }
+  .evGrid { grid-template-columns: 1fr; }
   .calGrid { grid-template-columns: 1fr; }
   .calCol { flex-direction: row; }
   .calHead { min-width: 70px; display: flex; align-items: center; justify-content: center; }
