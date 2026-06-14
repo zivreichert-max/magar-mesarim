@@ -51,6 +51,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `59 שנים לכיבוש`,
+    url: `https://he.wikipedia.org/wiki/מלחמת_ששת_הימים`,
   },
   {
     title: `שנה למבצע 'עם כלביא' / מלחמת 12 הימים מול איראן`,
@@ -59,6 +60,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `המלחמה הראשונה מול איראן החלה 13.6.2025, הפסקת אש 24.6.2025`,
+    url: `https://he.wikipedia.org/wiki/מבצע_עם_כלביא`,
   },
   {
     title: `יום הולדת 80 לדונלד טראמפ`,
@@ -66,6 +68,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `גיאופוליטי`,
     importance: `ודאי`,
     detail: `נולד 14.6.1946`,
+    url: `https://en.wikipedia.org/wiki/Donald_Trump`,
   },
   {
     title: `19 שנה להשתלטות חמאס על רצועת עזה`,
@@ -73,6 +76,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `ההשתלטות הושלמה באמצע יוני 2007`,
+    url: `https://he.wikipedia.org/wiki/השתלטות_חמאס_על_רצועת_עזה`,
   },
   {
     title: `פסגת G7`,
@@ -98,6 +102,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `נחטף 25.6.2006; מספר עגול. רלוונטי לשיח עסקאות חטופים`,
+    url: `https://he.wikipedia.org/wiki/חטיפת_גלעד_שליט`,
   },
   {
     title: `סיום קדנציה מבקר המדינה`,
@@ -111,7 +116,8 @@ export const TIMELINE: TimelineEvent[] = [
     dateEnd: `2026-07-31`,
     category: `חינוך`,
     importance: `הערכה`,
-    detail: `התכנית של קיש להשלמת הלימודים בעקבות המלחמה מול איראן - צפויה להתקל בכשלי יישום משמעותיים.`,
+    detail: `התכנית של קיש להשלמת הלימודים בעקבות המלחמה מול איראן - צפויה להתיקל בכשלי יישום משמעותיים.`,
+    url: `https://www.ynet.co.il/news/article/b18mzzz1mg`,
   },
   {
     title: `בנק ישראל — ריבית + תחזית Q3`,
@@ -121,11 +127,21 @@ export const TIMELINE: TimelineEvent[] = [
     detail: `תאריך מאושר; תחזית רבעונית Q3`,
   },
   {
+    title: `פסגת נאט"ו בנאקרה`,
+    dateStart: `2026-07-07`,
+    dateEnd: `2026-07-08`,
+    category: `גיאופוליטי`,
+    importance: `ודאי`,
+    detail: `פסגת אנקרה תעסוק במספר נושאים מרכזיים, בהם הסכסוכים סביב מדינות נאט"ו, המלחמה בין רוסיה לאוקראינה, ההתפתחויות במזרח התיכון, תקציבי הביטחון, וכן שינויים מבניים ותפיסתיים בתוך הברית.`,
+    url: `https://www.epc.eu/projects/countdown-to-the-nato-summit-in-ankara-challenges-expectations-goals/`,
+  },
+  {
     title: `12 שנה למבצע 'צוק איתן'`,
     dateStart: `2026-07-08`,
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `החל 8.7.2014`,
+    url: `https://he.wikipedia.org/wiki/מבצע_צוק_איתן`,
   },
   {
     title: `20 שנה למלחמת לבנון השנייה`,
@@ -133,6 +149,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `החלה 12.7.2006; מספר עגול`,
+    url: `https://he.wikipedia.org/wiki/מלחמת_לבנון_השנייה`,
   },
   {
     title: `פגרת בית המשפט`,
@@ -146,6 +163,14 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `תיקון חוק יסוד: השפיטה עבר 24.7.2023 - שיא המחאה והקיטוב ערב 7.10`,
+    url: `https://he.wikipedia.org/wiki/חוק_הסבירות`,
+  },
+  {
+    title: `א' באלול - זמן אלול וחזרה ללימודים במגזר החרדי`,
+    dateStart: `2026-08-14`,
+    category: `חינוך`,
+    importance: `ודאי`,
+    detail: `במגזר החרדי, תלמידים ובחורי ישיבות — בעיקר מגיל בר־מצווה ועד ישיבות גבוהות, ובחלק מהמוסדות גם ילדים צעירים יותר בתלמודי תורה — חוזרים ללימודים כבר בא׳ באלול, כחלק מ“זמן אלול”, תקופת לימוד והכנה רוחנית לימים הנוראים. לעומת זאת, במערכת החינוך הממלכתית החופש הגדול נמשך עד פתיחת השנה האזרחית־מנהלית ב־1 בספטמבר 2026.`,
   },
   {
     title: `21 שנה לתוכנית ההתנתקות ופינוי גוש קטיף`,
@@ -154,6 +179,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `הפינוי בפועל אוגוסט 2005`,
+    url: `https://he.wikipedia.org/wiki/תוכנית_ההתנתקות`,
   },
   {
     title: `תשעה באב (צום)`,
@@ -168,6 +194,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `הרש גולדברג-פולין, עדן ירושלמי, אורי דנינו, אלמוג סרוסי, אלכס לובנוב, כרמל גת; הצית מחאה והשבתה כללית 1-2.9`,
+    url: `https://he.wikipedia.org/wiki/חרבות_ברזל`,
   },
   {
     title: `פתיחת שנת הלימודים תשפ"ז`,
@@ -175,6 +202,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `חינוך`,
     importance: `ודאי`,
     detail: `יום שלישי, 1.9.2026`,
+    url: `https://www.ynet.co.il/wellness/article/rkzzvy4dt`,
   },
   {
     title: `בחירות לכנסת ה-26`,
@@ -197,6 +225,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `חתימה בבית הלבן 13.9.1993`,
+    url: `https://he.wikipedia.org/wiki/הסכם_אוסלו`,
   },
   {
     title: `מושב מועצת המנהלים של סבא"א (IAEA) — ספטמבר`,
@@ -205,6 +234,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `גיאופוליטי`,
     importance: `הערכה`,
     detail: `זו הזירה הרשמית המרכזית שבה נבחנת תוכנית הגרעין של איראן, ושבה מתקבלות החלטות גינוי ולעיתים העברת הנושא למועצת הביטחון של האו"ם.`,
+    url: `https://www.iaea.org/about/governance/board-of-governors`,
   },
   {
     title: `48 שנה להסכמי קמפ דייוויד`,
@@ -212,6 +242,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `17.9.1978`,
+    url: `https://he.wikipedia.org/wiki/הסכמי_קמפ_דייוויד`,
   },
   {
     title: `2 שנים למבצע הביפרים נגד חיזבאללה`,
@@ -219,6 +250,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `נכס לקואלציה`,
+    url: `https://he.wikipedia.org/wiki/מתקפת_הזימוניות_וההקשרים`,
   },
   {
     title: `יום כיפור תשפ"ז`,
@@ -253,7 +285,7 @@ export const TIMELINE: TimelineEvent[] = [
     dateStart: `2026-09-27`,
     category: `בחירות`,
     importance: `הערכה`,
-    detail: `לכל המאוחר 52 יום לפני הבחירות`,
+    detail: `לכול המאוחר 52 יום לפני הבחירות`,
   },
   {
     title: `2 שנים לחיסול חסן נסראללה`,
@@ -261,6 +293,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `נכס לקואלציה`,
+    url: `https://he.wikipedia.org/wiki/חיסול_חסן_נסראללה`,
   },
   {
     title: `26 שנה לפרוץ האינתיפאדה השנייה`,
@@ -268,6 +301,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `סוף ספטמבר 2000`,
+    url: `https://he.wikipedia.org/wiki/האינתיפאדה_השנייה`,
   },
   {
     title: `בנק ישראל — ריבית + תחזית Q4`,
@@ -283,6 +317,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `6.10.1973`,
+    url: `https://he.wikipedia.org/wiki/מלחמת_יום_הכיפורים`,
   },
   {
     title: `השביעי באוקטובר`,
@@ -296,6 +331,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `השימוש הראשון בכנסת 12.10.2023; הבטחה שנותרה שנויה במחלוקת`,
+    url: `https://www.youtube.com/watch?v=1ZQd-0J3QGU`,
   },
   {
     title: `3 שנים לפינוי יישובי עוטף עזה/הדרום (החלטה 950)`,
@@ -303,6 +339,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `פינוי 0-7 ק"מ מהרצועה אושר 12.10.2023`,
+    url: `https://www.gov.il/he/pages/dec950_2023`,
   },
   {
     title: `3 שנים לפינוי יישובי הצפון (החלטה 975)`,
@@ -310,6 +347,7 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `פינוי גבול לבנון אושר 18.10.2023; החזרה נקבעה רק ל-1.3.2025`,
+    url: `https://www.gov.il/he/pages/dec975_2023`,
   },
   {
     title: `32 שנה להסכם השלום עם ירדן`,
@@ -317,5 +355,6 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `26.10.1994`,
+    url: `https://he.wikipedia.org/wiki/הסכם_השלום_בין_ישראל_לירדן`,
   },
 ];
