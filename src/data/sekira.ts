@@ -105,10 +105,11 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
   },
 ];
 
-export interface SekiraHighlight { date: string; category: string; title: string; detail: string; url?: string; }
+export interface SekiraHighlight { day: string; date: string; category: string; title: string; detail: string; url?: string; }
 
 export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
   {
+    day: `יום ראשון`,
     date: `13.06–24.06`,
     category: `יום שנה`,
     title: `שנה למבצע 'עם כלביא' / מלחמת 12 הימים מול איראן`,
@@ -116,6 +117,7 @@ export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
     url: `https://he.wikipedia.org/wiki/מבצע_עם_כלביא`,
   },
   {
+    day: `יום ראשון`,
     date: `14.06`,
     category: `גיאופוליטי`,
     title: `יום הולדת 80 לדונלד טראמפ`,
@@ -123,6 +125,7 @@ export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
     url: `https://en.wikipedia.org/wiki/Donald_Trump`,
   },
   {
+    day: `יום ראשון`,
     date: `14.06`,
     category: `יום שנה`,
     title: `19 שנה להשתלטות חמאס על רצועת עזה`,
@@ -130,6 +133,7 @@ export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
     url: `https://he.wikipedia.org/wiki/השתלטות_חמאס_על_רצועת_עזה`,
   },
   {
+    day: `יום שני`,
     date: `15.06`,
     category: `גיאופוליטי`,
     title: `פסגת G7`,
@@ -137,6 +141,7 @@ export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
     url: `https://www.kan.org.il/content/kan-news/global/1053069/`,
   },
   {
+    day: `יום שני`,
     date: `15.06–07.07`,
     category: `גיאופוליטי`,
     title: `המושב ה-62 של מועצת זכויות האדם של האו"ם`,
@@ -144,6 +149,7 @@ export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
     url: `https://www.linkedin.com/pulse/human-rights-council-hold-62nd-session-unhumanrightscouncil-cixge`,
   },
   {
+    day: `יום רביעי`,
     date: `17.06`,
     category: `כלכלי`,
     title: `פד - ריבית`,
@@ -151,6 +157,7 @@ export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
     url: `https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm`,
   },
   {
+    day: `יום שישי`,
     date: `19.06`,
     category: `גיאופוליטי`,
     title: `חתימה על מזכר הבנות בין איראן לארה"ב`,
