@@ -19,13 +19,13 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         time: `9:00`,
         committee: `ועדת החוקה`,
         topic: `חוק פיצול היועמ"ש — הכנה לקריאה שנייה ושלישית`,
-        hasPaper: true,
+        hasPaper: false,
       },
       {
         time: `12:00`,
         committee: `ועדת התקשורת`,
         topic: `הצעת חוק התקשורת — צפויות הצבעות`,
-        hasPaper: true,
+        hasPaper: false,
       },
       {
         time: ``,
@@ -42,7 +42,7 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         time: `9:00`,
         committee: `ועדת החוקה`,
         topic: `חוק פיצול היועמ"ש — הכנה לקריאה שנייה ושלישית`,
-        hasPaper: true,
+        hasPaper: false,
       },
       {
         time: `9:30`,
@@ -59,7 +59,7 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         time: `9:00`,
         committee: `ועדת החוקה`,
         topic: `חוק פיצול היועמ"ש — הכנה לקריאה שנייה ושלישית`,
-        hasPaper: true,
+        hasPaper: false,
       },
       {
         time: `9:30`,
@@ -71,7 +71,7 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         time: `10:00`,
         committee: `הוועדה למיזמים ציבוריים`,
         topic: `ביטול הרפורמה בכשרות של מתן כהנא`,
-        hasPaper: false,
+        hasPaper: true,
       },
     ],
   },
@@ -82,7 +82,7 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         time: `9:00`,
         committee: `ועדת החוקה`,
         topic: `חוק פיצול היועמ"ש — הכנה לקריאה שנייה ושלישית`,
-        hasPaper: true,
+        hasPaper: false,
       },
       {
         time: `9:00`,
@@ -99,7 +99,7 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         time: `9:30`,
         committee: `הוועדה למיזמים ציבוריים`,
         topic: `ביטול הרפורמה בכשרות של מתן כהנא`,
-        hasPaper: false,
+        hasPaper: true,
       },
     ],
   },
@@ -149,6 +149,13 @@ export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
     title: `פד - ריבית`,
     detail: `המועד הבא שבו הפד יחליט על הריבית הוא בישיבת ה־FOMC הקרובה: שלישי–רביעי, 16–17 ביוני 2026. ההודעה על ההחלטה תפורסם ביום רביעי, 17 ביוני 2026 בשעה 14:00 שעון מזרח ארה״ב, כלומר בערך 21:00 שעון ישראל. מסיבת העיתונאים מתוכננת ל־14:30 שעון מזרח ארה״ב, כלומר 21:30 בישראל.`,
     url: `https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm`,
+  },
+  {
+    date: `19.06`,
+    category: `גיאופוליטי`,
+    title: `חתימה על מזכר הבנות בין איראן לארה"ב`,
+    detail: `ההסכם בין איראן לארה"ב טרם פורסם, וכל הצעדים שכלולים בו אמורים להיכנס לתוקף רק אחרי החתימה שתתקיים ביום שישי בשוויץ.`,
+    url: `https://www.ynet.co.il/news/article/b1cc2gazgl`,
   },
 ];
 
