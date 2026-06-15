@@ -104,6 +104,14 @@ export const TIMELINE: TimelineEvent[] = [
     url: `https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm`,
   },
   {
+    title: `חתימה על מזכר הבנות בין איראן לארה"ב`,
+    dateStart: `2026-06-19`,
+    category: `גיאופוליטי`,
+    importance: `ודאי`,
+    detail: `ההסכם בין איראן לארה"ב טרם פורסם, וכל הצעדים שכלולים בו אמורים להיכנס לתוקף רק אחרי החתימה שתתקיים ביום שישי בשוויץ.`,
+    url: `https://www.ynet.co.il/news/article/b1cc2gazgl`,
+  },
+  {
     title: `שנתיים לפסיקת בג"ץ - גיוס חרדים`,
     dateStart: `2026-06-25`,
     category: `פוליטי`,
