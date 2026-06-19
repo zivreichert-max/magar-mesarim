@@ -100,8 +100,9 @@
 .topicName { font-size: 14px; font-weight: 700; color: #2077BB; margin-bottom: 8px; }
 .topicPoint { font-size: 13px; line-height: 1.6; color: #374151; padding-right: 14px; position: relative; margin-bottom: 5px; }
 .topicPoint::before { content: '•'; position: absolute; right: 0; color: #2077BB; }
+.topicHeading { font-weight: 700; color: #111827; }
 .topicEmpty { font-size: 12px; color: #cbd5e1; font-style: italic; }
-.topicLink { font-size: 12px; color: #0075C4; font-weight: 700; text-decoration: none; white-space: nowrap; margin-inline-start: 4px; }
+.topicLink { font-size: 12px; color: #0075C4; font-weight: 700; text-decoration: none; white-space: nowrap; margin-inline-start: 6px; }
 .topicLink:hover { text-decoration: underline; }
 
 /* ============ INTRO SEQUENCE (overlay) ============ */

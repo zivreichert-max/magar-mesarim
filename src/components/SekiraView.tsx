@@ -114,15 +114,14 @@ export default function SekiraView({ onOpenPaper }: { onOpenPaper: (p: Paper) =>
       ) : (
         <>
           <div className={styles.sectionIntro}>הסיפורים המרכזיים על סדר היום הציבורי — מחולק לפי נושאים.</div>
-          {SEKIRA_MEDIA.map((t, i) => (
+          {SEKIRA_MEDIA.filter(t => t.points.length > 0).map((t, i) => (
             <div key={i} className={styles.topicBlock}>
               <div className={styles.topicName}>{t.topic}</div>
-              {t.points.length === 0 ? (
-                <div className={styles.topicEmpty}>יתעדכן בהמשך</div>
-              ) : t.points.map((p, j) => (
+              {t.points.map((p, j) => (
                 <div key={j} className={styles.topicPoint}>
+                  {p.heading && <span className={styles.topicHeading}>{p.heading}: </span>}
                   {p.text}
-                  {p.url && <a href={p.url} target="_blank" rel="noreferrer" className={styles.topicLink}>צפו ↗</a>}
+                  {p.url && <a href={p.url} target="_blank" rel="noreferrer" className={styles.topicLink}>לכתבה ↗</a>}
                 </div>
               ))}
             </div>
