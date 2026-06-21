@@ -19,7 +19,7 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         time: `09:00`,
         committee: `ועדת החוקה`,
         topic: `פיצול היועמ"ש — הכנה לקריאה שנייה ושלישית`,
-        hasPaper: false,
+        hasPaper: true,
       },
       {
         time: `10:00`,
@@ -42,7 +42,7 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         time: `09:00`,
         committee: `ועדת החוקה`,
         topic: `חקיקת הבחירות לכנסת ה-26 — פניית יו"ר ועדת הבחירות המרכזית`,
-        hasPaper: false,
+        hasPaper: true,
       },
       {
         time: `10:00`,
@@ -54,7 +54,7 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         time: `11:30`,
         committee: `ועדת החוקה`,
         topic: `פיצול היועמ"ש — המשך הכנה לקריאה שנייה ושלישית`,
-        hasPaper: false,
+        hasPaper: true,
       },
       {
         time: `12:45`,
@@ -71,7 +71,7 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         time: `09:00`,
         committee: `ועדת החוקה`,
         topic: `פיצול היועמ"ש — המשך הכנה לקריאה שנייה ושלישית`,
-        hasPaper: false,
+        hasPaper: true,
       },
       {
         time: `10:00`,
@@ -120,6 +120,14 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
 export interface SekiraHighlight { day: string; date: string; category: string; title: string; detail: string; url?: string; }
 
 export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
+  {
+    day: `יום ראשון`,
+    date: `21.06`,
+    category: `בג"ץ`,
+    title: `הצבעה חוזרת על בחירת מבקר המדינה`,
+    detail: `בג"ץ הציע לכנסת הצבעה חוזרת על בחירת מבקר המדינה, על רקע פגיעה בחשאיות ההצבעה וטענת ניגוד עניינים — והצדדים נדרשו להשיב עד יום ראשון.`,
+    url: `https://www.ynet.co.il/news/blogs/article/bk9fpz11zgx`,
+  },
   {
     day: `יום חמישי`,
     date: `25.06`,
