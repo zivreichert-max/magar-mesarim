@@ -1,5 +1,7 @@
 'use client';
 import { SEKIRA_WEEK, SEKIRA_HIGHLIGHTS } from '@/data/sekira';
+import { findPaperForText } from './sekiraMatch';
+import { Paper } from '@/data/papers';
 import styles from './Sekira.module.css';
 
 const MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
@@ -20,7 +22,7 @@ function dayDates(): Record<string, string> {
 }
 
 // Notable events as a day grid — same "sharp" squares as the parliamentary arena.
-export default function SekiraHighlights() {
+export default function SekiraHighlights({ onOpenPaper }: { onOpenPaper?: (p: Paper) => void }) {
   const dates = dayDates();
   const byDay = DAY_ORDER
     .map(day => ({ day, items: SEKIRA_HIGHLIGHTS.filter(h => h.day === day) }))
@@ -42,6 +44,7 @@ export default function SekiraHighlights() {
           </div>
           {items.map((h, i) => {
             const isWindow = h.date.includes('–');
+            const paper = onOpenPaper ? findPaperForText(`${h.category} ${h.title}`) : null;
             return (
               <div key={i} className={styles.sharpItem}>
                 <div className={styles.sharpItemHead}>
@@ -50,9 +53,16 @@ export default function SekiraHighlights() {
                 </div>
                 <div className={styles.evTitle} style={{ marginBottom: h.detail ? 4 : 6 }}>{h.title}</div>
                 {h.detail && <div className={`${styles.sharpItemTopic} ${styles.hlClamp}`}>{h.detail}</div>}
-                {h.url && (
-                  <a className={styles.sharpPaper} href={h.url} target="_blank" rel="noreferrer">מקור ↗</a>
-                )}
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                  {paper && (
+                    <button type="button" className={styles.sharpPaper} onClick={() => onOpenPaper!(paper)}>
+                      נייר עמדה ↗
+                    </button>
+                  )}
+                  {h.url && (
+                    <a className={styles.sharpPaper} href={h.url} target="_blank" rel="noreferrer">מקור ↗</a>
+                  )}
+                </div>
               </div>
             );
           })}

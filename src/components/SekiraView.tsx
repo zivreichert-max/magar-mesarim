@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { SEKIRA_WEEK, SEKIRA_PARLIAMENTARY, SEKIRA_MEDIA, SekiraEvent } from '@/data/sekira';
-import { PAPERS, Paper } from '@/data/papers';
+import { Paper } from '@/data/papers';
+import { findPaperForText } from './sekiraMatch';
 import SekiraHighlights from './SekiraHighlights';
 import styles from './Sekira.module.css';
 
@@ -21,26 +22,10 @@ function weekDates(): string[] {
   });
 }
 
-// Match a sekira event to an existing position paper by shared distinctive words.
-const STOP = new Set(['חוק', 'הצעת', 'ועדת', 'הוועדה', 'דיון', 'הכנה', 'קריאה', 'שנייה', 'שלישית',
-  'צפויות', 'הצבעות', 'בקידום', 'בונים', 'מחדש', 'במרחב', 'המשך', 'דיונים']);
-function tokens(s: string): string[] {
-  return (s.match(/[֐-׿"']+/g) || [])
-    .map(w => w.replace(/["']/g, ''))
-    .filter(w => w.length >= 4 && !STOP.has(w));
-}
-function findPaper(ev: SekiraEvent): Paper | null {
-  const evToks = new Set([...tokens(ev.committee), ...tokens(ev.topic)]);
-  for (const p of PAPERS) {
-    const pToks = [...tokens(p.title), ...tokens(p.tag)];
-    if (pToks.some(t => evToks.has(t))) return p;
-  }
-  return null;
-}
-// Paper to open for a hasPaper event: the matched one, or an empty placeholder
-// (title only) when the paper hasn't been written yet.
+// Paper to open for a hasPaper parliamentary event: the matched one, or an empty
+// placeholder (title only) when the paper hasn't been written yet.
 export function paperForEvent(ev: SekiraEvent): Paper {
-  return findPaper(ev) ?? {
+  return findPaperForText(`${ev.committee} ${ev.topic}`) ?? {
     id: 0, title: ev.topic, tag: ev.committee, summary: '', sections: [], bottomLine: '',
   };
 }
@@ -108,8 +93,8 @@ export default function SekiraView({ onOpenPaper }: { onOpenPaper: (p: Paper) =>
         </>
       ) : arena === 'events' ? (
         <>
-          <div className={styles.sectionIntro}>האירועים הבולטים על ציר הזמן השבוע — ימי שנה, אירועים גאופוליטיים וכלכליים. לחיצה על שורה פותחת פירוט ומקור.</div>
-          <SekiraHighlights />
+          <div className={styles.sectionIntro}>האירועים הבולטים על ציר הזמן השבוע — ימי שנה, אירועים גאופוליטיים וכלכליים.</div>
+          <SekiraHighlights onOpenPaper={onOpenPaper} />
         </>
       ) : (
         <>

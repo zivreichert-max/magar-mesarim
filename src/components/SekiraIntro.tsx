@@ -107,7 +107,7 @@ export default function SekiraIntro({ onEnter, onOpenPaper }: {
               על ציר הזמן השבוע — ימי שנה, אירועים גאופוליטיים וכלכליים.
             </div>
           </div>
-          <SekiraHighlights />
+          <SekiraHighlights onOpenPaper={onOpenPaper} />
         </div>
       </section>
 
