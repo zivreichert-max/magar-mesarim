@@ -14,6 +14,7 @@ import RequestButton from '@/components/RequestButton';
 import ScheduleView from '@/components/ScheduleView';
 import ClientRequestsView from '@/components/ClientRequestsView';
 import PapersView from '@/components/PapersView';
+import WorkPlansView from '@/components/WorkPlansView';
 import KnessetUpdates from '@/components/KnessetUpdates';
 import PriceCalc from '@/components/PriceCalc';
 import SekiraView from '@/components/SekiraView';
@@ -29,11 +30,12 @@ const VIEW_TITLES: Record<string, string> = {
   schedule:   'לו"ז שבועי',
   requests:   'בקשות',
   papers:     'ניירות עמדה',
+  workplans:  'תכניות עבודה',
   updates:    'עדכונים אוטומטיים',
   calculator: 'מחשבון התייקרויות',
 };
 
-type ViewId = 'sekira' | 'messages' | 'schedule' | 'requests' | 'papers' | 'updates' | 'calculator';
+type ViewId = 'sekira' | 'messages' | 'schedule' | 'requests' | 'papers' | 'workplans' | 'updates' | 'calculator';
 
 // Order matters: first = rightmost tab (RTL). סקירה is the natural entry point.
 const TABS: { id: ViewId; label: string; fullOnly?: boolean }[] = [
@@ -41,6 +43,7 @@ const TABS: { id: ViewId; label: string; fullOnly?: boolean }[] = [
   { id: 'schedule',   label: 'לו"ז' },
   { id: 'updates',    label: 'עדכונים אוטומטיים', fullOnly: true },
   { id: 'papers',     label: 'ניירות עמדה' },
+  { id: 'workplans',  label: 'תכניות עבודה' },
   { id: 'messages',   label: 'מסרים' },
   { id: 'requests',   label: 'בקשות', fullOnly: true },
   { id: 'calculator', label: 'מחשבונים' },
@@ -238,6 +241,7 @@ export default function Home() {
           onExternalConsumed={() => setPaperToOpen(null)}
         />
       )}
+      {activeView === 'workplans' && <WorkPlansView role={role} clientId={activeClient?.id} />}
       {activeView === 'updates' && role === 'full' && <KnessetUpdates />}
       {activeView === 'calculator' && <PriceCalc />}
 

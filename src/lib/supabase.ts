@@ -123,6 +123,40 @@ export async function removePaperShare(paperId: number, clientId: string): Promi
   if (error) throw new Error(error.message);
 }
 
+// ─── workplan_shares helpers (תכניות עבודה) ───────────────────────────────────
+
+export async function getSharesForWorkplan(planId: number): Promise<string[]> {
+  const { data } = await supabase
+    .from('workplan_shares')
+    .select('client_id')
+    .eq('plan_id', planId);
+  return (data ?? []).map((row: { client_id: string }) => row.client_id);
+}
+
+export async function getSharedWorkplanIds(clientId: string): Promise<number[]> {
+  const { data } = await supabase
+    .from('workplan_shares')
+    .select('plan_id')
+    .eq('client_id', clientId);
+  return (data ?? []).map((row: { plan_id: number }) => row.plan_id);
+}
+
+export async function addWorkplanShare(planId: number, clientId: string): Promise<void> {
+  const { error } = await supabase
+    .from('workplan_shares')
+    .insert({ plan_id: planId, client_id: clientId });
+  if (error) throw new Error(error.message);
+}
+
+export async function removeWorkplanShare(planId: number, clientId: string): Promise<void> {
+  const { error } = await supabase
+    .from('workplan_shares')
+    .delete()
+    .eq('plan_id', planId)
+    .eq('client_id', clientId);
+  if (error) throw new Error(error.message);
+}
+
 // ─── client_requests helpers ──────────────────────────────────────────────────
 
 export async function submitClientRequest(data: {
