@@ -157,6 +157,75 @@ export async function removeWorkplanShare(planId: number, clientId: string): Pro
   if (error) throw new Error(error.message);
 }
 
+// ─── site_sessions (usage analytics) ─────────────────────────────────────────
+
+export interface SiteSession {
+  id: string;
+  client_id: string | null;
+  client_name: string | null;
+  role: string;
+  user_label: string;
+  started_at: string;
+  last_active: string;
+  user_agent: string | null;
+}
+
+export async function startSession(s: {
+  client_id: string | null;
+  client_name: string | null;
+  role: string;
+  user_label: string;
+}): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('site_sessions')
+    .insert({
+      ...s,
+      user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+    })
+    .select('id')
+    .single();
+  if (error) return null;
+  return (data as { id: string }).id;
+}
+
+export async function pingSession(id: string): Promise<void> {
+  await supabase
+    .from('site_sessions')
+    .update({ last_active: new Date().toISOString() })
+    .eq('id', id);
+}
+
+// Best-effort final ping on tab close — keepalive fetch survives unload where a
+// normal supabase-js request would be cancelled.
+export function pingSessionBeacon(id: string): void {
+  try {
+    const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!base || !key) return;
+    fetch(`${base}/rest/v1/site_sessions?id=eq.${id}`, {
+      method: 'PATCH',
+      keepalive: true,
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({ last_active: new Date().toISOString() }),
+    }).catch(() => {});
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function getSiteSessions(): Promise<SiteSession[]> {
+  const { data } = await supabase
+    .from('site_sessions')
+    .select('*')
+    .order('started_at', { ascending: false });
+  return (data ?? []) as SiteSession[];
+}
+
 // ─── client_requests helpers ──────────────────────────────────────────────────
 
 export async function submitClientRequest(data: {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { MESSAGES, Message, Topic } from '@/data/messages';
 import { Client } from '@/data/clients';
 import PasswordGate from '@/components/PasswordGate';
@@ -20,7 +20,7 @@ import PriceCalc from '@/components/PriceCalc';
 import SekiraView from '@/components/SekiraView';
 import SekiraIntro from '@/components/SekiraIntro';
 import { Paper } from '@/data/papers';
-import { getSharedMessageIds } from '@/lib/supabase';
+import { getSharedMessageIds, startSession, pingSession, pingSessionBeacon } from '@/lib/supabase';
 
 type AppState = 'password' | 'name' | 'ready';
 
@@ -71,6 +71,7 @@ export default function Home() {
   const [activeView, setActiveView] = useState<ViewId>('sekira');
   const [introDone, setIntroDone] = useState(false);
   const [paperToOpen, setPaperToOpen] = useState<Paper | null>(null);
+  const sessionStarted = useRef(false);
 
   // On mount, check if name is already stored + whether intro was already seen
   useEffect(() => {
@@ -108,6 +109,41 @@ export default function Home() {
       });
     }
   }, [appState, role, activeClient]);
+
+  // Usage analytics — one session row per entry, heartbeat keeps duration fresh
+  useEffect(() => {
+    if (appState !== 'ready' || sessionStarted.current) return;
+    sessionStarted.current = true;
+
+    let sessionId: string | null = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const label = role === 'client'
+      ? (activeClient?.name ?? 'מפלגה לא ידועה')
+      : (authorName || 'צוות');
+
+    startSession({
+      client_id: activeClient?.id ?? null,
+      client_name: activeClient?.name ?? null,
+      role,
+      user_label: label,
+    }).then(id => {
+      sessionId = id;
+      if (!id) return;
+      interval = setInterval(() => pingSession(id), 30_000);
+    });
+
+    const finalPing = () => {
+      if (sessionId && document.visibilityState === 'hidden') pingSessionBeacon(sessionId);
+    };
+    document.addEventListener('visibilitychange', finalPing);
+    window.addEventListener('pagehide', () => { if (sessionId) pingSessionBeacon(sessionId); });
+
+    return () => {
+      if (interval) clearInterval(interval);
+      document.removeEventListener('visibilitychange', finalPing);
+    };
+  }, [appState, role, activeClient, authorName]);
 
   function handleUnlock(unlockedRole: 'full' | 'client', client: Client | null) {
     setRole(unlockedRole);
