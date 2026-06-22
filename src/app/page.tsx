@@ -16,7 +16,7 @@ import ClientRequestsView from '@/components/ClientRequestsView';
 import PapersView from '@/components/PapersView';
 import WorkPlansView from '@/components/WorkPlansView';
 import KnessetUpdates from '@/components/KnessetUpdates';
-import PriceCalc from '@/components/PriceCalc';
+import CalculatorsHub from '@/components/CalculatorsHub';
 import SekiraView from '@/components/SekiraView';
 import SekiraIntro from '@/components/SekiraIntro';
 import { Paper } from '@/data/papers';
@@ -32,7 +32,7 @@ const VIEW_TITLES: Record<string, string> = {
   papers:     'ניירות עמדה',
   workplans:  'תכניות עבודה',
   updates:    'עדכונים אוטומטיים',
-  calculator: 'מחשבון התייקרויות',
+  calculator: 'מחשבונים',
 };
 
 type ViewId = 'sekira' | 'messages' | 'schedule' | 'requests' | 'papers' | 'workplans' | 'updates' | 'calculator';
@@ -279,7 +279,7 @@ export default function Home() {
       )}
       {activeView === 'workplans' && <WorkPlansView role={role} clientId={activeClient?.id} />}
       {activeView === 'updates' && role === 'full' && <KnessetUpdates />}
-      {activeView === 'calculator' && <PriceCalc />}
+      {activeView === 'calculator' && <CalculatorsHub />}
 
       <DetailPanel
         message={selectedMessage}
