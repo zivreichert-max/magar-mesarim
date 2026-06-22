@@ -15,6 +15,7 @@ export default function WorkPlansView({ role, clientId }: Props) {
   const [sharedWith, setSharedWith] = useState<string[]>([]);
   const [allowedIds, setAllowedIds] = useState<number[] | null>(null);
   const [shareError, setShareError] = useState<string | null>(null);
+  const [zoomImg, setZoomImg] = useState<string | null>(null);
 
   function openPanel(p: WorkPlan) {
     setSelected(p);
@@ -108,9 +109,33 @@ export default function WorkPlansView({ role, clientId }: Props) {
             {selected.points.length > 0 && (
               <div>
                 <div style={{ fontSize: 10, fontWeight: 700, color: '#0075C4', letterSpacing: '0.08em', marginBottom: 8, borderBottom: '1px solid #e5e7eb', paddingBottom: 6 }}>עיקרי התוכנית</div>
-                <ol style={{ paddingRight: 20, display: 'flex', flexDirection: 'column', gap: 8, margin: 0 }}>
-                  {selected.points.map((pt, i) => <li key={i} style={{ fontSize: 13.5, lineHeight: 1.75, color: '#374151' }}>{pt}</li>)}
-                </ol>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {selected.points.map((pt, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <div style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: '#0075C4', color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>{i + 1}</div>
+                      <div style={{ fontSize: 13.5, lineHeight: 1.75, color: '#374151', flex: 1 }}>{pt}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {selected.visuals.length > 0 && (
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#0075C4', letterSpacing: '0.08em', marginBottom: 8, borderBottom: '1px solid #e5e7eb', paddingBottom: 6 }}>ויזואליה</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {selected.visuals.map((v, i) => (
+                    <div key={i} style={{ textAlign: 'center' }}>
+                      <img
+                        src={v}
+                        onClick={() => setZoomImg(v)}
+                        alt=""
+                        title="לחץ להגדלה"
+                        style={{ maxWidth: '100%', maxHeight: '40vh', borderRadius: 6, objectFit: 'contain', display: 'inline-block', cursor: 'zoom-in', border: '1px solid #e5e7eb' }}
+                      />
+                      <div style={{ fontSize: 11, color: '#aaa', marginTop: 4 }}>לחץ על התמונה להגדלה</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
             {selected.bottomLine && (
@@ -163,6 +188,20 @@ export default function WorkPlansView({ role, clientId }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Fullscreen image zoom */}
+      {zoomImg && (
+        <div
+          onClick={() => setZoomImg(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 19999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out',
+          }}
+        >
+          <img src={zoomImg} alt="" style={{ maxWidth: '95vw', maxHeight: '92vh', borderRadius: 8, objectFit: 'contain' }} />
+          <div style={{ position: 'absolute', top: 16, left: 16, color: '#fff', fontSize: 24, cursor: 'pointer', fontWeight: 700 }}>✕</div>
+        </div>
+      )}
     </div>
   );
 }
