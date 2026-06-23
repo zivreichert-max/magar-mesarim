@@ -2,12 +2,14 @@
 import { useState } from 'react';
 import PriceCalc from './PriceCalc';
 import EduBudgetCalc from './EduBudgetCalc';
+import EduOutcomesCalc from './EduOutcomesCalc';
 
-type CalcId = 'prices' | 'edu';
+type CalcId = 'prices' | 'edu' | 'eduOutcomes';
 
 const CALCS: { id: CalcId; label: string }[] = [
   { id: 'prices', label: 'התייקרויות' },
   { id: 'edu', label: 'תקצוב חינוך לתלמיד' },
+  { id: 'eduOutcomes', label: 'הישגים בחינוך' },
 ];
 
 export default function CalculatorsHub() {
@@ -44,7 +46,9 @@ export default function CalculatorsHub() {
         })}
       </div>
 
-      {active === 'prices' ? <PriceCalc /> : <EduBudgetCalc />}
+      {active === 'prices' && <PriceCalc />}
+      {active === 'edu' && <EduBudgetCalc />}
+      {active === 'eduOutcomes' && <EduOutcomesCalc />}
     </div>
   );
 }
