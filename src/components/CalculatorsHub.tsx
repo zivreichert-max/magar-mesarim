@@ -9,7 +9,7 @@ type CalcId = 'prices' | 'edu' | 'eduOutcomes' | 'crime';
 
 const CALCS: { id: CalcId; label: string }[] = [
   { id: 'prices', label: 'התייקרויות' },
-  { id: 'edu', label: 'תקצוב חינוך לתלמיד' },
+  { id: 'edu', label: 'הוצאה על תלמיד' },
   { id: 'eduOutcomes', label: 'הישגים בחינוך' },
   { id: 'crime', label: 'פשיעה ורצח' },
 ];
