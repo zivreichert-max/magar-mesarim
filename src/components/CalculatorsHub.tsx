@@ -3,13 +3,15 @@ import { useState } from 'react';
 import PriceCalc from './PriceCalc';
 import EduBudgetCalc from './EduBudgetCalc';
 import EduOutcomesCalc from './EduOutcomesCalc';
+import CrimeCalc from './CrimeCalc';
 
-type CalcId = 'prices' | 'edu' | 'eduOutcomes';
+type CalcId = 'prices' | 'edu' | 'eduOutcomes' | 'crime';
 
 const CALCS: { id: CalcId; label: string }[] = [
   { id: 'prices', label: 'התייקרויות' },
   { id: 'edu', label: 'תקצוב חינוך לתלמיד' },
   { id: 'eduOutcomes', label: 'הישגים בחינוך' },
+  { id: 'crime', label: 'פשיעה ורצח' },
 ];
 
 export default function CalculatorsHub() {
@@ -49,6 +51,7 @@ export default function CalculatorsHub() {
       {active === 'prices' && <PriceCalc />}
       {active === 'edu' && <EduBudgetCalc />}
       {active === 'eduOutcomes' && <EduOutcomesCalc />}
+      {active === 'crime' && <CrimeCalc />}
     </div>
   );
 }
