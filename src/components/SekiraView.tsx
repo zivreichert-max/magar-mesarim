@@ -8,16 +8,29 @@ import styles from './Sekira.module.css';
 
 const MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
-// Per-day date labels derived from SEKIRA_WEEK, e.g. "14–18 ביוני 2026" → 14.6, 15.6…
+// Start of the sekira week, handling single-month ("14–18 ביוני 2026") and
+// cross-month ("28 ביוני – 2 ביולי 2026") forms.
+function weekStart(): { day: number; month: number; year: number } | null {
+  let m = SEKIRA_WEEK.match(/(\d{1,2})\s+ב?(\S+?)\s*[–-]\s*\d{1,2}\s+ב?\S+?\s+(\d{4})/);
+  if (m) {
+    const mi = MONTHS.indexOf(m[2]);
+    if (mi >= 0) return { day: parseInt(m[1]), month: mi, year: parseInt(m[3]) };
+  }
+  m = SEKIRA_WEEK.match(/(\d{1,2})\s*[–-]\s*\d{1,2}\s+ב?(\S+)\s+(\d{4})/);
+  if (m) {
+    const mi = MONTHS.indexOf(m[2]);
+    if (mi >= 0) return { day: parseInt(m[1]), month: mi, year: parseInt(m[3]) };
+  }
+  return null;
+}
+
+// Per-day date labels derived from SEKIRA_WEEK → 14.6, 15.6… (Date overflow
+// carries cross-month weeks into the next month automatically).
 function weekDates(): string[] {
-  const m = SEKIRA_WEEK.match(/(\d{1,2})\s*[–-]\s*\d{1,2}\s+ב?(\S+)\s+(\d{4})/);
-  if (!m) return [];
-  const startDay = parseInt(m[1]);
-  const monthIdx = MONTHS.indexOf(m[2]);
-  const year = parseInt(m[3]);
-  if (monthIdx < 0) return [];
+  const s = weekStart();
+  if (!s) return [];
   return SEKIRA_PARLIAMENTARY.map((_, i) => {
-    const d = new Date(year, monthIdx, startDay + i);
+    const d = new Date(s.year, s.month, s.day + i);
     return `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
   });
 }

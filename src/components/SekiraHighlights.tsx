@@ -7,12 +7,17 @@ import styles from './Sekira.module.css';
 const MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 const DAY_ORDER = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'יום שבת'];
 
-// Date label per weekday, derived from SEKIRA_WEEK ("14–18 ביוני 2026")
+// Date label per weekday, derived from SEKIRA_WEEK. Handles single-month
+// ("14–18 ביוני 2026") and cross-month ("28 ביוני – 2 ביולי 2026") forms.
 function dayDates(): Record<string, string> {
-  const m = SEKIRA_WEEK.match(/(\d{1,2})\s*[–-]\s*\d{1,2}\s+ב?(\S+)\s+(\d{4})/);
-  if (!m) return {};
-  const start = parseInt(m[1]), monIdx = MONTHS.indexOf(m[2]), year = parseInt(m[3]);
-  if (monIdx < 0) return {};
+  let start = NaN, monIdx = -1, year = NaN;
+  let m = SEKIRA_WEEK.match(/(\d{1,2})\s+ב?(\S+?)\s*[–-]\s*\d{1,2}\s+ב?\S+?\s+(\d{4})/);
+  if (m) { start = parseInt(m[1]); monIdx = MONTHS.indexOf(m[2]); year = parseInt(m[3]); }
+  else {
+    m = SEKIRA_WEEK.match(/(\d{1,2})\s*[–-]\s*\d{1,2}\s+ב?(\S+)\s+(\d{4})/);
+    if (m) { start = parseInt(m[1]); monIdx = MONTHS.indexOf(m[2]); year = parseInt(m[3]); }
+  }
+  if (monIdx < 0 || isNaN(start)) return {};
   const map: Record<string, string> = {};
   DAY_ORDER.forEach((d, i) => {
     const dt = new Date(year, monIdx, start + i);
