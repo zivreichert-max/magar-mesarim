@@ -4,14 +4,16 @@ import PriceCalc from './PriceCalc';
 import EduBudgetCalc from './EduBudgetCalc';
 import EduOutcomesCalc from './EduOutcomesCalc';
 import CrimeCalc from './CrimeCalc';
+import RecruitmentLink from './RecruitmentLink';
 
-type CalcId = 'prices' | 'edu' | 'eduOutcomes' | 'crime';
+type CalcId = 'prices' | 'edu' | 'eduOutcomes' | 'crime' | 'recruitment';
 
 const CALCS: { id: CalcId; label: string }[] = [
   { id: 'prices', label: 'התייקרויות' },
   { id: 'edu', label: 'הוצאה על תלמיד' },
   { id: 'eduOutcomes', label: 'הישגים בחינוך' },
   { id: 'crime', label: 'פשיעה ורצח' },
+  { id: 'recruitment', label: 'התגייסות וקצונה' },
 ];
 
 export default function CalculatorsHub() {
@@ -52,6 +54,7 @@ export default function CalculatorsHub() {
       {active === 'edu' && <EduBudgetCalc />}
       {active === 'eduOutcomes' && <EduOutcomesCalc />}
       {active === 'crime' && <CrimeCalc />}
+      {active === 'recruitment' && <RecruitmentLink />}
     </div>
   );
 }
