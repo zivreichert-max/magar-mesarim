@@ -30,12 +30,6 @@ const BASE_PERIOD = 'דצמבר/2022';
 // מחולל מחירים ומדדי מחירים — מכסה גם מחירים ממוצעים וגם מדד המחירים לצרכן
 const CBS_SOURCE_URL = 'https://www.cbs.gov.il/he/Statistics/Pages/%D7%9E%D7%97%D7%95%D7%9C%D7%9C%D7%99%D7%9D/%D7%9E%D7%97%D7%95%D7%9C%D7%9C-%D7%9E%D7%97%D7%99%D7%A8%D7%99%D7%9D.aspx';
 
-const EXTERNAL_LINKS = [
-  { label: 'נתוני פשיעה ורצח בחברה הערבית', url: 'https://rassed.nalcci.org/dashboard/violence' },
-  { label: 'רצח נשים — ארכיון',              url: 'https://iwn.org.il/violence-against-women-archive/' },
-  { label: 'מעקב חוקי ההפיכה המשפטית',       url: 'https://www.demonitor.org.il/' },
-];
-
 function changeColor(pct: number): string {
   if (pct >= 50) return '#7f1d1d';
   if (pct >= 25) return '#991b1b';
@@ -279,32 +273,6 @@ export default function PriceCalc() {
               למקור בלמ&quot;ס — מחולל מחירים ומדדי מחירים ↗
             </a>
           </div>
-        </div>
-
-        {/* ── כלים ומאגרי מידע — מתחת למחשבון ─────────────── */}
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 10, letterSpacing: '0.03em' }}>
-          כלים ומאגרי מידע
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {EXTERNAL_LINKS.map(({ label, url }) => (
-            <a
-              key={url}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '11px 14px', background: '#fff', border: '1px solid #e5e7eb',
-                borderRadius: 6, textDecoration: 'none', color: '#111827',
-                fontSize: 13, fontWeight: 500,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#2077BB'; e.currentTarget.style.background = '#f8faff'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.background = '#fff'; }}
-            >
-              <span>{label}</span>
-              <span style={{ fontSize: 13, color: '#9ca3af', flexShrink: 0, marginRight: 8 }}>↗</span>
-            </a>
-          ))}
         </div>
 
         {/* Methodology footer */}

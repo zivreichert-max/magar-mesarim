@@ -4,16 +4,21 @@ import PriceCalc from './PriceCalc';
 import EduBudgetCalc from './EduBudgetCalc';
 import EduOutcomesCalc from './EduOutcomesCalc';
 import CrimeCalc from './CrimeCalc';
-import RecruitmentLink from './RecruitmentLink';
+import ExternalLinks from './ExternalLinks';
 
-type CalcId = 'prices' | 'edu' | 'eduOutcomes' | 'crime' | 'recruitment';
+type CalcId = 'prices' | 'edu' | 'eduOutcomes' | 'crime' | 'external';
 
 const CALCS: { id: CalcId; label: string }[] = [
   { id: 'prices', label: 'התייקרויות' },
   { id: 'edu', label: 'הוצאה על תלמיד' },
   { id: 'eduOutcomes', label: 'הישגים בחינוך' },
   { id: 'crime', label: 'פשיעה ורצח' },
-  { id: 'recruitment', label: 'התגייסות וקצונה' },
+  { id: 'external', label: 'מחשבונים חיצוניים' },
+];
+
+const EXTERNAL_CALCS = [
+  { label: 'התגייסות, קצונה ושירות קרבי', url: 'https://recruitment-data.vercel.app/he', desc: 'נתוני גיוס, קצונה ושירות קרבי לאורך השנים' },
+  { label: 'מעקב חוקי ההפיכה המשפטית', url: 'https://www.demonitor.org.il/', desc: 'דמוקרטים — מעקב אחר חקיקת המהפכה המשפטית' },
 ];
 
 export default function CalculatorsHub() {
@@ -54,7 +59,11 @@ export default function CalculatorsHub() {
       {active === 'edu' && <EduBudgetCalc />}
       {active === 'eduOutcomes' && <EduOutcomesCalc />}
       {active === 'crime' && <CrimeCalc />}
-      {active === 'recruitment' && <RecruitmentLink />}
+      {active === 'external' && (
+        <div style={{ padding: '24px', maxWidth: 640 }}>
+          <ExternalLinks links={EXTERNAL_CALCS} />
+        </div>
+      )}
     </div>
   );
 }

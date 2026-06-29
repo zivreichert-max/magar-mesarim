@@ -3,6 +3,12 @@ import { useState, useMemo } from 'react';
 import {
   CRIME_METRICS, CRIME_DATA, CRIME_YEARS, CrimeMetricKey,
 } from '@/data/crime';
+import ExternalLinks from './ExternalLinks';
+
+const CRIME_EXTERNAL = [
+  { label: 'נתוני פשיעה ורצח בחברה הערבית', url: 'https://rassed.nalcci.org/dashboard/violence', desc: 'דאשבורד רשד — נתוני אלימות בחברה הערבית' },
+  { label: 'רצח נשים — ארכיון', url: 'https://iwn.org.il/violence-against-women-archive/', desc: 'ארכיון שדולת הנשים בישראל' },
+];
 
 const NAVY = '#1e3a7b';
 const UP = '#b0233a';   // increase (the adverse signal) — muted, used sparingly
@@ -195,6 +201,8 @@ export default function CrimeCalc() {
             רצח: מספר קורבנות לפי שנה (2021–2025, שנים מלאות). שאר העבירות: סך תיקים לפי שנה; 2025 חלקי ואינו נכלל בחישוב המגמה. הנתונים התקבלו מהתנועה לחופש המידע (נתוני משטרת ישראל).
           </div>
         </div>
+
+        <ExternalLinks title="מקורות נוספים" links={CRIME_EXTERNAL} />
       </div>
     </div>
   );
