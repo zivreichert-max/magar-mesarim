@@ -103,6 +103,12 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         topic: `פיצול תפקיד היועמ"ש`,
         hasPaper: true,
       },
+      {
+        time: `11:00`,
+        committee: `ועדת חוץ וביטחון`,
+        topic: `החוק להקפאת מעצרי העריקים החרדים`,
+        hasPaper: false,
+      },
     ],
   },
   {
