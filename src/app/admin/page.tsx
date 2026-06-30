@@ -520,6 +520,22 @@ function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
   const totalEntries = sessions.length;
   const totalMs = sessions.reduce((a, s) => a + sessionDurationMs(s), 0);
 
+  // ── Excel-style filters for the session log ──────────────────────────────
+  const [fParty, setFParty] = useState('');
+  const [fUser, setFUser] = useState('');
+  const [fDate, setFDate] = useState('');
+  const userOptions = [...new Set(sessions.map(s => s.user_label || '—'))].sort((a, b) => a.localeCompare(b, 'he'));
+  const filteredSessions = sessions.filter(s =>
+    (!fParty || partyMeta(s).key === fParty) &&
+    (!fUser || (s.user_label || '—') === fUser) &&
+    (!fDate || new Date(s.started_at).toLocaleDateString('he-IL') === fDate)
+  );
+  const hasFilter = !!(fParty || fUser || fDate);
+  const selectStyle = {
+    padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border)',
+    background: '#fff', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, cursor: 'pointer',
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 16 }}>
@@ -615,6 +631,32 @@ function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
             <h2 style={{ fontFamily: "'Frank Ruhl Libre', serif", fontSize: 18, fontWeight: 800, color: 'var(--text)', margin: '0 0 14px' }}>
               יומן כניסות
             </h2>
+            {/* Excel-style filters */}
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
+              <select value={fParty} onChange={e => setFParty(e.target.value)} style={selectStyle}>
+                <option value="">כל המפלגות</option>
+                {stats.map(st => <option key={st.key} value={st.key}>{st.name}</option>)}
+              </select>
+              <select value={fUser} onChange={e => setFUser(e.target.value)} style={selectStyle}>
+                <option value="">כל המשתמשים</option>
+                {userOptions.map(u => <option key={u} value={u}>{u}</option>)}
+              </select>
+              <select value={fDate} onChange={e => setFDate(e.target.value)} style={selectStyle}>
+                <option value="">כל התאריכים</option>
+                {dayStats.map(d => <option key={d.key} value={d.key}>{d.label}</option>)}
+              </select>
+              {hasFilter && (
+                <button
+                  onClick={() => { setFParty(''); setFUser(''); setFDate(''); }}
+                  style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg3)', color: 'var(--muted)', fontFamily: 'inherit', fontSize: 13, cursor: 'pointer' }}
+                >
+                  נקה סינון
+                </button>
+              )}
+              <span style={{ fontSize: 12, color: 'var(--muted)', marginInlineStart: 'auto' }}>
+                {filteredSessions.length} כניסות
+              </span>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1.2fr 1.2fr 0.8fr', gap: 12, padding: '0 16px', fontSize: 11, color: 'var(--muted)', fontWeight: 700 }}>
                 <span>מפלגה</span>
@@ -622,7 +664,7 @@ function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
                 <span>מתי</span>
                 <span style={{ textAlign: 'left' }}>משך</span>
               </div>
-              {sessions.slice(0, SESSION_LOG_LIMIT).map(s => (
+              {filteredSessions.slice(0, SESSION_LOG_LIMIT).map(s => (
                 <div
                   key={s.id}
                   style={{
@@ -641,11 +683,15 @@ function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
                 </div>
               ))}
             </div>
-            {sessions.length > SESSION_LOG_LIMIT && (
-              <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 10 }}>
-                מוצגות {SESSION_LOG_LIMIT} הכניסות האחרונות מתוך {sessions.length}.
+            {filteredSessions.length === 0 ? (
+              <p style={{ color: 'var(--muted)', fontSize: 13, marginTop: 10 }}>
+                אין כניסות התואמות לסינון.
               </p>
-            )}
+            ) : filteredSessions.length > SESSION_LOG_LIMIT ? (
+              <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 10 }}>
+                מוצגות {SESSION_LOG_LIMIT} הכניסות האחרונות מתוך {filteredSessions.length}.
+              </p>
+            ) : null}
           </div>
         </>
       )}
