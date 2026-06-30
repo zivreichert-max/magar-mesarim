@@ -77,6 +77,32 @@ function aggregateByParty(sessions: SiteSession[]): PartyStat[] {
   return out.sort((a, b) => b.entries - a.entries);
 }
 
+function sessionPartyName(s: SiteSession): string {
+  return s.client_name ?? (s.role === 'full' ? 'צוות / מנהל' : 'לא ידוע');
+}
+
+interface DayStat { key: string; label: string; entries: number; totalMs: number; sortTs: number; }
+
+function aggregateByDay(sessions: SiteSession[]): DayStat[] {
+  const WD = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+  const map = new Map<string, DayStat>();
+  for (const s of sessions) {
+    const d = new Date(s.started_at);
+    const key = d.toLocaleDateString('he-IL');
+    let g = map.get(key);
+    if (!g) {
+      g = { key, label: `${WD[d.getDay()]} ${d.getDate()}.${d.getMonth() + 1}`, entries: 0, totalMs: 0, sortTs: 0 };
+      map.set(key, g);
+    }
+    g.entries += 1;
+    g.totalMs += sessionDurationMs(s);
+    g.sortTs = Math.max(g.sortTs, d.getTime());
+  }
+  return [...map.values()].sort((a, b) => b.sortTs - a.sortTs);
+}
+
+const SESSION_LOG_LIMIT = 200;
+
 export default function AdminPage() {
   const [unlocked, setUnlocked] = useState(false);
   const [pw, setPw] = useState('');
@@ -470,6 +496,8 @@ interface AnalyticsPanelProps {
 
 function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
   const stats = aggregateByParty(sessions);
+  const dayStats = aggregateByDay(sessions);
+  const maxDayEntries = Math.max(1, ...dayStats.map(d => d.entries));
   const totalEntries = sessions.length;
   const totalMs = sessions.reduce((a, s) => a + sessionDurationMs(s), 0);
 
@@ -525,6 +553,63 @@ function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
             </div>
           ))}
         </div>
+      )}
+
+      {!loading && sessions.length > 0 && (
+        <>
+          {/* ── Per-day breakdown ───────────────────────────────────────── */}
+          <div style={{ marginTop: 36 }}>
+            <h2 style={{ fontFamily: "'Frank Ruhl Libre', serif", fontSize: 18, fontWeight: 800, color: 'var(--text)', margin: '0 0 14px' }}>
+              פילוח לפי יום
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {dayStats.map(d => (
+                <div key={d.key} style={{ display: 'grid', gridTemplateColumns: '96px 1fr 160px', gap: 12, alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{d.label}</span>
+                  <div style={{ background: 'var(--bg3)', borderRadius: 6, height: 22, overflow: 'hidden' }}>
+                    <div style={{ width: `${(d.entries / maxDayEntries) * 100}%`, height: '100%', background: '#0075C4', borderRadius: 6 }} />
+                  </div>
+                  <span style={{ fontSize: 12, color: 'var(--muted)', textAlign: 'left' }}>{d.entries} כניסות · {formatDuration(d.totalMs)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Session log ─────────────────────────────────────────────── */}
+          <div style={{ marginTop: 36 }}>
+            <h2 style={{ fontFamily: "'Frank Ruhl Libre', serif", fontSize: 18, fontWeight: 800, color: 'var(--text)', margin: '0 0 14px' }}>
+              יומן כניסות
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1.2fr 1.2fr 0.8fr', gap: 12, padding: '0 16px', fontSize: 11, color: 'var(--muted)', fontWeight: 700 }}>
+                <span>מפלגה</span>
+                <span>שם</span>
+                <span>מתי</span>
+                <span style={{ textAlign: 'left' }}>משך</span>
+              </div>
+              {sessions.slice(0, SESSION_LOG_LIMIT).map(s => (
+                <div
+                  key={s.id}
+                  style={{
+                    background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8,
+                    padding: '10px 16px', display: 'grid',
+                    gridTemplateColumns: '1.4fr 1.2fr 1.2fr 0.8fr', gap: 12, alignItems: 'center',
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{sessionPartyName(s)}</span>
+                  <span style={{ fontSize: 13, color: 'rgba(232,230,224,0.8)' }}>{s.user_label || '—'}</span>
+                  <span style={{ fontSize: 12, color: 'var(--muted)' }}>{formatDateTime(s.started_at)}</span>
+                  <span style={{ fontSize: 12, color: 'rgba(232,230,224,0.8)', textAlign: 'left' }}>{formatDuration(sessionDurationMs(s))}</span>
+                </div>
+              ))}
+            </div>
+            {sessions.length > SESSION_LOG_LIMIT && (
+              <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 10 }}>
+                מוצגות {SESSION_LOG_LIMIT} הכניסות האחרונות מתוך {sessions.length}.
+              </p>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
