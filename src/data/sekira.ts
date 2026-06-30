@@ -115,6 +115,24 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
     day: `יום רביעי`,
     events: [
       {
+        time: `08:30`,
+        committee: `ועדת החינוך`,
+        topic: `הצעת חוק זכויות הסטודנט (מסלולי לימוד נפרדים בתארים מתקדמים)`,
+        hasPaper: false,
+      },
+      {
+        time: `09:00`,
+        committee: `ועדת חוץ וביטחון`,
+        topic: `הצעת חוק שירות ביטחון (תיקון מס' 26)`,
+        hasPaper: false,
+      },
+      {
+        time: `09:00`,
+        committee: `ועדת הכנסת`,
+        topic: `הצעת חוק מימון מפלגות (הוראת שעה – מימון הבחירות לכנסת ה-26)`,
+        hasPaper: false,
+      },
+      {
         time: `09:00`,
         committee: `ועדת החוקה`,
         topic: `חקיקת הבחירות לכנסת ה-26`,
