@@ -149,6 +149,18 @@ export const SEKIRA_PARLIAMENTARY: SekiraDay[] = [
         topic: `פיצול תפקיד היועמ"ש`,
         hasPaper: true,
       },
+      {
+        time: `10:00`,
+        committee: `ועדת חוץ וביטחון`,
+        topic: `החוק להקפאת מעצרי העריקים החרדים`,
+        hasPaper: false,
+      },
+      {
+        time: `13:00`,
+        committee: `ועדת חוץ וביטחון`,
+        topic: `הצעת חוק שירות ביטחון (תיקון מס׳ 28) – הארכת שירות החובה בצה״ל`,
+        hasPaper: false,
+      },
     ],
   },
 ];
