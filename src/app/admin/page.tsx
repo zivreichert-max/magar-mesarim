@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, Suggestion, SiteSession, getSiteSessions } from '@/lib/supabase';
+import { CLIENTS } from '@/data/clients';
 import { TOPICS } from '@/data/messages';
 
 const CORRECT_PASSWORD = '61218384';
@@ -41,9 +42,25 @@ function formatDateTime(iso: string) {
   });
 }
 
+// Each password maps to a party colour (from clients.ts); the full/internal
+// password and unknown clients get their own colours so every chart segment,
+// dot and bar is colour-coded consistently across the dashboard.
+const PARTY_COLOR: Record<string, string> = Object.fromEntries(CLIENTS.map(c => [c.id, c.color]));
+const FULL_COLOR = '#0f172a';
+const UNKNOWN_COLOR = '#9ca3af';
+
+function partyMeta(s: SiteSession): { key: string; name: string; color: string } {
+  if (s.client_id && PARTY_COLOR[s.client_id]) {
+    return { key: s.client_id, name: s.client_name ?? s.client_id, color: PARTY_COLOR[s.client_id] };
+  }
+  if (s.role === 'full') return { key: '__full__', name: 'צוות / מנהל', color: FULL_COLOR };
+  return { key: '__unknown__', name: 'לא ידוע', color: UNKNOWN_COLOR };
+}
+
 interface PartyStat {
   key: string;
   name: string;
+  color: string;
   entries: number;
   users: number;
   totalMs: number;
@@ -52,12 +69,11 @@ interface PartyStat {
 }
 
 function aggregateByParty(sessions: SiteSession[]): PartyStat[] {
-  const map = new Map<string, { name: string; sessions: SiteSession[]; users: Set<string> }>();
+  const map = new Map<string, { name: string; color: string; sessions: SiteSession[]; users: Set<string> }>();
   for (const s of sessions) {
-    const key = s.client_id ?? (s.role === 'full' ? '__full__' : '__unknown__');
-    const name = s.client_name ?? (s.role === 'full' ? 'צוות / מנהל' : 'לא ידוע');
-    let g = map.get(key);
-    if (!g) { g = { name, sessions: [], users: new Set() }; map.set(key, g); }
+    const m = partyMeta(s);
+    let g = map.get(m.key);
+    if (!g) { g = { name: m.name, color: m.color, sessions: [], users: new Set() }; map.set(m.key, g); }
     g.sessions.push(s);
     g.users.add(s.user_label || '—');
   }
@@ -66,7 +82,7 @@ function aggregateByParty(sessions: SiteSession[]): PartyStat[] {
     const totalMs = g.sessions.reduce((a, s) => a + sessionDurationMs(s), 0);
     const lastActive = g.sessions.reduce((a, s) => s.last_active > a ? s.last_active : a, g.sessions[0].last_active);
     out.push({
-      key, name: g.name,
+      key, name: g.name, color: g.color,
       entries: g.sessions.length,
       users: g.users.size,
       totalMs,
@@ -77,28 +93,31 @@ function aggregateByParty(sessions: SiteSession[]): PartyStat[] {
   return out.sort((a, b) => b.entries - a.entries);
 }
 
-function sessionPartyName(s: SiteSession): string {
-  return s.client_name ?? (s.role === 'full' ? 'צוות / מנהל' : 'לא ידוע');
-}
-
-interface DayStat { key: string; label: string; entries: number; totalMs: number; sortTs: number; }
+interface DayPartySeg { key: string; name: string; color: string; count: number; }
+interface DayStat { key: string; label: string; entries: number; totalMs: number; sortTs: number; parties: DayPartySeg[]; }
 
 function aggregateByDay(sessions: SiteSession[]): DayStat[] {
   const WD = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
-  const map = new Map<string, DayStat>();
+  const map = new Map<string, DayStat & { _p: Map<string, DayPartySeg> }>();
   for (const s of sessions) {
     const d = new Date(s.started_at);
     const key = d.toLocaleDateString('he-IL');
     let g = map.get(key);
     if (!g) {
-      g = { key, label: `${WD[d.getDay()]} ${d.getDate()}.${d.getMonth() + 1}`, entries: 0, totalMs: 0, sortTs: 0 };
+      g = { key, label: `${WD[d.getDay()]} ${d.getDate()}.${d.getMonth() + 1}`, entries: 0, totalMs: 0, sortTs: 0, parties: [], _p: new Map() };
       map.set(key, g);
     }
     g.entries += 1;
     g.totalMs += sessionDurationMs(s);
     g.sortTs = Math.max(g.sortTs, d.getTime());
+    const m = partyMeta(s);
+    const seg = g._p.get(m.key);
+    if (seg) seg.count += 1;
+    else g._p.set(m.key, { key: m.key, name: m.name, color: m.color, count: 1 });
   }
-  return [...map.values()].sort((a, b) => b.sortTs - a.sortTs);
+  return [...map.values()]
+    .map(g => ({ ...g, parties: [...g._p.values()].sort((a, b) => b.count - a.count) }))
+    .sort((a, b) => b.sortTs - a.sortTs);
 }
 
 const SESSION_LOG_LIMIT = 200;
@@ -208,8 +227,8 @@ export default function AdminPage() {
               padding: '12px 24px',
               borderRadius: 8,
               border: 'none',
-              background: 'var(--text)',
-              color: 'var(--bg)',
+              background: 'var(--brand)',
+              color: '#fff',
               fontFamily: 'inherit',
               fontWeight: 700,
               cursor: 'pointer',
@@ -250,8 +269,8 @@ export default function AdminPage() {
                 borderRadius: 8,
                 border: '1px solid',
                 borderColor: isActive ? 'transparent' : 'var(--border)',
-                background: isActive ? 'rgba(255,255,255,0.12)' : 'transparent',
-                color: isActive ? 'var(--text)' : 'var(--muted)',
+                background: isActive ? 'var(--brand)' : 'transparent',
+                color: isActive ? '#fff' : 'var(--muted)',
                 fontFamily: 'inherit',
                 fontSize: 14,
                 fontWeight: isActive ? 700 : 500,
@@ -328,8 +347,8 @@ export default function AdminPage() {
                 borderRadius: 20,
                 border: '1px solid',
                 borderColor: isActive ? 'transparent' : 'var(--border)',
-                background: isActive ? 'rgba(255,255,255,0.12)' : 'transparent',
-                color: isActive ? 'var(--text)' : 'var(--muted)',
+                background: isActive ? 'var(--brand)' : 'transparent',
+                color: isActive ? '#fff' : 'var(--muted)',
                 fontFamily: 'inherit',
                 fontSize: 12,
                 fontWeight: isActive ? 700 : 400,
@@ -384,7 +403,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Description */}
-                <p style={{ fontSize: 13, color: 'rgba(232,230,224,0.8)', lineHeight: 1.6, margin: 0 }}>
+                <p style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.6, margin: 0 }}>
                   {s.description}
                 </p>
 
@@ -544,11 +563,14 @@ function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
                 gridTemplateColumns: '1.6fr 0.8fr 0.8fr 1fr 1fr 1.2fr', gap: 12, alignItems: 'center',
               }}
             >
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{st.name}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+                <span style={{ width: 10, height: 10, borderRadius: 3, background: st.color, flexShrink: 0 }} />
+                {st.name}
+              </span>
               <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', textAlign: 'center' }}>{st.entries}</span>
-              <span style={{ fontSize: 14, color: 'rgba(232,230,224,0.8)', textAlign: 'center' }}>{st.users}</span>
-              <span style={{ fontSize: 13, color: 'rgba(232,230,224,0.8)', textAlign: 'center' }}>{formatDuration(st.avgMs)}</span>
-              <span style={{ fontSize: 13, color: 'rgba(232,230,224,0.8)', textAlign: 'center' }}>{formatDuration(st.totalMs)}</span>
+              <span style={{ fontSize: 14, color: 'var(--text)', textAlign: 'center' }}>{st.users}</span>
+              <span style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>{formatDuration(st.avgMs)}</span>
+              <span style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>{formatDuration(st.totalMs)}</span>
               <span style={{ fontSize: 12, color: 'var(--muted)', textAlign: 'left' }}>{formatDateTime(st.lastActive)}</span>
             </div>
           ))}
@@ -562,12 +584,25 @@ function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
             <h2 style={{ fontFamily: "'Frank Ruhl Libre', serif", fontSize: 18, fontWeight: 800, color: 'var(--text)', margin: '0 0 14px' }}>
               פילוח לפי יום
             </h2>
+            {/* Legend — colour per party */}
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+              {stats.map(st => (
+                <span key={st.key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--muted)' }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 3, background: st.color }} />
+                  {st.name}
+                </span>
+              ))}
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {dayStats.map(d => (
                 <div key={d.key} style={{ display: 'grid', gridTemplateColumns: '96px 1fr 160px', gap: 12, alignItems: 'center' }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{d.label}</span>
                   <div style={{ background: 'var(--bg3)', borderRadius: 6, height: 22, overflow: 'hidden' }}>
-                    <div style={{ width: `${(d.entries / maxDayEntries) * 100}%`, height: '100%', background: '#0075C4', borderRadius: 6 }} />
+                    <div style={{ display: 'flex', height: '100%', width: `${(d.entries / maxDayEntries) * 100}%` }}>
+                      {d.parties.map(p => (
+                        <div key={p.key} title={`${p.name}: ${p.count}`} style={{ flexGrow: p.count, flexBasis: 0, background: p.color }} />
+                      ))}
+                    </div>
                   </div>
                   <span style={{ fontSize: 12, color: 'var(--muted)', textAlign: 'left' }}>{d.entries} כניסות · {formatDuration(d.totalMs)}</span>
                 </div>
@@ -596,10 +631,13 @@ function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
                     gridTemplateColumns: '1.4fr 1.2fr 1.2fr 0.8fr', gap: 12, alignItems: 'center',
                   }}
                 >
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{sessionPartyName(s)}</span>
-                  <span style={{ fontSize: 13, color: 'rgba(232,230,224,0.8)' }}>{s.user_label || '—'}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+                    <span style={{ width: 9, height: 9, borderRadius: 3, background: partyMeta(s).color, flexShrink: 0 }} />
+                    {partyMeta(s).name}
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{s.user_label || '—'}</span>
                   <span style={{ fontSize: 12, color: 'var(--muted)' }}>{formatDateTime(s.started_at)}</span>
-                  <span style={{ fontSize: 12, color: 'rgba(232,230,224,0.8)', textAlign: 'left' }}>{formatDuration(sessionDurationMs(s))}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', textAlign: 'left' }}>{formatDuration(sessionDurationMs(s))}</span>
                 </div>
               ))}
             </div>
