@@ -57,8 +57,13 @@ export default function AddToScheduleModal({ session, onClose, onSaved }: Props)
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
-  function copyPrompt() {
-    navigator.clipboard.writeText(buildSessionPrompt(session));
+  async function copyPrompt() {
+    try {
+      await navigator.clipboard.writeText(buildSessionPrompt(session));
+    } catch {
+      setError('ההעתקה ללוח נכשלה');
+      return;
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   }
@@ -122,7 +127,7 @@ export default function AddToScheduleModal({ session, onClose, onSaved }: Props)
         position: 'fixed', top: '50%', right: '50%', transform: 'translate(50%, -50%)',
         width: '92%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
         background: '#fff', borderRadius: 10, zIndex: 10001, direction: 'rtl',
-        fontFamily: "'Heebo', sans-serif",
+        fontFamily: "var(--font-heebo), sans-serif",
         boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
       }}>
         {/* Header */}

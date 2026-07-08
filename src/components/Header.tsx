@@ -34,7 +34,7 @@ export default function Header({ count, total, role, activeClient, viewTitle }: 
         >
           <span
             style={{
-              fontFamily: "'Heebo', sans-serif",
+              fontFamily: "var(--font-heebo), sans-serif",
               fontSize: 11,
               fontWeight: 900,
               color: '#111111',
@@ -51,7 +51,7 @@ export default function Header({ count, total, role, activeClient, viewTitle }: 
           <div
             className="site-header-title"
             style={{
-              fontFamily: "'Heebo', sans-serif",
+              fontFamily: "var(--font-heebo), sans-serif",
               fontSize: 20,
               fontWeight: 900,
               color: '#111111',
@@ -79,7 +79,7 @@ export default function Header({ count, total, role, activeClient, viewTitle }: 
           {activeClient.name}
         </div>
       ) : (
-        <div style={{ fontSize: 12, color: '#555555', textAlign: 'left' }}>
+        <div style={{ fontSize: 12, color: '#6b7280', textAlign: 'left' }}>
           <span style={{ color: '#111111', fontSize: 18, fontWeight: 800 }}>{count}</span>
           {count !== total && (
             <span> / {total}</span>

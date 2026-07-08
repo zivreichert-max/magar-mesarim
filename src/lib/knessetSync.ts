@@ -33,13 +33,17 @@ export async function syncKnessetSessions(): Promise<KnessetUpdate[]> {
   const liveActive    = all.filter(s => !s.cancelled);
   const liveCancelled = all.filter(s => s.cancelled);
 
-  const { data: stored } = await supabase.from('knesset_sessions').select('*');
+  // A failed read here must abort the sync: treating it as "no stored state"
+  // would skip change detection and insert duplicate cancel rows
+  const { data: stored, error: storedErr } = await supabase.from('knesset_sessions').select('*');
+  if (storedErr) throw new Error(`knesset_sessions read failed: ${storedErr.message}`);
   const storedMap = new Map(((stored ?? []) as StoredSession[]).map(s => [s.id, s]));
 
   // Load existing updates so we don't create duplicates
-  const { data: existingUpdates } = await supabase
+  const { data: existingUpdates, error: updatesErr } = await supabase
     .from('knesset_updates')
     .select('session_id, update_type');
+  if (updatesErr) throw new Error(`knesset_updates read failed: ${updatesErr.message}`);
   const alreadyCancelled = new Set(
     (existingUpdates ?? [])
       .filter((u: { update_type: string }) => u.update_type === 'cancel')
@@ -111,7 +115,7 @@ export async function syncKnessetSessions(): Promise<KnessetUpdate[]> {
 
   // ── Persist current state ─────────────────────────────────────────────────
   if (all.length > 0) {
-    await supabase.from('knesset_sessions').upsert(
+    const { error: upsertErr } = await supabase.from('knesset_sessions').upsert(
       all.map((s: KnessetSession) => ({
         id: s.id,
         committee: s.committee,
@@ -125,10 +129,12 @@ export async function syncKnessetSessions(): Promise<KnessetUpdate[]> {
       })),
       { onConflict: 'id' }
     );
+    if (upsertErr) throw new Error(`knesset_sessions upsert failed: ${upsertErr.message}`);
   }
 
   if (newUpdates.length > 0) {
-    await supabase.from('knesset_updates').insert(newUpdates);
+    const { error: insertErr } = await supabase.from('knesset_updates').insert(newUpdates);
+    if (insertErr) throw new Error(`knesset_updates insert failed: ${insertErr.message}`);
   }
 
   return getRecentKnessetUpdates();

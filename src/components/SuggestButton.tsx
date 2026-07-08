@@ -40,11 +40,13 @@ export default function SuggestButton({ authorName }: SuggestButtonProps) {
   const [source, setSource] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   async function handleSubmit() {
     if (!subtopic.trim() || !description.trim() || submitting) return;
     setSubmitting(true);
-    await supabase.from('suggestions').insert({
+    setSubmitError(null);
+    const { error } = await supabase.from('suggestions').insert({
       topic,
       subtopic: subtopic.trim(),
       description: description.trim(),
@@ -53,6 +55,11 @@ export default function SuggestButton({ authorName }: SuggestButtonProps) {
       status: 'pending',
     });
     setSubmitting(false);
+    if (error) {
+      // Keep the form contents so nothing is lost
+      setSubmitError(error.message);
+      return;
+    }
     setSent(true);
     setTimeout(() => {
       setSent(false);
@@ -83,7 +90,7 @@ export default function SuggestButton({ authorName }: SuggestButtonProps) {
           fontWeight: 700,
           fontSize: 14,
           cursor: 'pointer',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+          boxShadow: '0 4px 18px rgba(12,68,124,0.18)',
           display: 'flex',
           alignItems: 'center',
           gap: 8,
@@ -131,7 +138,7 @@ export default function SuggestButton({ authorName }: SuggestButtonProps) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2
                 style={{
-                  fontFamily: "'Frank Ruhl Libre', serif",
+                  fontFamily: "var(--font-frank-ruhl), serif",
                   fontSize: 20,
                   fontWeight: 700,
                   color: 'var(--text)',
@@ -243,6 +250,11 @@ export default function SuggestButton({ authorName }: SuggestButtonProps) {
                 </div>
 
                 {/* Submit */}
+                {submitError && (
+                  <div style={{ fontSize: 13, color: '#dc2626', fontWeight: 600 }}>
+                    השליחה נכשלה — ההצעה לא נשמרה. נסה שוב ({submitError})
+                  </div>
+                )}
                 <button
                   onClick={handleSubmit}
                   disabled={!subtopic.trim() || !description.trim() || submitting}

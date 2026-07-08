@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase, Suggestion, SiteSession, getSiteSessions } from '@/lib/supabase';
 import { CLIENTS } from '@/data/clients';
 import { TOPICS } from '@/data/messages';
@@ -149,16 +149,26 @@ export default function AdminPage() {
     setSessionsLoading(false);
   }, []);
 
+  // Deferred a tick so the effect body has no synchronous setState
+  // (react-hooks/set-state-in-effect; keeps React Compiler optimizations)
   useEffect(() => {
-    if (unlocked) fetchSuggestions();
+    if (!unlocked) return;
+    const t = setTimeout(fetchSuggestions, 0);
+    return () => clearTimeout(t);
   }, [unlocked, fetchSuggestions]);
 
   useEffect(() => {
-    if (unlocked && section === 'analytics') fetchSessions();
+    if (!unlocked || section !== 'analytics') return;
+    const t = setTimeout(fetchSessions, 0);
+    return () => clearTimeout(t);
   }, [unlocked, section, fetchSessions]);
 
   async function updateStatus(id: string, status: string) {
-    await supabase.from('suggestions').update({ status }).eq('id', id);
+    const { error } = await supabase.from('suggestions').update({ status }).eq('id', id);
+    if (error) {
+      alert(`עדכון הסטטוס נכשל — לא נשמר. (${error.message})`);
+      return;
+    }
     setSuggestions(prev =>
       prev.map(s => s.id === id ? { ...s, status } : s)
     );
@@ -190,7 +200,7 @@ export default function AdminPage() {
       >
         <h1
           style={{
-            fontFamily: "'Frank Ruhl Libre', serif",
+            fontFamily: "var(--font-frank-ruhl), serif",
             fontSize: 26,
             fontWeight: 900,
             color: 'var(--text)',
@@ -303,7 +313,7 @@ export default function AdminPage() {
         <div>
           <h1
             style={{
-              fontFamily: "'Frank Ruhl Libre', serif",
+              fontFamily: "var(--font-frank-ruhl), serif",
               fontSize: 24,
               fontWeight: 900,
               color: 'var(--text)',
@@ -313,7 +323,7 @@ export default function AdminPage() {
             הצעות תוכן
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: 13, marginTop: 4 }}>
-            {counts.all} הצעות סה"כ · {counts.pending} ממתינות
+            {counts.all} הצעות סה&quot;כ · {counts.pending} ממתינות
           </p>
         </div>
         <button
@@ -514,22 +524,27 @@ interface AnalyticsPanelProps {
 }
 
 function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
-  const stats = aggregateByParty(sessions);
-  const dayStats = aggregateByDay(sessions);
-  const maxDayEntries = Math.max(1, ...dayStats.map(d => d.entries));
+  // Aggregations only depend on the session list — memoized so typing in the
+  // filter selects doesn't recompute them on every render
+  const stats = useMemo(() => aggregateByParty(sessions), [sessions]);
+  const dayStats = useMemo(() => aggregateByDay(sessions), [sessions]);
+  const maxDayEntries = useMemo(() => Math.max(1, ...dayStats.map(d => d.entries)), [dayStats]);
   const totalEntries = sessions.length;
-  const totalMs = sessions.reduce((a, s) => a + sessionDurationMs(s), 0);
+  const totalMs = useMemo(() => sessions.reduce((a, s) => a + sessionDurationMs(s), 0), [sessions]);
 
   // ── Excel-style filters for the session log ──────────────────────────────
   const [fParty, setFParty] = useState('');
   const [fUser, setFUser] = useState('');
   const [fDate, setFDate] = useState('');
-  const userOptions = [...new Set(sessions.map(s => s.user_label || '—'))].sort((a, b) => a.localeCompare(b, 'he'));
-  const filteredSessions = sessions.filter(s =>
+  const userOptions = useMemo(
+    () => [...new Set(sessions.map(s => s.user_label || '—'))].sort((a, b) => a.localeCompare(b, 'he')),
+    [sessions]
+  );
+  const filteredSessions = useMemo(() => sessions.filter(s =>
     (!fParty || partyMeta(s).key === fParty) &&
     (!fUser || (s.user_label || '—') === fUser) &&
     (!fDate || new Date(s.started_at).toLocaleDateString('he-IL') === fDate)
-  );
+  ), [sessions, fParty, fUser, fDate]);
   const hasFilter = !!(fParty || fUser || fDate);
   const selectStyle = {
     padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border)',
@@ -540,11 +555,11 @@ function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h1 style={{ fontFamily: "'Frank Ruhl Libre', serif", fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: 0 }}>
+          <h1 style={{ fontFamily: "var(--font-frank-ruhl), serif", fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: 0 }}>
             שימוש באתר
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: 13, marginTop: 4 }}>
-            {totalEntries} כניסות סה"כ · {formatDuration(totalMs)} זמן מצטבר
+            {totalEntries} כניסות סה&quot;כ · {formatDuration(totalMs)} זמן מצטבר
           </p>
         </div>
         <button
@@ -597,7 +612,7 @@ function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
         <>
           {/* ── Per-day breakdown ───────────────────────────────────────── */}
           <div style={{ marginTop: 36 }}>
-            <h2 style={{ fontFamily: "'Frank Ruhl Libre', serif", fontSize: 18, fontWeight: 800, color: 'var(--text)', margin: '0 0 14px' }}>
+            <h2 style={{ fontFamily: "var(--font-frank-ruhl), serif", fontSize: 18, fontWeight: 800, color: 'var(--text)', margin: '0 0 14px' }}>
               פילוח לפי יום
             </h2>
             {/* Legend — colour per party */}
@@ -628,7 +643,7 @@ function AnalyticsPanel({ sessions, loading, onRefresh }: AnalyticsPanelProps) {
 
           {/* ── Session log ─────────────────────────────────────────────── */}
           <div style={{ marginTop: 36 }}>
-            <h2 style={{ fontFamily: "'Frank Ruhl Libre', serif", fontSize: 18, fontWeight: 800, color: 'var(--text)', margin: '0 0 14px' }}>
+            <h2 style={{ fontFamily: "var(--font-frank-ruhl), serif", fontSize: 18, fontWeight: 800, color: 'var(--text)', margin: '0 0 14px' }}>
               יומן כניסות
             </h2>
             {/* Excel-style filters */}

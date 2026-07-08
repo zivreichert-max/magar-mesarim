@@ -1,7 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getAllKnessetUpdates, KnessetUpdate } from '@/lib/knessetSync';
-import { getWeeklyKnessetSessions, KnessetSessionRow, markKnessetUpdateInSchedule, ManualScheduleEvent } from '@/lib/supabase';
+import { getWeeklyKnessetSessions, KnessetSessionRow, markKnessetUpdateInSchedule } from '@/lib/supabase';
+import { safeUrl } from '@/lib/urls';
+import { localIso, anchorSunday, normalizeTime, committeeMatches } from '@/lib/scheduleUtils';
 import { SCHEDULE, ScheduleEvent } from '@/data/schedule';
 import { TIMELINE, TimelineEvent } from '@/data/timeline';
 import AddToScheduleModal, { SessionInfo, buildSessionPrompt } from './AddToScheduleModal';
@@ -13,18 +15,8 @@ const UPDATE_PRIORITY: Record<string, number> = { cancel: 3, change: 2, new: 1 }
 type WeekView = 'current' | 'next';
 
 // Compute YYYY-MM-DD for each work day of the requested week (0 = current, 1 = next).
-// Uses local date parts — toISOString() is UTC and shifts the date back
-// a day between midnight and ~03:00 Israel time.
-function localIso(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-function getWeekDateMap(weekOffset: number): Record<string, string> {
-  const now = new Date();
-  const sunday = new Date(now);
-  // From Friday the work week is over — anchor "current week" to the upcoming
-  // Sunday, so Fri/Sat already show the week being planned
-  const rollover = now.getDay() >= 5 ? 7 : 0;
-  sunday.setDate(now.getDate() - now.getDay() + rollover + weekOffset * 7);
+function getWeekDateMap(weekOffset: number, now: Date): Record<string, string> {
+  const sunday = anchorSunday(now, weekOffset);
   const map: Record<string, string> = {};
   WORK_DAYS.forEach((name, i) => {
     const d = new Date(sunday);
@@ -33,10 +25,6 @@ function getWeekDateMap(weekOffset: number): Record<string, string> {
   });
   return map;
 }
-const WEEK_DATE_MAPS: Record<WeekView, Record<string, string>> = {
-  current: getWeekDateMap(0),
-  next: getWeekDateMap(1),
-};
 
 // "11.6"-style display date expected for each day of each week —
 // a session's day+date pins it to a week; rows from older weeks match neither
@@ -47,33 +35,38 @@ const toDisplayMap = (m: Record<string, string>): Record<string, string> =>
       return [day, `${Number(d)}.${Number(mo)}`];
     })
   );
-const WEEK_DISPLAY_DATES: Record<WeekView, Record<string, string>> = {
-  current: toDisplayMap(WEEK_DATE_MAPS.current),
-  next: toDisplayMap(WEEK_DATE_MAPS.next),
+
+type WeekMaps = {
+  dateMaps: Record<WeekView, Record<string, string>>;
+  displayDates: Record<WeekView, Record<string, string>>;
 };
 
-function sessionWeek(s: KnessetSessionRow): WeekView | null {
-  if (WEEK_DISPLAY_DATES.current[s.day_name] === s.date) return 'current';
-  if (WEEK_DISPLAY_DATES.next[s.day_name] === s.date) return 'next';
+// Computed per-render-day (not at module load) so a tab left open across the
+// Friday rollover or a week boundary doesn't keep stale week anchoring —
+// getCurrentWeekId() in supabase.ts recomputes fresh, and the two must agree
+function computeWeekMaps(now: Date): WeekMaps {
+  const dateMaps = {
+    current: getWeekDateMap(0, now),
+    next: getWeekDateMap(1, now),
+  };
+  return {
+    dateMaps,
+    displayDates: {
+      current: toDisplayMap(dateMaps.current),
+      next: toDisplayMap(dateMaps.next),
+    },
+  };
+}
+
+function sessionWeek(s: KnessetSessionRow, displayDates: WeekMaps['displayDates']): WeekView | null {
+  if (displayDates.current[s.day_name] === s.date) return 'current';
+  if (displayDates.next[s.day_name] === s.date) return 'next';
   return null;
 }
 
 function isoToDisplay(iso: string) {
   const [, m, d] = iso.split('-');
   return `${d}.${m}`;
-}
-
-function normalizeTime(t: string) {
-  if (!t) return '';
-  const [h, m] = t.split(':');
-  return `${h.padStart(2, '0')}:${m ?? '00'}`;
-}
-
-function committeeMatches(committee: string, ev: ScheduleEvent): boolean {
-  if (committee === ev.category) return true;
-  if (ev.title.startsWith(committee + ':') || ev.title.startsWith(committee + ' ')) return true;
-  if (committee.includes(ev.category) || ev.category.includes(committee)) return true;
-  return false;
 }
 
 function findMatchingScheduleEvent(session: KnessetSessionRow): ScheduleEvent | null {
@@ -115,20 +108,42 @@ export default function KnessetUpdates() {
   const [weekView, setWeekView] = useState<WeekView>('current');
   const [copiedPromptId, setCopiedPromptId] = useState<string>('');
 
+  // Re-anchor the week maps when the day changes while the tab stays open —
+  // refreshed on focus/visibility so Thursday→Sunday transitions don't go stale
+  const [dayStamp, setDayStamp] = useState(() => localIso(new Date()));
+  useEffect(() => {
+    const refresh = () => setDayStamp(localIso(new Date()));
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, []);
+  const { dateMaps, displayDates } = useMemo(
+    () => computeWeekMaps(new Date(`${dayStamp}T12:00:00`)),
+    [dayStamp]
+  );
+
   // Full date incl. year ("16.06.2026") — the stored "16.6" lacks the year,
   // which the AI prompt needs to pin the exact session
   function fullDateOf(session: KnessetSessionRow): string {
-    const iso = WEEK_DATE_MAPS[sessionWeek(session) ?? 'current'][session.day_name];
+    const iso = dateMaps[sessionWeek(session, displayDates) ?? 'current'][session.day_name];
     if (!iso) return session.date;
     const [y, m, d] = iso.split('-');
     return `${d}.${m}.${y}`;
   }
 
-  function copySessionPrompt(session: KnessetSessionRow) {
-    navigator.clipboard.writeText(buildSessionPrompt({
-      committee: session.committee, title: session.title,
-      day_name: session.day_name, date: fullDateOf(session), time: session.time,
-    }));
+  async function copySessionPrompt(session: KnessetSessionRow) {
+    try {
+      await navigator.clipboard.writeText(buildSessionPrompt({
+        committee: session.committee, title: session.title,
+        day_name: session.day_name, date: fullDateOf(session), time: session.time,
+      }));
+    } catch {
+      alert('ההעתקה ללוח נכשלה');
+      return;
+    }
     setCopiedPromptId(session.id);
     setTimeout(() => setCopiedPromptId(''), 2500);
   }
@@ -139,7 +154,7 @@ export default function KnessetUpdates() {
         getWeeklyKnessetSessions(),
         getAllKnessetUpdates(),
       ]);
-      setSessions(sessionData.filter(s => sessionWeek(s) !== null));
+      setSessions(sessionData);
       setUpdates(updateData);
       const newest = sessionData.reduce<string>((max, s) => (s.last_seen && s.last_seen > max ? s.last_seen : max), '');
       setLastSync(newest);
@@ -181,8 +196,8 @@ export default function KnessetUpdates() {
 
   // "next week" is a planning view — there is no manual לו"ז to compare against yet
   const isPlanning = weekView === 'next';
-  const dateMap = WEEK_DATE_MAPS[weekView];
-  const weekSessions = sessions.filter(s => sessionWeek(s) === weekView);
+  const dateMap = dateMaps[weekView];
+  const weekSessions = sessions.filter(s => sessionWeek(s, displayDates) === weekView);
 
   // A day counts as having content if it has sessions OR gov items OR timeline
   // events — checking sessions alone would bounce the selection off days whose
@@ -199,7 +214,7 @@ export default function KnessetUpdates() {
       if (first) setSelectedDay(first);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessions, govItems, selectedDay, weekView]);
+  }, [sessions, govItems, selectedDay, weekView, dayStamp]);
 
   // Build map: session_id → highest-priority update
   const updateMap = new Map<string, KnessetUpdate>();
@@ -237,7 +252,7 @@ export default function KnessetUpdates() {
   if (loading) return null;
 
   return (
-    <div style={{ marginTop: 28, padding: '0 24px 80px', direction: 'rtl', fontFamily: "'Heebo', sans-serif" }}>
+    <div style={{ marginTop: 28, padding: '0 24px 80px', direction: 'rtl', fontFamily: "var(--font-heebo), sans-serif" }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -283,7 +298,7 @@ export default function KnessetUpdates() {
       <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         {(['current', 'next'] as WeekView[]).map(w => {
           const isSel = weekView === w;
-          const range = `${WEEK_DISPLAY_DATES[w]['יום ראשון']}–${WEEK_DISPLAY_DATES[w]['יום שישי']}`;
+          const range = `${displayDates[w]['יום ראשון']}–${displayDates[w]['יום שישי']}`;
           return (
             <button key={w} type="button" onClick={() => setWeekView(w)}
               style={{
@@ -336,7 +351,7 @@ export default function KnessetUpdates() {
 
           {/* ── Gov agenda items (ministers + government meeting) ─── */}
           {dayGovItems.map((item, i) => (
-            <a key={`gov-${i}`} href={item.url} target="_blank" rel="noopener noreferrer"
+            <a key={`gov-${i}`} href={safeUrl(item.url) ?? undefined} target="_blank" rel="noopener noreferrer"
               style={{
                 display: 'flex', alignItems: 'flex-start', gap: 10,
                 background: item.color + '08',
@@ -393,8 +408,8 @@ export default function KnessetUpdates() {
                 {ev.detail && (
                   <div style={{ fontSize: 11, color: '#6b7280', marginTop: 3, lineHeight: 1.5 }}>{ev.detail}</div>
                 )}
-                {ev.url && (
-                  <a href={ev.url} target="_blank" rel="noreferrer"
+                {safeUrl(ev.url) && (
+                  <a href={safeUrl(ev.url)!} target="_blank" rel="noreferrer"
                     style={{ display: 'inline-block', fontSize: 11, color: '#7c3aed', marginTop: 4 }}>
                     לקישור ›
                   </a>
@@ -463,10 +478,12 @@ export default function KnessetUpdates() {
                         {update.change_desc}
                       </span>
                     )}
-                    <a href={session.url} target="_blank" rel="noopener noreferrer"
-                      style={{ fontSize: 10, color: '#0075C4', textDecoration: 'none', fontWeight: 600 }}>
-                      ↗ ישיבה
-                    </a>
+                    {safeUrl(session.url) && (
+                      <a href={safeUrl(session.url)!} target="_blank" rel="noopener noreferrer"
+                        style={{ fontSize: 10, color: '#0075C4', textDecoration: 'none', fontWeight: 600 }}>
+                        ↗ ישיבה
+                      </a>
+                    )}
                   </div>
                   {markErr && (
                     <div style={{ fontSize: 11, color: '#dc2626', marginTop: 3 }}>שגיאה: {markErr}</div>
@@ -552,7 +569,7 @@ export default function KnessetUpdates() {
         <AddToScheduleModal
           session={modalSession}
           onClose={() => setModalSession(null)}
-          onSaved={(_saved: ManualScheduleEvent) => {
+          onSaved={() => {
             setAddedIds(prev => new Set([...prev, sessions.find(s => s.committee === modalSession.committee && s.day_name === modalSession.day_name && s.time === modalSession.time)?.id ?? '']));
           }}
         />

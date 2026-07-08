@@ -14,11 +14,20 @@ function tokens(s: string): string[] {
 }
 
 // Best-matching real paper for an arbitrary text (or null). No synthetic fallback.
+// Scored by number of shared tokens so a paper sharing one incidental word
+// doesn't beat a paper sharing several.
 export function findPaperForText(text: string): Paper | null {
   const toks = new Set(tokens(text));
+  let best: Paper | null = null;
+  let bestScore = 0;
   for (const p of PAPERS) {
-    const pToks = [...tokens(p.title), ...tokens(p.tag)];
-    if (pToks.some(t => toks.has(t))) return p;
+    const pToks = new Set([...tokens(p.title), ...tokens(p.tag)]);
+    let score = 0;
+    for (const t of pToks) if (toks.has(t)) score++;
+    if (score > bestScore) {
+      bestScore = score;
+      best = p;
+    }
   }
-  return null;
+  return best;
 }

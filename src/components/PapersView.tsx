@@ -71,7 +71,7 @@ export default function PapersView({ role, clientId, externalPaper, onExternalCo
     : PAPERS.filter(p => allowedPaperIds?.includes(p.id) ?? false);
 
   return (
-    <div style={{ direction: 'rtl', fontFamily: "'Heebo', sans-serif" }}>
+    <div style={{ direction: 'rtl', fontFamily: "var(--font-heebo), sans-serif" }}>
       {/* Overlay */}
       <div
         onClick={closePanel}

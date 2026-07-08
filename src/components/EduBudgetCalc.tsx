@@ -9,14 +9,15 @@ function fmt(n: number) {
 }
 
 // EDU_BUDGET arrives sorted ascending by perStudent (lowest first).
+// Static data → derived values are module constants, not per-render state
+const total = EDU_BUDGET.length;
+const maxPer = EDU_BUDGET[total - 1].perStudent;
+const median = EDU_BUDGET[Math.floor(total / 2)].perStudent;
+const lowest = EDU_BUDGET.slice(0, 5);                  // 5 lowest-spending
+const highest = EDU_BUDGET.slice(-5).slice().reverse(); // 5 highest-spending
+
 export default function EduBudgetCalc() {
   const [query, setQuery] = useState('');
-
-  const total = EDU_BUDGET.length;
-  const maxPer = EDU_BUDGET[total - 1].perStudent;
-  const median = EDU_BUDGET[Math.floor(total / 2)].perStudent;
-  const lowest = EDU_BUDGET.slice(0, 5);                  // 5 lowest-spending
-  const highest = EDU_BUDGET.slice(-5).slice().reverse(); // 5 highest-spending
 
   const results = useMemo(() => {
     const q = query.trim();
@@ -26,7 +27,7 @@ export default function EduBudgetCalc() {
       .filter(x => x.name.includes(q))
       .sort((a, b) => b.perStudent - a.perStudent)
       .slice(0, 40);
-  }, [query, total]);
+  }, [query]);
 
   function Row({ name, perStudent, n }: { name: string; perStudent: number; n: number }) {
     return (
@@ -46,7 +47,7 @@ export default function EduBudgetCalc() {
   }
 
   return (
-    <div style={{ direction: 'rtl', fontFamily: "'Heebo', sans-serif", background: '#f9fafb', minHeight: '100%', paddingBottom: 80 }}>
+    <div style={{ direction: 'rtl', fontFamily: "var(--font-heebo), sans-serif", background: '#f9fafb', minHeight: '100%', paddingBottom: 80 }}>
       <div style={{ padding: '20px 24px' }}>
         <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden', marginBottom: 20 }}>
 

@@ -18,6 +18,7 @@ export default function WorkPlansView({ role, clientId }: Props) {
   const [zoomImg, setZoomImg] = useState<string | null>(null);
 
   function openPanel(p: WorkPlan) {
+    setSharedWith([]);
     setSelected(p);
     requestAnimationFrame(() => setIsOpen(true));
   }
@@ -33,8 +34,12 @@ export default function WorkPlansView({ role, clientId }: Props) {
   }, [role, clientId]);
 
   useEffect(() => {
-    if (!selected || role !== 'full') { setSharedWith([]); return; }
-    getSharesForWorkplan(selected.id).then(setSharedWith);
+    if (!selected || role !== 'full') return;
+    let cancelled = false;
+    getSharesForWorkplan(selected.id).then(ids => {
+      if (!cancelled) setSharedWith(ids);
+    });
+    return () => { cancelled = true; };
   }, [selected, role]);
 
   async function handleToggleShare(cid: string) {
@@ -64,7 +69,7 @@ export default function WorkPlansView({ role, clientId }: Props) {
   }
 
   return (
-    <div style={{ direction: 'rtl', fontFamily: "'Heebo', sans-serif" }}>
+    <div style={{ direction: 'rtl', fontFamily: "var(--font-heebo), sans-serif" }}>
       {/* Overlay */}
       <div onClick={closePanel} style={{
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998,

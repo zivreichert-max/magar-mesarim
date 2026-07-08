@@ -93,7 +93,7 @@ export default function CrimeCalc() {
   });
 
   return (
-    <div style={{ direction: 'rtl', fontFamily: "'Heebo', sans-serif", background: '#f9fafb', minHeight: '100%', paddingBottom: 80 }}>
+    <div style={{ direction: 'rtl', fontFamily: "var(--font-heebo), sans-serif", background: '#f9fafb', minHeight: '100%', paddingBottom: 80 }}>
       <div style={{ padding: '20px 24px' }}>
         <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden', marginBottom: 20 }}>
 

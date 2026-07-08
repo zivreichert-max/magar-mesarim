@@ -1,9 +1,16 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { SCHEDULE, WEEK_TITLE, ScheduleEvent } from '@/data/schedule';
 import { TIMELINE, TimelineEvent } from '@/data/timeline';
 import { getScheduleCancellations, ScheduleCancellation, getManualScheduleEvents, ManualScheduleEvent } from '@/lib/supabase';
+import { safeUrl } from '@/lib/urls';
+import { normalizeTime, committeeMatches } from '@/lib/scheduleUtils';
 import styles from './ScheduleTable.module.css';
+
+// Stable identity for open/closed row state — an index into a filtered array
+// would re-point to a different row whenever the filter changes
+const evKey = (e: ScheduleEvent) => `${e.day}|${e.time}|${e.title}`;
+const tlKey = (e: TimelineEvent) => `${e.dateStart}|${e.title}`;
 
 // Row accent within the white/blue/black palette (presentation only — the
 // distinct per-category colors in schedule.ts data are kept, just not shown here)
@@ -105,21 +112,6 @@ function tlColor(cat: string) { return TL_COLORS[cat] ?? '#9ca3af'; }
 const TL_CATS = ['הכל', ...Array.from(new Set(TIMELINE.map(e => e.category)))];
 const SORTED_TIMELINE = [...TIMELINE].sort((a, b) => a.dateStart.localeCompare(b.dateStart));
 
-function normalizeTime(t: string) {
-  if (!t) return '';
-  const [h, m] = t.split(':');
-  return `${h.padStart(2, '0')}:${(m ?? '00')}`;
-}
-
-function committeeMatches(committee: string, ev: ScheduleEvent): boolean {
-  if (committee === ev.category) return true;
-  // e.g. category='ביטחון לאומי', title starts with 'הוועדה לביטחון לאומי:'
-  if (ev.title.startsWith(committee + ':') || ev.title.startsWith(committee + ' ')) return true;
-  // partial: 'הוועדה לביטחון לאומי' contains 'ביטחון לאומי'
-  if (committee.includes(ev.category) || ev.category.includes(committee)) return true;
-  return false;
-}
-
 function isCancelledBySchedule(ev: ScheduleEvent, cancellations: ScheduleCancellation[]) {
   return cancellations.some(c =>
     c.day_name === ev.day &&
@@ -143,8 +135,8 @@ export default function ScheduleView() {
   const [subView, setSubView] = useState<'weekly' | 'timeline'>('weekly');
   const [activeCat, setActiveCat] = useState('all');
   const [tlCat, setTlCat] = useState('הכל');
-  const [openEvent, setOpenEvent] = useState<number | null>(null);
-  const [openTl, setOpenTl] = useState<number | null>(null);
+  const [openEvent, setOpenEvent] = useState<string | null>(null);
+  const [openTl, setOpenTl] = useState<string | null>(null);
   const [cancellations, setCancellations] = useState<ScheduleCancellation[]>([]);
   const [manualEvents, setManualEvents] = useState<ManualScheduleEvent[]>([]);
   // 'all' shows every day stacked (default); a day name filters to that day only
@@ -159,13 +151,18 @@ export default function ScheduleView() {
     getManualScheduleEvents().then(setManualEvents).catch(() => {});
   }, []);
 
-  const manualAsSchedule: ScheduleEvent[] = manualEvents.map(m => ({
-    day: m.day, time: m.time, title: m.title, summary: m.summary,
-    detail: m.detail, source: m.source, category: m.category, color: m.color,
-  }));
-  const ALL_EVENTS = [...SCHEDULE, ...manualAsSchedule];
+  const allEvents = useMemo<ScheduleEvent[]>(() => [
+    ...SCHEDULE,
+    ...manualEvents.map(m => ({
+      day: m.day, time: m.time, title: m.title, summary: m.summary,
+      detail: m.detail, source: m.source, category: m.category, color: m.color,
+    })),
+  ], [manualEvents]);
 
-  const filtered = ALL_EVENTS.filter(e => activeCat === 'all' || e.category === activeCat);
+  const filtered = useMemo(
+    () => allEvents.filter(e => activeCat === 'all' || e.category === activeCat),
+    [allEvents, activeCat]
+  );
 
   // Days (ראשון–חמישי) that have at least one event under the current category filter
   const daysWithEvents = DAYS.filter(day => filtered.some(e => e.day.startsWith(day)));
@@ -176,7 +173,7 @@ export default function ScheduleView() {
     : daysWithEvents.filter(d => d === selectedWeekDay);
 
   // Dates per day derived from WEEK_TITLE (supports "14.06-19.06" and legacy "07-11.06")
-  const weekDates: Record<string, string> = (() => {
+  const weekDates = useMemo<Record<string, string>>(() => {
     const result: Record<string, string> = {};
     const sunday = weekSunday();
     if (!sunday) return result;
@@ -186,14 +183,17 @@ export default function ScheduleView() {
       result[day] = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
     });
     return result;
-  })();
+  }, []);
 
-  const tlFiltered = SORTED_TIMELINE.filter(e =>
-    inMonthTab(e, selectedMonth) && (tlCat === 'הכל' || e.category === tlCat)
+  const tlFiltered = useMemo(
+    () => SORTED_TIMELINE.filter(e =>
+      inMonthTab(e, selectedMonth) && (tlCat === 'הכל' || e.category === tlCat)
+    ),
+    [selectedMonth, tlCat]
   );
 
   return (
-    <div style={{ direction: 'rtl', fontFamily: "'Heebo', sans-serif" }}>
+    <div style={{ direction: 'rtl', fontFamily: "var(--font-heebo), sans-serif" }}>
       {/* Sub-tabs */}
       <div style={{
         background: '#fff', borderBottom: '0.5px solid #e5e7eb',
@@ -281,13 +281,13 @@ export default function ScheduleView() {
                       <div>שעה</div><div>מוסד</div><div>נושא ותקציר</div><div />
                     </div>
                     {dayEvents.map(ev => {
-                      const gi = ALL_EVENTS.indexOf(ev);
-                      const isOpen = openEvent === gi;
+                      const k = evKey(ev);
+                      const isOpen = openEvent === k;
                       const hasDetail = !!(ev.summary || ev.detail);
                       const isCancelled = isCancelledBySchedule(ev, cancellations);
                       const instLabel = CATS.find(c => c.id === ev.category)?.label ?? ev.category;
                       const topic = topicOf(ev);
-                      const urls = (ev.url ?? '').split('\n').map(s => s.trim()).filter(Boolean);
+                      const urls = (ev.url ?? '').split('\n').map(s => safeUrl(s)).filter((u): u is string => !!u);
                       const rowCls = [
                         styles.row,
                         isOpen ? styles.open : '',
@@ -295,9 +295,9 @@ export default function ScheduleView() {
                         isCancelled ? styles.cancelled : '',
                       ].filter(Boolean).join(' ');
                       return (
-                        <div key={gi} className={rowCls}
+                        <div key={k} className={rowCls}
                           style={{ ['--c' as string]: isCancelled ? '#dc2626' : accentFor(ev.category) } as React.CSSProperties}
-                          onClick={() => hasDetail && setOpenEvent(isOpen ? null : gi)}>
+                          onClick={() => hasDetail && setOpenEvent(isOpen ? null : k)}>
                           <div className={`${styles.cTime} ${ev.time ? '' : styles.cTimeNone}`}>{ev.time || '—'}</div>
                           <div className={styles.cInst}>
                             <span className={styles.dot} />{instLabel}
@@ -393,8 +393,9 @@ export default function ScheduleView() {
             ) : (
               <div className={styles.tlTable}>
                 <div className={styles.tlHead}><div>תאריך</div><div>קטגוריה</div><div>אירוע</div><div /></div>
-                {tlFiltered.map((ev, idx) => {
-                  const isOpen = openTl === idx;
+                {tlFiltered.map(ev => {
+                  const k = tlKey(ev);
+                  const isOpen = openTl === k;
                   const hasDetail = !!ev.detail;
                   const compact = (iso: string) => { const p = iso.split('-'); return `${+p[2]}.${+p[1]}`; };
                   const dateLabel = ev.dateEnd && ev.dateEnd !== ev.dateStart
@@ -402,9 +403,9 @@ export default function ScheduleView() {
                   const isEstimate = ev.importance === 'הערכה';
                   const rowCls = [styles.tlRow, isOpen ? styles.open : '', hasDetail ? '' : styles.noexp].filter(Boolean).join(' ');
                   return (
-                    <div key={idx} className={rowCls}
+                    <div key={k} className={rowCls}
                       style={{ ['--c' as string]: '#0075C4' } as React.CSSProperties}
-                      onClick={() => hasDetail && setOpenTl(isOpen ? null : idx)}>
+                      onClick={() => hasDetail && setOpenTl(isOpen ? null : k)}>
                       <div className={styles.tlDate}>{dateLabel}</div>
                       <div className={styles.tlCat}>
                         {ev.category}{isEstimate && <span style={{ fontWeight: 400, color: '#9ca3af' }}> · הערכה</span>}
@@ -418,9 +419,9 @@ export default function ScheduleView() {
                       {hasDetail && (
                         <div className={styles.panel}><div><div className={styles.panelIn}>
                           <p>{ev.detail}</p>
-                          {ev.url && (
+                          {safeUrl(ev.url) && (
                             <div className={styles.links}>
-                              <a href={ev.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>↗ מקור</a>
+                              <a href={safeUrl(ev.url)!} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>↗ מקור</a>
                             </div>
                           )}
                         </div></div></div>

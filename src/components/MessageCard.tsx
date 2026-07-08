@@ -24,7 +24,7 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
         borderBottom: '1px solid #e5e7eb',
         borderLeft: '1px solid #e5e7eb',
         outline: 'none',
-        borderRadius: 0,
+        borderRadius: '0 0 6px 6px',
         padding: 20,
         cursor: 'pointer',
         touchAction: 'manipulation',
@@ -44,7 +44,7 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
       }}
       onMouseEnter={e => {
         const el = e.currentTarget as HTMLButtonElement;
-        el.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
+        el.style.boxShadow = '0 2px 12px rgba(12,68,124,0.10)';
         el.style.transform = 'translateY(-1px)';
       }}
       onMouseLeave={e => {
@@ -64,7 +64,7 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
             fontWeight: 700,
             letterSpacing: 0.3,
             padding: '2px 8px',
-            borderRadius: 2,
+            borderRadius: 3,
           }}
         >
           {message.topic}
@@ -77,7 +77,7 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
           fontSize: 14,
           fontWeight: 700,
           lineHeight: 1.5,
-          color: '#111111',
+          color: '#111827',
           direction: 'rtl',
           textAlign: 'right',
         }}
@@ -90,7 +90,7 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
         <div
           style={{
             fontSize: 12,
-            color: '#555555',
+            color: '#6b7280',
             lineHeight: 1.6,
             flex: 1,
             direction: 'rtl',
@@ -113,7 +113,7 @@ export default function MessageCard({ message, index, onClick }: MessageCardProp
         }}
       >
         <span style={{
-          fontSize: 11, color: '#555555', opacity: 0.6,
+          fontSize: 11, color: '#9ca3af',
           overflow: 'hidden', textOverflow: 'ellipsis',
           whiteSpace: 'nowrap', maxWidth: '80%', display: 'block',
         }}>

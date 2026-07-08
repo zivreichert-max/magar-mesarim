@@ -53,7 +53,7 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
       >
         <span
           style={{
-            fontFamily: "'Heebo', sans-serif",
+            fontFamily: "var(--font-heebo), sans-serif",
             fontSize: 13,
             fontWeight: 900,
             color: '#111111',
@@ -69,7 +69,7 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
       <div style={{ textAlign: 'center' }}>
         <h1
           style={{
-            fontFamily: "'Heebo', sans-serif",
+            fontFamily: "var(--font-heebo), sans-serif",
             fontSize: 28,
             fontWeight: 900,
             color: '#111111',
@@ -83,7 +83,7 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
         </p>
       </div>
 
-      <p style={{ color: '#555555', fontSize: 14, margin: 0 }}>הזן סיסמה לכניסה</p>
+      <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>הזן סיסמה לכניסה</p>
 
       <div className="flex gap-2.5">
         <input
@@ -96,7 +96,7 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
           autoFocus
           style={{
             padding: '12px 18px',
-            borderRadius: 0,
+            borderRadius: 6,
             border: '1px solid #e5e7eb',
             background: '#ffffff',
             color: '#111111',
@@ -113,7 +113,7 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
           onClick={handleSubmit}
           style={{
             padding: '12px 24px',
-            borderRadius: 2,
+            borderRadius: 6,
             border: 'none',
             background: '#0075C4',
             color: '#ffffff',
@@ -127,7 +127,7 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
         </button>
       </div>
 
-      <div style={{ height: 18, color: '#ef4444', fontSize: 13 }}>
+      <div style={{ height: 18, color: '#dc2626', fontSize: 13 }}>
         {error}
       </div>
     </div>

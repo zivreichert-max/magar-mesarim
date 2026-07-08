@@ -1,10 +1,17 @@
 'use client';
 import { useState } from 'react';
-import PriceCalc from './PriceCalc';
-import EduBudgetCalc from './EduBudgetCalc';
-import EduOutcomesCalc from './EduOutcomesCalc';
-import CrimeCalc from './CrimeCalc';
+import dynamic from 'next/dynamic';
 import ExternalLinks from './ExternalLinks';
+
+// Each calculator carries its own large generated data file (crime.ts alone is
+// ~2,300 lines) — loaded on demand so none of it ships in the main bundle
+const calcLoading = () => (
+  <div style={{ textAlign: 'center', padding: 48, color: '#9ca3af', fontSize: 13 }}>טוען…</div>
+);
+const PriceCalc = dynamic(() => import('./PriceCalc'), { loading: calcLoading });
+const EduBudgetCalc = dynamic(() => import('./EduBudgetCalc'), { loading: calcLoading });
+const EduOutcomesCalc = dynamic(() => import('./EduOutcomesCalc'), { loading: calcLoading });
+const CrimeCalc = dynamic(() => import('./CrimeCalc'), { loading: calcLoading });
 
 type CalcId = 'prices' | 'edu' | 'eduOutcomes' | 'crime' | 'external';
 
@@ -25,7 +32,7 @@ export default function CalculatorsHub() {
   const [active, setActive] = useState<CalcId>('prices');
 
   return (
-    <div style={{ direction: 'rtl', fontFamily: "'Heebo', sans-serif" }}>
+    <div style={{ direction: 'rtl', fontFamily: "var(--font-heebo), sans-serif" }}>
       {/* Calculator selector */}
       <div style={{ display: 'flex', gap: 8, padding: '16px 24px 0', background: '#f9fafb', flexWrap: 'wrap' }}>
         {CALCS.map(c => {

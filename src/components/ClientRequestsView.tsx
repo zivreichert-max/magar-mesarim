@@ -116,7 +116,7 @@ function RequestCard({ request, onClick, onDelete }: RequestCardProps) {
         <div
           style={{
             fontSize: 12,
-            color: '#555555',
+            color: '#6b7280',
             lineHeight: 1.6,
             flex: 1,
             direction: 'rtl',
@@ -172,11 +172,19 @@ function RequestDetailPanel({ request, onClose, onStatusChange }: RequestDetailP
   const [saving, setSaving] = useState(false);
 
   async function handleStatusChange(newStatus: string) {
+    const prevStatus = status;
     setSaving(true);
     setStatus(newStatus);
-    await updateRequestStatus(request.id, newStatus);
-    setSaving(false);
-    onStatusChange(request.id, newStatus);
+    try {
+      await updateRequestStatus(request.id, newStatus);
+      onStatusChange(request.id, newStatus);
+    } catch {
+      // Revert optimistic update on failure
+      setStatus(prevStatus);
+      alert('עדכון הסטטוס נכשל — לא נשמר. נסה שוב.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (

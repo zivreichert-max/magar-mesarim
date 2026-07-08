@@ -36,7 +36,7 @@ export default function NamePrompt({ onName }: NamePromptProps) {
     >
       <h1
         style={{
-          fontFamily: "'Frank Ruhl Libre', serif",
+          fontFamily: "var(--font-frank-ruhl), serif",
           fontSize: 28,
           fontWeight: 900,
           color: 'var(--text)',

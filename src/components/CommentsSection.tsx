@@ -18,36 +18,49 @@ export default function CommentsSection({ cardId, authorName }: CommentsSectionP
   const [comments, setComments] = useState<Comment[]>([]);
   const [body, setBody] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    fetchComments();
+    let cancelled = false;
+    async function load() {
+      const { data, error } = await supabase
+        .from('comments')
+        .select('*')
+        .eq('card_id', cardId)
+        .order('created_at', { ascending: true });
+      if (cancelled) return;
+      if (error) {
+        setLoadError(true);
+        return;
+      }
+      setLoadError(false);
+      setComments((data ?? []) as Comment[]);
+    }
+    load();
+    return () => { cancelled = true; };
   }, [cardId]);
-
-  async function fetchComments() {
-    const { data } = await supabase
-      .from('comments')
-      .select('*')
-      .eq('card_id', cardId)
-      .order('created_at', { ascending: true });
-    if (data) setComments(data as Comment[]);
-  }
 
   async function handleSubmit() {
     const text = body.trim();
     if (!text || submitting) return;
     setSubmitting(true);
+    setSubmitError(false);
     const { data, error } = await supabase
       .from('comments')
       .insert({ card_id: cardId, author_name: authorName, body: text })
       .select()
       .single();
     setSubmitting(false);
-    if (!error && data) {
-      setComments(prev => [...prev, data as Comment]);
-      setBody('');
-      textareaRef.current?.focus();
+    if (error || !data) {
+      // Keep the text in the textarea so nothing is lost
+      setSubmitError(true);
+      return;
     }
+    setComments(prev => [...prev, data as Comment]);
+    setBody('');
+    textareaRef.current?.focus();
   }
 
   return (
@@ -96,7 +109,7 @@ export default function CommentsSection({ cardId, authorName }: CommentsSectionP
                   {formatDate(c.created_at)}
                 </span>
               </div>
-              <p style={{ fontSize: 13, lineHeight: 1.6, color: 'rgba(232,230,224,0.8)', margin: 0 }}>
+              <p style={{ fontSize: 13, lineHeight: 1.6, color: '#374151', margin: 0 }}>
                 {c.body}
               </p>
             </div>
@@ -104,7 +117,11 @@ export default function CommentsSection({ cardId, authorName }: CommentsSectionP
         </div>
       )}
 
-      {comments.length === 0 && (
+      {loadError ? (
+        <p style={{ fontSize: 12, color: '#dc2626', marginBottom: 14 }}>
+          שגיאה בטעינת ההערות — ייתכן שיש הערות שאינן מוצגות.
+        </p>
+      ) : comments.length === 0 && (
         <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 14 }}>
           אין הערות עדיין. היה הראשון.
         </p>
@@ -164,6 +181,11 @@ export default function CommentsSection({ cardId, authorName }: CommentsSectionP
         >
           {submitting ? 'שולח...' : 'פרסם הערה'}
         </button>
+        {submitError && (
+          <div style={{ fontSize: 12, color: '#dc2626' }}>
+            ההערה לא נשמרה — נסה שוב.
+          </div>
+        )}
       </div>
     </section>
   );

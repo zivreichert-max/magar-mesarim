@@ -98,7 +98,7 @@ export default function RequestButton({ authorName, clientId }: RequestButtonPro
           fontWeight: 700,
           fontSize: 14,
           cursor: 'pointer',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+          boxShadow: '0 4px 18px rgba(12,68,124,0.18)',
           display: 'flex',
           alignItems: 'center',
           gap: 8,
@@ -146,7 +146,7 @@ export default function RequestButton({ authorName, clientId }: RequestButtonPro
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2
                 style={{
-                  fontFamily: "'Frank Ruhl Libre', serif",
+                  fontFamily: "var(--font-frank-ruhl), serif",
                   fontSize: 20,
                   fontWeight: 700,
                   color: 'var(--text)',

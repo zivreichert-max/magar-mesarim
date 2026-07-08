@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { anchorSunday, localIso } from './scheduleUtils';
 
 // Lazy singleton – prevents module-level instantiation during SSR/static pre-render
 let _instance: SupabaseClient | null = null;
@@ -60,33 +61,37 @@ export interface ClientRequest {
 // ─── message_shares helpers ───────────────────────────────────────────────────
 
 export async function getSharesForMessage(messageId: number): Promise<string[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('message_shares')
     .select('client_id')
     .eq('message_id', messageId);
+  if (error) throw new Error(error.message);
   return (data ?? []).map((row: { client_id: string }) => row.client_id);
 }
 
 export async function getSharedMessageIds(clientId: string): Promise<number[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('message_shares')
     .select('message_id')
     .eq('client_id', clientId);
+  if (error) throw new Error(error.message);
   return (data ?? []).map((row: { message_id: number }) => row.message_id);
 }
 
 export async function addShare(messageId: number, clientId: string): Promise<void> {
-  await supabase
+  const { error } = await supabase
     .from('message_shares')
     .insert({ message_id: messageId, client_id: clientId });
+  if (error) throw new Error(error.message);
 }
 
 export async function removeShare(messageId: number, clientId: string): Promise<void> {
-  await supabase
+  const { error } = await supabase
     .from('message_shares')
     .delete()
     .eq('message_id', messageId)
     .eq('client_id', clientId);
+  if (error) throw new Error(error.message);
 }
 
 // ─── paper_shares helpers ─────────────────────────────────────────────────────
@@ -219,10 +224,15 @@ export function pingSessionBeacon(id: string): void {
 }
 
 export async function getSiteSessions(): Promise<SiteSession[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('site_sessions')
     .select('*')
-    .order('started_at', { ascending: false });
+    .order('started_at', { ascending: false })
+    .limit(2000);
+  if (error) {
+    console.error('getSiteSessions failed:', error.message);
+    return [];
+  }
   return (data ?? []) as SiteSession[];
 }
 
@@ -252,10 +262,11 @@ export async function getClientRequests(): Promise<ClientRequest[]> {
 }
 
 export async function updateRequestStatus(id: string, status: string): Promise<void> {
-  await supabase
+  const { error } = await supabase
     .from('client_requests')
     .update({ status })
     .eq('id', id);
+  if (error) throw new Error(error.message);
 }
 
 export async function deleteClientRequest(id: string): Promise<void> {
@@ -282,14 +293,9 @@ export interface ManualScheduleEvent {
 }
 
 export function getCurrentWeekId(): string {
-  const now = new Date();
-  const sunday = new Date(now);
-  // From Friday the work week is over — manual schedule events belong to the
-  // upcoming week (matches the docx rollover and KnessetUpdates week anchoring)
-  sunday.setDate(now.getDate() - now.getDay() + (now.getDay() >= 5 ? 7 : 0));
-  // Local date parts — toISOString() is UTC and would shift the week key
-  // back a day when called between midnight and ~03:00 Israel time
-  return `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
+  // Manual schedule events belong to the anchored week (matches the docx
+  // rollover and KnessetUpdates week anchoring via the same shared helper)
+  return localIso(anchorSunday(new Date()));
 }
 
 export async function addManualScheduleEvent(
@@ -304,29 +310,16 @@ export async function addManualScheduleEvent(
   return data as ManualScheduleEvent;
 }
 
-export async function updateManualScheduleEvent(
-  id: string,
-  fields: Partial<Pick<ManualScheduleEvent, 'title' | 'summary' | 'detail' | 'source'>>
-): Promise<void> {
-  const { error } = await supabase.from('manual_schedule_events').update(fields).eq('id', id);
-  if (error) throw new Error(error.message);
-}
-
 export async function getManualScheduleEvents(): Promise<ManualScheduleEvent[]> {
   const { data, error } = await supabase
     .from('manual_schedule_events')
     .select('*')
     .eq('week_id', getCurrentWeekId());
-  if (error) return [];
+  if (error) {
+    console.error('getManualScheduleEvents failed:', error.message);
+    return [];
+  }
   return (data ?? []) as ManualScheduleEvent[];
-}
-
-export async function clearOldManualEvents(): Promise<void> {
-  const { error } = await supabase
-    .from('manual_schedule_events')
-    .delete()
-    .neq('week_id', getCurrentWeekId());
-  if (error) throw new Error(error.message);
 }
 
 // ─── cbs_price_data ──────────────────────────────────────────────────────────
@@ -345,7 +338,10 @@ export interface CbsPriceRow {
 
 export async function getCbsPriceData(): Promise<CbsPriceRow[]> {
   const { data, error } = await supabase.from('cbs_price_data').select('*');
-  if (error) return [];
+  if (error) {
+    console.error('getCbsPriceData failed:', error.message);
+    return [];
+  }
   return (data ?? []) as CbsPriceRow[];
 }
 
@@ -365,7 +361,11 @@ export interface KnessetSessionRow {
 }
 
 export async function getWeeklyKnessetSessions(): Promise<KnessetSessionRow[]> {
-  const { data } = await supabase.from('knesset_sessions').select('*');
+  const { data, error } = await supabase.from('knesset_sessions').select('*');
+  if (error) {
+    console.error('getWeeklyKnessetSessions failed:', error.message);
+    return [];
+  }
   return (data ?? []) as KnessetSessionRow[];
 }
 
@@ -391,6 +391,9 @@ export async function getScheduleCancellations(): Promise<ScheduleCancellation[]
     .select('committee, day_name, time_before')
     .eq('update_type', 'cancel')
     .eq('marked_in_schedule', true);
-  if (error) return [];
+  if (error) {
+    console.error('getScheduleCancellations failed:', error.message);
+    return [];
+  }
   return (data ?? []) as ScheduleCancellation[];
 }

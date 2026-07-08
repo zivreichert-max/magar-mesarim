@@ -6,7 +6,7 @@ export interface ExternalLink { label: string; url: string; desc?: string; }
 // Used both as a standalone "מחשבונים חיצוניים" tab and nested under a calculator.
 export default function ExternalLinks({ title, links }: { title?: string; links: ExternalLink[] }) {
   return (
-    <div style={{ direction: 'rtl', fontFamily: "'Heebo', sans-serif" }}>
+    <div style={{ direction: 'rtl', fontFamily: "var(--font-heebo), sans-serif" }}>
       {title && (
         <div style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 10, letterSpacing: '0.03em' }}>
           {title}

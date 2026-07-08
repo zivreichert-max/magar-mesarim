@@ -16,7 +16,7 @@ interface DetailPanelProps {
 // ─── Source rendering ────────────────────────────────────────────────────────
 
 const linkStyle: React.CSSProperties = {
-  color: '#60a5fa',
+  color: '#0075C4',
   textDecoration: 'underline',
   textUnderlineOffset: 3,
   wordBreak: 'break-all',
@@ -77,7 +77,7 @@ function renderSource(source: string, sourceUrl?: string): React.ReactNode {
   const segments = source.split('|').map(s => s.trim()).filter(Boolean);
   return segments.map((seg, i) => (
     <span key={i}>
-      {i > 0 && <span style={{ color: '#555555', margin: '0 6px' }}>·</span>}
+      {i > 0 && <span style={{ color: '#9ca3af', margin: '0 6px' }}>·</span>}
       {parseSourceSegment(seg)}
     </span>
   ));
@@ -119,7 +119,7 @@ function renderDetailTable(rows: string[][], key: number) {
                   style={{
                     padding: '6px 12px',
                     border: '1px solid #e5e7eb',
-                    color: '#111111',
+                    color: '#111827',
                     fontWeight: ci === 0 ? 600 : 400,
                     opacity: ci === 0 ? 1 : 0.75,
                     whiteSpace: 'nowrap',
@@ -162,7 +162,7 @@ function renderDetail(detail: string): React.ReactNode {
           tableRows.length = 0;
         }
         nodes.push(
-          <p key={`p-${nodes.length}`} style={{ fontSize: 15, lineHeight: 1.8, color: '#222', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+          <p key={`p-${nodes.length}`} style={{ fontSize: 15, lineHeight: 1.8, color: '#374151', margin: 0, direction: 'rtl', textAlign: 'right' }}>
             {trimmed}
           </p>
         );
@@ -180,7 +180,7 @@ function renderDetail(detail: string): React.ReactNode {
   const nodes: React.ReactNode[] = [];
   for (const trimmed of nonEmptyLines) {
     nodes.push(
-      <p key={nodes.length} style={{ fontSize: 15, lineHeight: 1.8, color: '#222', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+      <p key={nodes.length} style={{ fontSize: 15, lineHeight: 1.8, color: '#374151', margin: 0, direction: 'rtl', textAlign: 'right' }}>
         {trimmed}
       </p>
     );
@@ -188,7 +188,7 @@ function renderDetail(detail: string): React.ReactNode {
 
   if (nodes.length === 0) {
     return (
-      <p style={{ fontSize: 15, lineHeight: 1.8, color: '#222', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+      <p style={{ fontSize: 15, lineHeight: 1.8, color: '#374151', margin: 0, direction: 'rtl', textAlign: 'right' }}>
         {detail}
       </p>
     );
@@ -223,6 +223,17 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
   const color = message ? (TOPICS[message.topic]?.color ?? '#fff') : '#fff';
   const [imgZoomed, setImgZoomed] = useState(false);
   const [sharedWith, setSharedWith] = useState<string[]>([]);
+  const [shareError, setShareError] = useState<string | null>(null);
+
+  // Reset share state when a different message opens — adjusted during render
+  // (not in an effect) per react.dev/learn/you-might-not-need-an-effect
+  const [prevMessageId, setPrevMessageId] = useState<number | null>(null);
+  const currentId = message?.id ?? null;
+  if (currentId !== prevMessageId) {
+    setPrevMessageId(currentId);
+    setSharedWith([]);
+    setShareError(null);
+  }
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -240,15 +251,12 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
 
   // Load sharing state when message changes (only for full role)
   useEffect(() => {
-    const load = async () => {
-      if (!message || role !== 'full') {
-        setSharedWith([]);
-        return;
-      }
-      const ids = await getSharesForMessage(message.id);
-      setSharedWith(ids);
-    };
-    load();
+    if (!message || role !== 'full') return;
+    let cancelled = false;
+    getSharesForMessage(message.id)
+      .then(ids => { if (!cancelled) setSharedWith(ids); })
+      .catch(e => { if (!cancelled) setShareError((e as Error).message); });
+    return () => { cancelled = true; };
   }, [message, role]);
 
   async function handleToggleShare(clientId: string) {
@@ -258,10 +266,19 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
     setSharedWith(prev =>
       isShared ? prev.filter(id => id !== clientId) : [...prev, clientId]
     );
-    if (isShared) {
-      await removeShare(message.id, clientId);
-    } else {
-      await addShare(message.id, clientId);
+    setShareError(null);
+    try {
+      if (isShared) {
+        await removeShare(message.id, clientId);
+      } else {
+        await addShare(message.id, clientId);
+      }
+    } catch (e) {
+      // Revert optimistic update on failure
+      setSharedWith(prev =>
+        isShared ? [...prev, clientId] : prev.filter(id => id !== clientId)
+      );
+      setShareError((e as Error).message);
     }
   }
 
@@ -306,13 +323,13 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
         <div style={{fontSize: 11, color: color, fontWeight: 700, marginBottom: 8}}>
           {message.topic}
         </div>
-        <h2 style={{fontSize: 20, fontWeight: 900, margin: '0 0 16px', color: '#111'}}>
+        <h2 style={{fontSize: 20, fontWeight: 900, margin: '0 0 16px', color: '#111827'}}>
           {message.title}
         </h2>
         {message.summary && (
           <div style={{ marginBottom: 20 }}>
             <SectionHeading>תקציר</SectionHeading>
-            <p style={{ fontSize: 17, lineHeight: 1.85, color: '#222', margin: 0, direction: 'rtl', textAlign: 'right' }}>
+            <p style={{ fontSize: 17, lineHeight: 1.85, color: '#374151', margin: 0, direction: 'rtl', textAlign: 'right' }}>
               {message.summary}
             </p>
           </div>
@@ -327,7 +344,7 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
                 alt=""
                 title="לחץ להגדלה"
               />
-              <div style={{ fontSize: 11, color: '#aaa', marginTop: 4 }}>לחץ על התמונה להגדלה</div>
+              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>לחץ על התמונה להגדלה</div>
             </div>
             {imgZoomed && (
               <div
@@ -357,19 +374,24 @@ export default function DetailPanel({ message, onClose, authorName, role }: Deta
           </div>
         )}
         {message.source && (
-          <div style={{ fontSize: 12, color: '#888', marginTop: 8, borderTop: '1px solid #eee', paddingTop: 12 }}>
+          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 8, borderTop: '1px solid #e5e7eb', paddingTop: 12 }}>
             <span style={{ fontWeight: 600, color: '#555', marginLeft: 6 }}>מקור:</span>
             {renderSource(message.source)}
           </div>
         )}
-        <div style={{borderTop: '1px solid #eee', marginTop: 20, paddingTop: 16}}>
-          <CommentsSection cardId={message.id ?? 0} authorName={authorName} />
+        <div style={{borderTop: '1px solid #e5e7eb', marginTop: 20, paddingTop: 16}}>
+          <CommentsSection cardId={message.id} authorName={authorName} />
         </div>
 
         {/* Share with clients — visible only for full role */}
         {role === 'full' && (
-          <div style={{ borderTop: '1px solid #eee', marginTop: 20, paddingTop: 16 }}>
+          <div style={{ borderTop: '1px solid #e5e7eb', marginTop: 20, paddingTop: 16 }}>
             <SectionHeading>לשתף עם</SectionHeading>
+            {shareError && (
+              <div style={{ fontSize: 12, color: '#dc2626', marginBottom: 8 }}>
+                שגיאה בעדכון השיתוף — נסה שוב ({shareError})
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {CLIENTS.map(client => {
                 const isActive = sharedWith.includes(client.id);

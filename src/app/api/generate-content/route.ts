@@ -16,9 +16,46 @@ const SYSTEM = `אתה כותב פריט לו"ז לוועדת כנסת עבור 
 החזר JSON בלבד, ללא טקסט נוסף:
 {"summary": "...", "detail": "פסקה 1\\n\\nפסקה 2\\n\\nפסקה 3", "source": "שם המקור — תיאור\\nhttps://..."}`;
 
+// Best-effort per-IP rate limit — this endpoint spends real Anthropic credits
+// (web search + tokens), so an unauthenticated caller must not be able to
+// loop it. In-memory per serverless instance; a cold start resets it, which
+// is acceptable for blunting abuse.
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX = 5;
+const hits = new Map<string, number[]>();
+
+function rateLimited(ip: string): boolean {
+  const now = Date.now();
+  const recent = (hits.get(ip) ?? []).filter(t => now - t < RATE_WINDOW_MS);
+  if (recent.length >= RATE_MAX) return true;
+  recent.push(now);
+  hits.set(ip, recent);
+  if (hits.size > 1000) hits.clear(); // memory guard
+  return false;
+}
+
+function asBoundedString(v: unknown, max: number): string | null {
+  if (typeof v !== 'string') return null;
+  const s = v.trim();
+  return s.length > 0 && s.length <= max ? s : null;
+}
+
 export async function POST(req: Request) {
   try {
-    const { committee, title, day, time } = await req.json();
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+    if (rateLimited(ip)) {
+      return NextResponse.json({ error: 'יותר מדי בקשות — נסה שוב בעוד דקה' }, { status: 429 });
+    }
+
+    const body = await req.json();
+    const committee = asBoundedString(body.committee, 200);
+    const title = asBoundedString(body.title, 300);
+    const day = asBoundedString(body.day, 40);
+    const time = asBoundedString(body.time, 40);
+    if (!committee || !title || !day || !time) {
+      return NextResponse.json({ error: 'קלט חסר או ארוך מדי' }, { status: 400 });
+    }
+
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return NextResponse.json({ error: 'ANTHROPIC_API_KEY לא מוגדר ב-Vercel' }, { status: 500 });
 

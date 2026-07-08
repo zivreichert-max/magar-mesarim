@@ -76,19 +76,19 @@ export default function PriceCalc() {
   const updatedStr   = updatedDate ? new Date(updatedDate).toLocaleDateString('he-IL') : '';
 
   if (loading) return (
-    <div style={{ padding: '60px 24px', textAlign: 'center', color: '#9ca3af', fontFamily: "'Heebo', sans-serif" }}>
+    <div style={{ padding: '60px 24px', textAlign: 'center', color: '#9ca3af', fontFamily: "var(--font-heebo), sans-serif" }}>
       טוען נתונים...
     </div>
   );
 
   if (rows.length === 0) return (
-    <div style={{ padding: '60px 24px', textAlign: 'center', color: '#9ca3af', fontFamily: "'Heebo', sans-serif", fontSize: 13 }}>
+    <div style={{ padding: '60px 24px', textAlign: 'center', color: '#9ca3af', fontFamily: "var(--font-heebo), sans-serif", fontSize: 13 }}>
       אין נתונים — הרץ את סקריפט הסנכרון תחילה
     </div>
   );
 
   return (
-    <div style={{ direction: 'rtl', fontFamily: "'Heebo', sans-serif", background: '#f9fafb', minHeight: '100%', paddingBottom: 80 }}>
+    <div style={{ direction: 'rtl', fontFamily: "var(--font-heebo), sans-serif", background: '#f9fafb', minHeight: '100%', paddingBottom: 80 }}>
       <div style={{ padding: '20px 24px' }}>
 
         {/* ── מחשבון ההתייקרויות ─────────────────────────── */}
