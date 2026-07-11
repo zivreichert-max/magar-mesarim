@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { SEKIRA_WEEK, SEKIRA_PARLIAMENTARY, SEKIRA_MEDIA } from '@/data/sekira';
-import { paperForEvent } from './SekiraView';
+import { paperForEvent, TopicText } from './SekiraView';
 import { Paper } from '@/data/papers';
 import SekiraHighlights from './SekiraHighlights';
 import styles from './Sekira.module.css';
@@ -80,7 +80,7 @@ export default function SekiraIntro({ onEnter, onOpenPaper }: {
                     >
                       <div className={styles.calTime}>{ev.time || '—'}</div>
                       <div className={styles.calCommittee}>{ev.committee}</div>
-                      <div className={styles.calTopic}>{ev.topic}</div>
+                      <div className={styles.calTopic}><TopicText text={ev.topic} /></div>
                       {ev.hasPaper ? (
                         <button type="button" className={styles.calPaperBtn} onClick={() => onOpenPaper(paperForEvent(ev))}>
                           נייר עמדה ↗

@@ -35,6 +35,21 @@ function weekDates(): string[] {
   });
 }
 
+// Topic text with optional "•"-separated bullet list (e.g. expected plenum
+// legislation authored in the docx as "…להעביר: • חוק א • חוק ב").
+export function TopicText({ text }: { text: string }) {
+  if (!text.includes('•')) return <>{text}</>;
+  const [head, ...bullets] = text.split('•');
+  return (
+    <>
+      {head.trim()}
+      <ul className={styles.topicBullets}>
+        {bullets.map((b, i) => <li key={i}>{b.trim()}</li>)}
+      </ul>
+    </>
+  );
+}
+
 // Paper to open for a hasPaper parliamentary event: the matched one, or an empty
 // placeholder (title only) when the paper hasn't been written yet.
 export function paperForEvent(ev: SekiraEvent): Paper {
@@ -77,7 +92,7 @@ export default function SekiraView({ onOpenPaper }: { onOpenPaper: (p: Paper) =>
               <div key={d.day} className={styles.sharpCol}>
                 <div className={styles.sharpDay}>
                   <div className={styles.sharpDayName}>{d.day}</div>
-                  {dates[di] && <div className={styles.sharpDayDate}>{dates[di]}</div>}
+                  {dates[di] && !/\d/.test(d.day) && <div className={styles.sharpDayDate}>{dates[di]}</div>}
                 </div>
                 <div className={styles.sharpSub}>בוועדות הכנסת:</div>
                 {d.events.length === 0 ? (
@@ -87,7 +102,7 @@ export default function SekiraView({ onOpenPaper }: { onOpenPaper: (p: Paper) =>
                     <div className={styles.sharpItemHead}>
                       {ev.time && <span className="time">{ev.time}</span>}{ev.time ? ' · ' : ''}{ev.committee}
                     </div>
-                    <div className={styles.sharpItemTopic}>{ev.topic}</div>
+                    <div className={styles.sharpItemTopic}><TopicText text={ev.topic} /></div>
                     {ev.hasPaper ? (
                       <button type="button" className={styles.sharpPaper} onClick={() => onOpenPaper(paperForEvent(ev))}>
                         נייר עמדה ↗

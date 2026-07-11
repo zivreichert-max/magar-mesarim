@@ -31,6 +31,9 @@
 .sharpItemHead { font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 3px; }
 .sharpItemHead .time { color: #0075C4; }
 .sharpItemTopic { font-size: 12px; line-height: 1.5; color: #4b5563; margin-bottom: 4px; }
+.topicBullets { margin: 5px 0 0; padding-inline-start: 16px; list-style: disc; }
+.topicBullets li { font-weight: 600; color: #1f2937; margin-bottom: 3px; }
+.topicBullets li::marker { color: #0075C4; }
 .sharpPaper {
   display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600;
   color: #0075C4; text-decoration: none; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit;
