@@ -134,7 +134,9 @@ export default function SekiraView({ onOpenPaper }: { onOpenPaper: (p: Paper) =>
                 <div key={j} className={styles.topicPoint}>
                   {p.heading && <span className={styles.topicHeading}>{p.heading}: </span>}
                   {p.text}
-                  {p.url && <a href={p.url} target="_blank" rel="noreferrer" className={styles.topicLink}>לכתבה ↗</a>}
+                  {(p.links ?? (p.url ? [{ label: 'לכתבה', url: p.url }] : [])).map((l, k) => (
+                    <a key={k} href={l.url} target="_blank" rel="noreferrer" className={styles.topicLink}>{l.label} ↗</a>
+                  ))}
                 </div>
               ))}
             </div>
