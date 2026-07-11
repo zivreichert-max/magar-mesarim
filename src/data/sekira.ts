@@ -109,6 +109,7 @@ export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
     category: `זיכרון`,
     title: `20 שנה לפרוץ מלחמת לבנון השנייה`,
     detail: `המלחמה החלה בעקבות מתקפת חיזבאללה, שבה נהרגו חיילים ונחטפו אהוד גולדווסר ואלדד רגב.`,
+    url: `https://news.walla.co.il/item/3849923`,
   },
   {
     day: `יום שני`,
@@ -130,6 +131,7 @@ export const SEKIRA_HIGHLIGHTS: SekiraHighlight[] = [
     category: `ממלכתי`,
     title: `יום זאב ז'בוטינסקי`,
     detail: `יום הזיכרון הממלכתי למנהיג הציונות הרוויזיוניסטית; הטקס הרשמי ייערך בשעה 18:00 בהר הרצל.`,
+    url: `https://betar.org.il/noticia/%D7%99%D7%95%D7%9D-%D7%96%D7%91%D7%95%D7%98%D7%99%D7%A0%D7%A1%D7%A7%D7%99-2026-%D7%91%D7%94%D7%A8-%D7%94%D7%A8%D7%A6%D7%9C-%D7%99%D7%A8%D7%95%D7%A9%D7%9C%D7%99%D7%9D/`,
   },
   {
     day: `יום שישי`,
