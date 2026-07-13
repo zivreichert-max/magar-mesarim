@@ -141,6 +141,13 @@ export const TIMELINE: TimelineEvent[] = [
     url: `https://www.ynet.co.il/news/article/b18mzzz1mg`,
   },
   {
+    title: `1000 יום ל 7 באוקטובר`,
+    dateStart: `2026-07-02`,
+    category: `יום שנה`,
+    importance: `ודאי`,
+    detail: `מחאות צפויות ברחבי הארץ`,
+  },
+  {
     title: `בנק ישראל — ריבית + תחזית Q3`,
     dateStart: `2026-07-06`,
     category: `כלכלי`,
@@ -173,10 +180,28 @@ export const TIMELINE: TimelineEvent[] = [
     url: `https://he.wikipedia.org/wiki/מלחמת_לבנון_השנייה`,
   },
   {
+    title: `פיזור הכנסת ויציאה לפגרת בחירות`,
+    dateStart: `2026-07-17`,
+    category: `פוליטי`,
+    importance: `ודאי`,
+  },
+  {
+    title: `יום אחרון להתפטרות עובדי מדינה בכירה שרוצים להתמודד`,
+    dateStart: `2026-07-19`,
+    category: `פוליטי`,
+    importance: `ודאי`,
+  },
+  {
     title: `פגרת בית המשפט`,
     dateStart: `2026-07-20`,
     category: `בג"ץ`,
     importance: `הערכה`,
+  },
+  {
+    title: `הפריימריז במפלגת הדמוקרטים`,
+    dateStart: `2026-07-20`,
+    category: `פוליטי`,
+    importance: `ודאי`,
   },
   {
     title: `3 שנים לחוק הסבירות — שיא המהפכה המשפטית`,
@@ -185,6 +210,12 @@ export const TIMELINE: TimelineEvent[] = [
     importance: `ודאי`,
     detail: `תיקון חוק יסוד: השפיטה עבר 24.7.2023 - שיא המחאה והקיטוב ערב 7.10`,
     url: `https://he.wikipedia.org/wiki/חוק_הסבירות`,
+  },
+  {
+    title: `הפריימריז במפלגת הציונות הדתית`,
+    dateStart: `2026-07-26`,
+    category: `פוליטי`,
+    importance: `הערכה`,
   },
   {
     title: `א' באלול - זמן אלול וחזרה ללימודים במגזר החרדי`,
@@ -201,6 +232,12 @@ export const TIMELINE: TimelineEvent[] = [
     importance: `ודאי`,
     detail: `הפינוי בפועל אוגוסט 2005`,
     url: `https://he.wikipedia.org/wiki/תוכנית_ההתנתקות`,
+  },
+  {
+    title: `הפריימריז במפלגת הליכוד`,
+    dateStart: `2026-08-18`,
+    category: `פוליטי`,
+    importance: `הערכה`,
   },
   {
     title: `תשעה באב (צום)`,
@@ -226,12 +263,18 @@ export const TIMELINE: TimelineEvent[] = [
     url: `https://www.ynet.co.il/wellness/article/rkzzvy4dt`,
   },
   {
-    title: `בחירות לכנסת ה-26`,
-    dateStart: `2026-09-08`,
-    dateEnd: `2026-10-20`,
-    category: `בחירות`,
+    title: `מועד הגשת רשימות המועמדים לוועדה המרכזית`,
+    dateStart: `2026-09-07`,
+    category: `פוליטי`,
     importance: `הערכה`,
-    detail: `פרקי הזמן אליהם דובר במהלך חקיקת פיזור הכנסת בקריאה ראשונה - המועד החוקי האחרון הוא ה27.10.2027`,
+  },
+  {
+    title: `תוצאות מבחני PISA 2025`,
+    dateStart: `2026-09-08`,
+    category: `חינוך`,
+    importance: `ודאי`,
+    detail: `וצאות מחזור PISA 2025 צפויות להתפרסם ב־8 בספטמבר 2026. המחזור יתמקד במדעים, לצד מתמטיקה וקריאה, ויכלול לראשונה גם תחום חדש של למידה בעולם הדיגיטלי.`,
+    url: `https://www.oecd.org/en/about/programmes/pisa.html`,
   },
   {
     title: `ראש השנה תשפ"ז`,
@@ -363,6 +406,12 @@ export const TIMELINE: TimelineEvent[] = [
     url: `https://www.gov.il/he/pages/dec950_2023`,
   },
   {
+    title: `תחילת שידורי תעמולת הבחירות בטלווזיה וברדיו`,
+    dateStart: `2026-10-13`,
+    category: `פוליטי`,
+    importance: `ודאי`,
+  },
+  {
     title: `3 שנים לפינוי יישובי הצפון (החלטה 975)`,
     dateStart: `2026-10-18`,
     category: `יום שנה`,
@@ -371,11 +420,35 @@ export const TIMELINE: TimelineEvent[] = [
     url: `https://www.gov.il/he/pages/dec975_2023`,
   },
   {
+    title: `פתיחת הצבעה בנציגויות ישראל בחו"ל`,
+    dateStart: `2026-10-20`,
+    category: `פוליטי`,
+    importance: `ודאי`,
+  },
+  {
     title: `32 שנה להסכם השלום עם ירדן`,
     dateStart: `2026-10-26`,
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `26.10.1994`,
     url: `https://he.wikipedia.org/wiki/הסכם_השלום_בין_ישראל_לירדן`,
+  },
+  {
+    title: `יום הבחירות לכנסת`,
+    dateStart: `2026-10-27`,
+    category: `פוליטי`,
+    importance: `ודאי`,
+  },
+  {
+    title: `פרסום התוצאות הסופיות והרשמיות`,
+    dateStart: `2026-11-04`,
+    category: `פוליטי`,
+    importance: `ודאי`,
+  },
+  {
+    title: `מועד אחרון להגשת ערעור על תוצאות הבחירות`,
+    dateStart: `2026-11-18`,
+    category: `פוליטי`,
+    importance: `ודאי`,
   },
 ];
