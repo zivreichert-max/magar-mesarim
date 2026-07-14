@@ -90,6 +90,7 @@
   display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 7px;
   border-radius: 3px; background: #fee2e2; color: #dc2626; margin-inline-start: 6px; vertical-align: 1px;
 }
+.badgePassed { background: #dcfce7; color: #16a34a; }
 
 .cX { align-self: center; text-align: center; }
 .chev {

@@ -302,6 +302,7 @@ export default function ScheduleView() {
                           <div className={styles.cInst}>
                             <span className={styles.dot} />{instLabel}
                             {isCancelled && <span className={styles.badge}>בוטל</span>}
+                            {ev.passed && !isCancelled && <span className={`${styles.badge} ${styles.badgePassed}`}>עבר ✓</span>}
                           </div>
                           <div className={styles.cTopic}>
                             <div className={styles.tt}>{topic}</div>
