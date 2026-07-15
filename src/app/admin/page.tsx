@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { supabase, Suggestion, SiteSession, getSiteSessions } from '@/lib/supabase';
+import { supabase, Suggestion, SiteSession, getSiteSessions, IntakeItem, getIntakeQueue, updateIntakeStatus } from '@/lib/supabase';
 import { CLIENTS } from '@/data/clients';
 import { TOPICS } from '@/data/messages';
 
@@ -129,9 +129,11 @@ export default function AdminPage() {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
-  const [section, setSection] = useState<'suggestions' | 'analytics'>('suggestions');
+  const [section, setSection] = useState<'suggestions' | 'intake' | 'analytics'>('suggestions');
   const [sessions, setSessions] = useState<SiteSession[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [intake, setIntake] = useState<IntakeItem[]>([]);
+  const [intakeLoading, setIntakeLoading] = useState(false);
 
   const fetchSuggestions = useCallback(async () => {
     setLoading(true);
@@ -149,6 +151,16 @@ export default function AdminPage() {
     setSessionsLoading(false);
   }, []);
 
+  const fetchIntake = useCallback(async () => {
+    setIntakeLoading(true);
+    try {
+      setIntake(await getIntakeQueue());
+    } catch {
+      setIntake([]);
+    }
+    setIntakeLoading(false);
+  }, []);
+
   // Deferred a tick so the effect body has no synchronous setState
   // (react-hooks/set-state-in-effect; keeps React Compiler optimizations)
   useEffect(() => {
@@ -162,6 +174,22 @@ export default function AdminPage() {
     const t = setTimeout(fetchSessions, 0);
     return () => clearTimeout(t);
   }, [unlocked, section, fetchSessions]);
+
+  useEffect(() => {
+    if (!unlocked || section !== 'intake') return;
+    const t = setTimeout(fetchIntake, 0);
+    return () => clearTimeout(t);
+  }, [unlocked, section, fetchIntake]);
+
+  async function setIntakeItemStatus(id: string, status: string) {
+    try {
+      await updateIntakeStatus(id, status);
+    } catch (err) {
+      alert(`עדכון הסטטוס נכשל (${err instanceof Error ? err.message : ''})`);
+      return;
+    }
+    setIntake(prev => prev.map(i => (i.id === id ? { ...i, status } : i)));
+  }
 
   async function updateStatus(id: string, status: string) {
     const { error } = await supabase.from('suggestions').update({ status }).eq('id', id);
@@ -268,7 +296,7 @@ export default function AdminPage() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '32px' }}>
       {/* Section switcher */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-        {([['suggestions', 'הצעות תוכן'], ['analytics', 'שימוש']] as const).map(([sec, label]) => {
+        {([['suggestions', 'הצעות תוכן'], ['intake', 'הזנה מהירה'], ['analytics', 'שימוש']] as const).map(([sec, label]) => {
           const isActive = section === sec;
           return (
             <button
@@ -295,6 +323,100 @@ export default function AdminPage() {
 
       {section === 'analytics' && (
         <AnalyticsPanel sessions={sessions} loading={sessionsLoading} onRefresh={fetchSessions} />
+      )}
+
+      {section === 'intake' && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+            <div>
+              <h1 style={{ fontFamily: "var(--font-frank-ruhl), serif", fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: 0 }}>
+                הזנה מהירה — תור עיבוד
+              </h1>
+              <p style={{ color: 'var(--muted)', fontSize: 13, marginTop: 4 }}>
+                {intake.length} פריטים · {intake.filter(i => i.status === 'pending').length} ממתינים לעיבוד
+              </p>
+            </div>
+            <button
+              onClick={fetchIntake}
+              style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg3)', color: 'var(--muted)', fontFamily: 'inherit', fontSize: 13, cursor: 'pointer' }}
+            >
+              רענן
+            </button>
+          </div>
+
+          {intakeLoading ? (
+            <p style={{ color: 'var(--muted)', fontSize: 14 }}>טוען...</p>
+          ) : intake.length === 0 ? (
+            <p style={{ color: 'var(--muted)', fontSize: 14 }}>
+              התור ריק — פריטים שנשלחים מכפתור ״⚡ הזנה מהירה״ באתר יופיעו כאן
+            </p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {intake.map(item => (
+                <div
+                  key={item.id}
+                  style={{
+                    background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 12,
+                    padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr auto',
+                    gap: '12px 20px', alignItems: 'start',
+                  }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                      {item.topic_hint && (
+                        <span style={{ fontSize: 11, fontWeight: 700, color: topicColor(item.topic_hint), letterSpacing: 0.5 }}>
+                          {item.topic_hint}
+                        </span>
+                      )}
+                      <span style={{ fontSize: 11, color: 'var(--muted)' }}>
+                        {item.author_name} · {formatDate(item.created_at)}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
+                      {item.raw_text}
+                    </p>
+                    {item.image_url && (
+                      <a href={item.image_url} target="_blank" rel="noreferrer">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={item.image_url}
+                          alt="ויזואליה מצורפת"
+                          style={{ maxWidth: 220, maxHeight: 130, borderRadius: 8, border: '1px solid var(--border)', objectFit: 'cover' }}
+                        />
+                      </a>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'stretch' }}>
+                    <span
+                      style={{
+                        fontSize: 11, fontWeight: 700, textAlign: 'center', padding: '4px 12px', borderRadius: 12,
+                        color: item.status === 'pending' ? '#d4a843' : item.status === 'processed' ? '#22c55e' : '#ef4444',
+                        border: '1px solid currentColor',
+                      }}
+                    >
+                      {item.status === 'pending' ? 'ממתין' : item.status === 'processed' ? 'עובד ✓' : 'נדחה'}
+                    </span>
+                    {item.status === 'pending' ? (
+                      <button
+                        onClick={() => setIntakeItemStatus(item.id, 'rejected')}
+                        style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: '#ef4444', fontFamily: 'inherit', fontSize: 12, cursor: 'pointer' }}
+                      >
+                        דחה
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setIntakeItemStatus(item.id, 'pending')}
+                        style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontFamily: 'inherit', fontSize: 12, cursor: 'pointer' }}
+                      >
+                        החזר לתור
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {section === 'suggestions' && (

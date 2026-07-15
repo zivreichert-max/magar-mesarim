@@ -277,6 +277,62 @@ export async function deleteClientRequest(id: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+// ─── intake_queue (הזנה מהירה — תוכן גולמי לעיבוד לקלפים) ─────────────────────
+
+export interface IntakeItem {
+  id: string;
+  raw_text: string;
+  topic_hint: string | null;
+  image_url: string | null;
+  author_name: string | null;
+  status: string; // pending / processed / rejected
+  processed_note: string | null;
+  created_at: string;
+}
+
+export async function submitIntake(data: {
+  raw_text: string;
+  topic_hint: string | null;
+  author_name: string;
+  image?: File | null;
+}): Promise<void> {
+  let image_url: string | null = null;
+  if (data.image) {
+    const ext = (data.image.name.split('.').pop() || 'png').toLowerCase();
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from('intake')
+      .upload(path, data.image, { contentType: data.image.type || 'image/png' });
+    if (upErr) throw new Error(`העלאת התמונה נכשלה: ${upErr.message}`);
+    image_url = supabase.storage.from('intake').getPublicUrl(path).data.publicUrl;
+  }
+  const { error } = await supabase.from('intake_queue').insert({
+    raw_text: data.raw_text,
+    topic_hint: data.topic_hint,
+    author_name: data.author_name,
+    image_url,
+    status: 'pending',
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function getIntakeQueue(): Promise<IntakeItem[]> {
+  const { data, error } = await supabase
+    .from('intake_queue')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as IntakeItem[];
+}
+
+export async function updateIntakeStatus(id: string, status: string): Promise<void> {
+  const { error } = await supabase
+    .from('intake_queue')
+    .update({ status })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
 // ─── manual_schedule_events ───────────────────────────────────────────────────
 
 export interface ManualScheduleEvent {
@@ -396,4 +452,66 @@ export async function getScheduleCancellations(): Promise<ScheduleCancellation[]
     return [];
   }
   return (data ?? []) as ScheduleCancellation[];
+}
+
+// ─── poll tracker (מגמת הסקרים) ───────────────────────────────────────────────
+
+export interface PollParty {
+  slug: string;
+  name_he: string;
+  color: string;
+  bloc: 'coalition' | 'opposition' | 'arab' | 'other';
+  active_from: string | null;
+  active_to: string | null;
+}
+
+export interface PollRow {
+  id: number;
+  published_at: string;
+  broadcaster: 'ch12' | 'ch13' | 'election';
+  pollster: string | null;
+  sample_size: number | null;
+  notes: string | null;
+}
+
+export interface PollResultRow {
+  poll_id: number;
+  party_slug: string;
+  seats: number | null;  // null = לא נמדדה / מתחת לאחוז החסימה — לא אפס
+}
+
+export interface PollEventRow {
+  id: number;
+  date: string;
+  label_he: string;
+  description: string | null;
+  emphasis: 'major' | 'minor';
+}
+
+export interface PollTrackerData {
+  parties: PollParty[];
+  polls: PollRow[];
+  results: PollResultRow[];
+  events: PollEventRow[];
+}
+
+export async function getPollTrackerData(): Promise<PollTrackerData> {
+  const [parties, polls, results, events] = await Promise.all([
+    supabase.from('parties').select('*'),
+    supabase.from('polls').select('*').order('published_at'),
+    supabase.from('poll_results').select('*'),
+    supabase.from('events').select('*').order('date'),
+  ]);
+  for (const r of [parties, polls, results, events]) {
+    if (r.error) {
+      console.error('getPollTrackerData failed:', r.error.message);
+      return { parties: [], polls: [], results: [], events: [] };
+    }
+  }
+  return {
+    parties: (parties.data ?? []) as PollParty[],
+    polls: (polls.data ?? []) as PollRow[],
+    results: (results.data ?? []) as PollResultRow[],
+    events: (events.data ?? []) as PollEventRow[],
+  };
 }

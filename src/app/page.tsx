@@ -11,6 +11,7 @@ import FilterBar from '@/components/FilterBar';
 import MessageCard from '@/components/MessageCard';
 import DetailPanel from '@/components/DetailPanel';
 import SuggestButton from '@/components/SuggestButton';
+import IntakeButton from '@/components/IntakeButton';
 import RequestButton from '@/components/RequestButton';
 import type { Paper } from '@/data/papers';
 
@@ -318,7 +319,10 @@ export default function Home() {
       />
 
       {role === 'full' ? (
-        <SuggestButton authorName={authorName} />
+        <>
+          <SuggestButton authorName={authorName} />
+          <IntakeButton authorName={authorName} />
+        </>
       ) : (
         <RequestButton authorName={activeClient?.name ?? ''} clientId={activeClient?.id ?? ''} />
       )}
