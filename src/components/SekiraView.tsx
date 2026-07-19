@@ -5,6 +5,7 @@ import {
   KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, TIMELINE, SOURCES,
   RPara, RCard, RExpandable, Tag, TagKind, PermList,
 } from '@/data/recess';
+import { READY_SECOND_THIRD, PLENUM_AS_OF } from '@/data/plenumReady';
 import styles from './Sekira.module.css';
 
 const TAG_STYLE: Record<TagKind, string> = {
@@ -54,21 +55,46 @@ function ParaView({ p }: { p: RPara }) {
   );
 }
 
-function ExpView({ exp }: { exp: RExpandable }) {
+// Tier-1 list of the "מוכן למליאה" calculator, rendered live from its data —
+// single source of truth with the calculator itself.
+function PlenumReadyTeaser({ onOpenCalculator }: { onOpenCalculator?: () => void }) {
+  return (
+    <>
+      {READY_SECOND_THIRD.map(b => (
+        <div key={b.symbol} className={styles.rPara}>
+          {b.name}
+          <TagChip tag={{ label: b.category, kind: 'pending' }} />
+        </div>
+      ))}
+      <div className={`${styles.rPara} ${styles.rMuted}`}>נכון ל-{PLENUM_AS_OF}</div>
+      {onOpenCalculator && (
+        <button type="button" className={styles.calcLink} onClick={onOpenCalculator}>
+          למחשבון המלא ←
+        </button>
+      )}
+    </>
+  );
+}
+
+function ExpView({ exp, onOpenCalculator }: { exp: RExpandable; onOpenCalculator?: () => void }) {
   return (
     <details className={styles.exp}>
       <summary className={styles.expSum}>
         <span>{exp.summary}</span>
-        {exp.tag && <TagChip tag={exp.tag} />}
+        {exp.dynamic === 'plenumReady'
+          ? <TagChip tag={{ label: `${READY_SECOND_THIRD.length} הצעות`, kind: 'need' }} />
+          : exp.tag && <TagChip tag={exp.tag} />}
       </summary>
       <div className={styles.expBody}>
-        {exp.paras.map((p, i) => <ParaView key={i} p={p} />)}
+        {exp.dynamic === 'plenumReady'
+          ? <PlenumReadyTeaser onOpenCalculator={onOpenCalculator} />
+          : exp.paras.map((p, i) => <ParaView key={i} p={p} />)}
       </div>
     </details>
   );
 }
 
-function CardView({ card }: { card: RCard }) {
+function CardView({ card, onOpenCalculator }: { card: RCard; onOpenCalculator?: () => void }) {
   return (
     <div className={styles.topicBlock}>
       <div className={styles.topicName}>
@@ -76,7 +102,7 @@ function CardView({ card }: { card: RCard }) {
         {card.tag && <TagChip tag={card.tag} />}
       </div>
       {card.paras.map((p, i) => <ParaView key={i} p={p} />)}
-      {card.expandables?.map((e, i) => <ExpView key={i} exp={e} />)}
+      {card.expandables?.map((e, i) => <ExpView key={i} exp={e} onOpenCalculator={onOpenCalculator} />)}
     </div>
   );
 }
@@ -101,11 +127,11 @@ function PermBox({ list, kind }: { list: PermList; kind: 'green' | 'amber' }) {
 
 /* ───── tab bodies (also reused by SekiraIntro) ───── */
 
-export function KnessetTab() {
+export function KnessetTab({ onOpenCalculator }: { onOpenCalculator?: () => void }) {
   return (
     <>
       {KNESSET_BLOCKS.map((b, i) =>
-        b.type === 'card' ? <CardView key={i} card={b.card} />
+        b.type === 'card' ? <CardView key={i} card={b.card} onOpenCalculator={onOpenCalculator} />
         : b.type === 'permGrid' ? (
           <div key={i} className={styles.permGrid}>
             <PermBox list={b.green} kind="green" />
@@ -204,7 +230,7 @@ const RECESS_TABS = [
 
 type RecessTabId = typeof RECESS_TABS[number]['id'];
 
-export default function SekiraView() {
+export default function SekiraView({ onOpenCalculator }: { onOpenCalculator?: () => void }) {
   const [tab, setTab] = useState<RecessTabId>('knesset');
 
   return (
@@ -233,7 +259,7 @@ export default function SekiraView() {
         <div className={styles.sectionIntro}>{RECESS_TABS.find(t => t.id === tab)!.intro}</div>
       )}
 
-      {tab === 'knesset' && <KnessetTab />}
+      {tab === 'knesset' && <KnessetTab onOpenCalculator={onOpenCalculator} />}
       {tab === 'gov' && <GovTab />}
       {tab === 'court' && <CourtTab />}
       {tab === 'events' && <EventsTab />}

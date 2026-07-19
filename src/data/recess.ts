@@ -25,7 +25,9 @@ export type TagKind = 'ok' | 'need' | 'frozen' | 'pending' | 'info';
 export interface Tag { label: string; kind: TagKind; }
 
 export interface RPara { head?: string; text: string; links?: RLink[]; muted?: boolean; }
-export interface RExpandable { summary: string; tag?: Tag; paras: RPara[]; }
+// dynamic: body is rendered by a component instead of `paras`
+// ('plenumReady' = tier-1 list from src/data/plenumReady.ts + link to the calculator).
+export interface RExpandable { summary: string; tag?: Tag; paras: RPara[]; dynamic?: 'plenumReady'; }
 export interface RCard { title: string; tag?: Tag; paras: RPara[]; expandables?: RExpandable[]; }
 export interface PermItem { text: string; cond?: string; }
 export interface PermList { title: string; items: PermItem[]; }
@@ -88,15 +90,11 @@ export const KNESSET_BLOCKS: KnessetBlock[] = [
       ],
       expandables: [
         {
+          // הרשימה נמשכת חיה מ-src/data/plenumReady.ts (מקור אמת אחד עם המחשבון
+          // "מוכן למליאה") — אין להזין כאן רשימה ידנית.
           summary: 'אילו הצעות חוק מוכנות לקריאה שנייה ושלישית?',
-          tag: { label: 'בבנייה', kind: 'info' },
-          // כשהמיפוי יוזן — להחליף את הפסקה ברשימת חוקים (פסקה לכל חוק, עם links).
-          paras: [
-            {
-              muted: true,
-              text: 'כאן ייכנס מיפוי הצעות החוק שהונחו על שולחן המליאה לאחר סיום עבודת הוועדות — ושניתן להעבירן בפגרה. המיפוי בעבודה ויעודכן בהמשך.',
-            },
-          ],
+          dynamic: 'plenumReady',
+          paras: [],
         },
       ],
     },

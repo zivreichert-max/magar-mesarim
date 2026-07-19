@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import ExternalLinks from './ExternalLinks';
 
@@ -9,13 +9,15 @@ const calcLoading = () => (
   <div style={{ textAlign: 'center', padding: 48, color: '#9ca3af', fontSize: 13 }}>טוען…</div>
 );
 const PriceCalc = dynamic(() => import('./PriceCalc'), { loading: calcLoading });
+const PlenumReadyCalc = dynamic(() => import('./PlenumReadyCalc'), { loading: calcLoading });
 const EduBudgetCalc = dynamic(() => import('./EduBudgetCalc'), { loading: calcLoading });
 const EduOutcomesCalc = dynamic(() => import('./EduOutcomesCalc'), { loading: calcLoading });
 const CrimeCalc = dynamic(() => import('./CrimeCalc'), { loading: calcLoading });
 
-type CalcId = 'prices' | 'edu' | 'eduOutcomes' | 'crime' | 'external';
+export type CalcId = 'plenum' | 'prices' | 'edu' | 'eduOutcomes' | 'crime' | 'external';
 
 const CALCS: { id: CalcId; label: string }[] = [
+  { id: 'plenum', label: 'מוכן למליאה' },
   { id: 'prices', label: 'התייקרויות' },
   { id: 'edu', label: 'הוצאה על תלמיד' },
   { id: 'eduOutcomes', label: 'הישגים בחינוך' },
@@ -28,8 +30,20 @@ const EXTERNAL_CALCS = [
   { label: 'מעקב חוקי ההפיכה המשפטית', url: 'https://www.demonitor.org.il/', desc: 'דמוקרטים — מעקב אחר חקיקת המהפכה המשפטית' },
 ];
 
-export default function CalculatorsHub() {
-  const [active, setActive] = useState<CalcId>('prices');
+export default function CalculatorsHub({ externalCalc, onExternalConsumed }: {
+  // Deep-link from another tab (e.g. the sekira's plenum-ready teaser):
+  // open on this calculator, then let the parent clear the request.
+  externalCalc?: CalcId | null;
+  onExternalConsumed?: () => void;
+}) {
+  const [active, setActive] = useState<CalcId>(externalCalc ?? 'plenum');
+
+  useEffect(() => {
+    if (externalCalc) {
+      setActive(externalCalc);
+      onExternalConsumed?.();
+    }
+  }, [externalCalc, onExternalConsumed]);
 
   return (
     <div style={{ direction: 'rtl', fontFamily: "var(--font-heebo), sans-serif" }}>
@@ -62,6 +76,7 @@ export default function CalculatorsHub() {
         })}
       </div>
 
+      {active === 'plenum' && <PlenumReadyCalc />}
       {active === 'prices' && <PriceCalc />}
       {active === 'edu' && <EduBudgetCalc />}
       {active === 'eduOutcomes' && <EduOutcomesCalc />}

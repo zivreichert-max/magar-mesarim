@@ -176,6 +176,11 @@
 .tlDate { font-weight: 700; color: #0075C4; font-variant-numeric: tabular-nums; }
 .tlMilestone .tlDate { color: #d97706; }
 
+/* link-button from the plenum-ready teaser to the calculator */
+.calcLink { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 700; color: #fff;
+  background: #0075C4; border: none; border-radius: 6px; padding: 7px 16px; cursor: pointer; font-family: inherit; }
+.calcLink:hover { background: #0c447c; }
+
 /* sources footer */
 .srcFoot { margin-top: 28px; padding-top: 12px; border-top: 1px solid #e5e7eb;
   font-size: 11px; color: #9ca3af; line-height: 1.8; }

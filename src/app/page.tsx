@@ -14,6 +14,7 @@ import SuggestButton from '@/components/SuggestButton';
 import IntakeButton from '@/components/IntakeButton';
 import RequestButton from '@/components/RequestButton';
 import type { Paper } from '@/data/papers';
+import type { CalcId } from '@/components/CalculatorsHub';
 
 // Tab views are code-split: each drags in its own generated data files
 // (schedule, timeline, sekira, papers, workplans…), and without dynamic()
@@ -82,7 +83,16 @@ export default function Home() {
     typeof document !== 'undefined' && hasSeenIntro()
   );
   const [paperToOpen, setPaperToOpen] = useState<Paper | null>(null);
+  const [calcToOpen, setCalcToOpen] = useState<CalcId | null>(null);
   const sessionStarted = useRef(false);
+
+  // Deep-link from the sekira's "מוכן למליאה" teaser → open the calculators
+  // tab on that calculator
+  function openPlenumCalculator() {
+    setCalcToOpen('plenum');
+    setActiveView('calculator');
+    window.scrollTo(0, 0);
+  }
 
   function enterFromIntro() {
     markIntroSeen();
@@ -227,7 +237,7 @@ export default function Home() {
         ))}
       </div>
 
-      {activeView === 'sekira' && <SekiraView />}
+      {activeView === 'sekira' && <SekiraView onOpenCalculator={openPlenumCalculator} />}
 
       {activeView === 'messages' ? (
         <>
@@ -295,7 +305,9 @@ export default function Home() {
       )}
       {activeView === 'workplans' && <WorkPlansView role={role} clientId={activeClient?.id} />}
       {activeView === 'updates' && role === 'full' && <KnessetUpdates />}
-      {activeView === 'calculator' && <CalculatorsHub />}
+      {activeView === 'calculator' && (
+        <CalculatorsHub externalCalc={calcToOpen} onExternalConsumed={() => setCalcToOpen(null)} />
+      )}
 
       <DetailPanel
         message={selectedMessage}
