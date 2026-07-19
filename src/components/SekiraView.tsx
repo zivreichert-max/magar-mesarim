@@ -1,8 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   RECESS_TITLE, RECESS_UPDATED, ELECTION_LABEL, daysToElection,
-  LEGEND, KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, TIMELINE, SOURCES,
+  LEGEND, KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, COURT_CARDS, TIMELINE, SOURCES,
   RPara, RCard, RExpandable, Tag, TagKind, PermList,
 } from '@/data/recess';
 import styles from './Sekira.module.css';
@@ -19,15 +19,13 @@ export function TagChip({ tag }: { tag: Tag }) {
   return <span className={`${styles.tag} ${TAG_STYLE[tag.kind]}`}>{tag.label}</span>;
 }
 
-// Inline markers in data text: **bold** and ==highlight==
+// Inline marker in data text: **bold**
 export function Rich({ text }: { text: string }) {
-  const parts = text.split(/(\*\*[^*]+\*\*|==[^=]+==)/g);
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return (
     <>
       {parts.map((p, i) =>
-        p.startsWith('**') ? <strong key={i}>{p.slice(2, -2)}</strong>
-        : p.startsWith('==') ? <mark key={i} className={styles.hlMark}>{p.slice(2, -2)}</mark>
-        : p
+        p.startsWith('**') ? <strong key={i}>{p.slice(2, -2)}</strong> : p
       )}
     </>
   );
@@ -144,6 +142,9 @@ export function CourtTab() {
           </div>
         ))}
       </div>
+      <div style={{ marginTop: 16 }}>
+        {COURT_CARDS.map((c, i) => <CardView key={i} card={c} />)}
+      </div>
     </>
   );
 }
@@ -166,9 +167,16 @@ export function EventsTab() {
 }
 
 export function Countdown() {
+  // Computed at render time (so each visit shows the current count) and
+  // re-checked hourly, so a tab left open across midnight ticks down too.
+  const [days, setDays] = useState(daysToElection);
+  useEffect(() => {
+    const id = setInterval(() => setDays(daysToElection()), 60 * 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
   return (
     <div className={styles.countBox}>
-      <span className={styles.countNum}>{daysToElection()}</span>
+      <span className={styles.countNum}>{days}</span>
       <span className={styles.countLbl}>{ELECTION_LABEL}</span>
     </div>
   );

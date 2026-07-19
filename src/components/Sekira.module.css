@@ -136,7 +136,6 @@
 .rPara:last-child { margin-bottom: 0; }
 .rParaHead { font-weight: 700; color: #111827; }
 .rMuted { color: #6b7280; font-size: 12px; }
-.hlMark { background: linear-gradient(transparent 55%, #fde68a 55%); color: inherit; }
 
 /* green/amber permission grid */
 .permGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
