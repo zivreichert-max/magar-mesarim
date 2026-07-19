@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import {
   RECESS_TITLE, RECESS_UPDATED, ELECTION_LABEL, daysToElection,
-  LEGEND, KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, COURT_CARDS, TIMELINE, SOURCES,
+  KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, TIMELINE, SOURCES,
   RPara, RCard, RExpandable, Tag, TagKind, PermList,
 } from '@/data/recess';
 import styles from './Sekira.module.css';
@@ -142,9 +142,6 @@ export function CourtTab() {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 16 }}>
-        {COURT_CARDS.map((c, i) => <CardView key={i} card={c} />)}
-      </div>
     </>
   );
 }
@@ -178,15 +175,6 @@ export function Countdown() {
     <div className={styles.countBox}>
       <span className={styles.countNum}>{days}</span>
       <span className={styles.countLbl}>{ELECTION_LABEL}</span>
-    </div>
-  );
-}
-
-function Legend() {
-  return (
-    <div className={styles.legend}>
-      <span className={styles.legendTitle}>מקרא:</span>
-      {LEGEND.map((t, i) => <TagChip key={i} tag={t} />)}
     </div>
   );
 }
@@ -227,7 +215,6 @@ export default function SekiraView() {
       </div>
 
       <Countdown />
-      <Legend />
 
       <div className={styles.subTabs} style={{ maxWidth: 640, margin: '0 auto 22px' }}>
         {RECESS_TABS.map(t => (

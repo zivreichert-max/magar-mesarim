@@ -24,13 +24,6 @@ export interface RLink { label: string; url: string; }
 export type TagKind = 'ok' | 'need' | 'frozen' | 'pending' | 'info';
 export interface Tag { label: string; kind: TagKind; }
 
-export const LEGEND: Tag[] = [
-  { label: 'פועל ללא אישור ועדת ההסכמות', kind: 'ok' },
-  { label: 'טעון אישור ועדת ההסכמות', kind: 'need' },
-  { label: 'מוקפא', kind: 'frozen' },
-  { label: 'עתירה תלויה', kind: 'pending' },
-];
-
 export interface RPara { head?: string; text: string; links?: RLink[]; muted?: boolean; }
 export interface RExpandable { summary: string; tag?: Tag; paras: RPara[]; }
 export interface RCard { title: string; tag?: Tag; paras: RPara[]; expandables?: RExpandable[]; }
@@ -303,7 +296,7 @@ export const COURT_ROWS: CourtRow[] = [
     legal: `תחולה נדחית — 1.1.2027; עתירות ובקשות הקפאה טרם הוכרעו`,
     date: '1.1.2027 — תחולה',
     links: [
-      { label: 'סיקור העתירות — כיכר השבת', url: 'https://www.kikar.co.il/israel-news/attorney-general-office-split-law' },
+      { label: 'כל מה שצריך לדעת על החוק — ynet', url: 'https://www.ynet.co.il/news/article/hylhxan4ge' },
     ],
   },
   {
@@ -313,31 +306,6 @@ export const COURT_ROWS: CourtRow[] = [
     date: '—',
     links: [
       { label: 'סיקור העתירה — ישראל היום', url: 'https://www.israelhayom.co.il/news/law/article/21000205' },
-    ],
-  },
-];
-
-// כרטיסי הקשר המוצגים בטאב בג"ץ, מתחת לטבלה.
-export const COURT_CARDS: RCard[] = [
-  {
-    title: 'חקיקת הבחירות — חוק הבחירות לכנסת ה-26',
-    paras: [
-      {
-        // TODO: קישור לנוסח החוק ברשומות — כשיפורסם.
-        text: `חוק הבחירות לכנסת ה-26 אושר סופית ב-**16.7**. החוק כולל הסדרי הצבעה מיוחדים למפונים, סמכויות חירום ליו"ר ועדת הבחירות, חובת סימון של תעמולת "דיפ-פייק" ותיקונים מנהליים נוספים.`,
-      },
-      {
-        text: `עם זאת, מהנוסח הסופי הוסר ההסדר שהציעה ועדת הבחירות המרכזית להצבת קלפיות מיוחדות בבתי אבות ובדיור מוגן. הסדר דומה הופעל כהוראת שעה בשתי מערכות הבחירות האחרונות, אך הקואליציה התנגדה לעיגונו והסעיף הוסר עוד לפני הקריאה הראשונה. נכון לעכשיו, דיירי בתי אבות ודיור מוגן רגילים לא ייהנו מקלפי מיוחדת במקום מגוריהם בבחירות הקרובות. ההסדר הקיים לקלפיות בבתי חולים ובמחלקות סיעודיות העומדות בתנאי החוק לא בוטל.`,
-        links: [
-          { label: 'ההתנגדות לקלפיות בבתי אבות — ynet', url: 'https://www.ynet.co.il/news/article/h1ylo8fmfe' },
-        ],
-      },
-      {
-        text: `ב-16.7 עתרו לבג"ץ יותר מ-50 דיירי בתי אבות ודיור מוגן בדרישה להורות על השבת ההסדר, בטענה שהסרתו תפגע בפועל ביכולתם של אלפי אזרחים ותיקים לממש את זכות הבחירה.`,
-        links: [
-          { label: 'סיקור העתירה — ישראל היום', url: 'https://www.israelhayom.co.il/news/law/article/21000205' },
-        ],
-      },
     ],
   },
 ];

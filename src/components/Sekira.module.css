@@ -111,20 +111,15 @@
 /* ====== RECESS SEKIRA (משטר פגרת בחירות) ====== */
 
 /* countdown */
-.countBox { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 14px; }
+.countBox { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 22px; }
 .countNum { font-size: 46px; font-weight: 900; color: #0c447c; line-height: 1; font-variant-numeric: tabular-nums; }
 .countLbl { font-size: 12px; color: #6b7280; }
 .heroCountNum { font-size: 56px; font-weight: 900; color: #fff; line-height: 1; margin-top: 22px; animation: fadeUp 0.8s ease 0.5s both; }
 .heroCountLbl { font-size: 13px; opacity: 0.8; margin-top: 4px; animation: fadeUp 0.8s ease 0.6s both; }
 
-/* legend */
-.legend { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; margin-bottom: 20px; }
-.legendTitle { font-size: 11px; font-weight: 700; color: #6b7280; }
-
 /* status tags */
 .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 9px; border-radius: 4px;
   border: 1px solid; white-space: nowrap; vertical-align: middle; margin-inline-start: 6px; }
-.legend .tag { margin-inline-start: 0; }
 .tagOk { background: #ecfdf5; color: #047857; border-color: #a7d7c5; }
 .tagNeed { background: #fffbeb; color: #b45309; border-color: #e8d3a8; }
 .tagFrozen { background: #fef2f2; color: #b91c1c; border-color: #ecc3c0; }
