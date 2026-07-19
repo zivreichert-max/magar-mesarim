@@ -90,20 +90,6 @@ export default function Home() {
     window.scrollTo(0, 0);
   }
 
-  // Open a position paper from the סקירה tab → switch to ניירות עמדה and open it
-  function openPaper(p: Paper) {
-    setPaperToOpen(p);
-    setActiveView('papers');
-  }
-
-  // Same, but from the intro overlay — also dismiss the intro into the app
-  function openPaperFromIntro(p: Paper) {
-    markIntroSeen();
-    setIntroDone(true);
-    openPaper(p);
-    window.scrollTo(0, 0);
-  }
-
   // When client role becomes ready, fetch allowed message IDs
   useEffect(() => {
     if (appState === 'ready' && role === 'client' && activeClient) {
@@ -211,7 +197,7 @@ export default function Home() {
   if (appState === 'name') return <NamePrompt onName={handleName} />;
 
   // First-entry onboarding overlay — sits above the app; "כניסה"/"דלג" reveals it
-  if (!introDone) return <SekiraIntro onEnter={enterFromIntro} onOpenPaper={openPaperFromIntro} />;
+  if (!introDone) return <SekiraIntro onEnter={enterFromIntro} />;
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
@@ -241,7 +227,7 @@ export default function Home() {
         ))}
       </div>
 
-      {activeView === 'sekira' && <SekiraView onOpenPaper={openPaper} />}
+      {activeView === 'sekira' && <SekiraView />}
 
       {activeView === 'messages' ? (
         <>

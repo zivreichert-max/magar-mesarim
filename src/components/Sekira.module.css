@@ -108,6 +108,86 @@
 .topicLink { font-size: 12px; color: #0075C4; font-weight: 700; text-decoration: none; white-space: nowrap; margin-inline-start: 6px; }
 .topicLink:hover { text-decoration: underline; }
 
+/* ====== RECESS SEKIRA (משטר פגרת בחירות) ====== */
+
+/* countdown */
+.countBox { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 14px; }
+.countNum { font-size: 46px; font-weight: 900; color: #0c447c; line-height: 1; font-variant-numeric: tabular-nums; }
+.countLbl { font-size: 12px; color: #6b7280; }
+.heroCountNum { font-size: 56px; font-weight: 900; color: #fff; line-height: 1; margin-top: 22px; animation: fadeUp 0.8s ease 0.5s both; }
+.heroCountLbl { font-size: 13px; opacity: 0.8; margin-top: 4px; animation: fadeUp 0.8s ease 0.6s both; }
+
+/* legend */
+.legend { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; margin-bottom: 20px; }
+.legendTitle { font-size: 11px; font-weight: 700; color: #6b7280; }
+
+/* status tags */
+.tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 9px; border-radius: 4px;
+  border: 1px solid; white-space: nowrap; vertical-align: middle; margin-inline-start: 6px; }
+.legend .tag { margin-inline-start: 0; }
+.tagOk { background: #ecfdf5; color: #047857; border-color: #a7d7c5; }
+.tagNeed { background: #fffbeb; color: #b45309; border-color: #e8d3a8; }
+.tagFrozen { background: #fef2f2; color: #b91c1c; border-color: #ecc3c0; }
+.tagPending { background: #eff6ff; color: #1e3a7b; border-color: #c6d3e8; }
+.tagInfo { background: #f1f5f9; color: #475569; border-color: #d7dde5; }
+
+/* card paragraphs */
+.rPara { font-size: 13px; line-height: 1.7; color: #374151; margin-bottom: 8px; }
+.rPara:last-child { margin-bottom: 0; }
+.rParaHead { font-weight: 700; color: #111827; }
+.rMuted { color: #6b7280; font-size: 12px; }
+.hlMark { background: linear-gradient(transparent 55%, #fde68a 55%); color: inherit; }
+
+/* green/amber permission grid */
+.permGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.perm { background: #fff; border: 0.5px solid #e5e7eb; border-radius: 6px; overflow: hidden; }
+.permHead { padding: 10px 14px; font-size: 13px; font-weight: 700; }
+.permHeadGreen { background: #ecfdf5; color: #047857; border-bottom: 1px solid #a7d7c5; }
+.permHeadAmber { background: #fffbeb; color: #b45309; border-bottom: 1px solid #e8d3a8; }
+.permList { list-style: none; padding: 10px 14px; margin: 0; }
+.permList li { font-size: 12.5px; line-height: 1.6; color: #374151; padding: 4px 14px 4px 0; position: relative; }
+.permList li::before { content: '—'; position: absolute; right: 0; color: #9ca3af; }
+.permCond { color: #6b7280; font-size: 11.5px; }
+
+/* expandables */
+.exp { background: #fff; border: 0.5px solid #e5e7eb; border-radius: 6px; margin: 10px 0; overflow: hidden; }
+.topicBlock .exp { background: #f9fafb; }
+.expSum { cursor: pointer; padding: 11px 14px; font-size: 13px; font-weight: 700; color: #111827;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; list-style: none; user-select: none; }
+.expSum::-webkit-details-marker { display: none; }
+.expSum::before { content: '+'; font-weight: 700; color: #0075C4; font-size: 15px; width: 14px; text-align: center; flex-shrink: 0; }
+.exp[open] .expSum::before { content: '–'; }
+.exp[open] .expSum { border-bottom: 1px solid #e5e7eb; }
+.expBody { padding: 11px 14px; }
+
+/* court table (בג"ץ) */
+.courtTable { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; }
+.courtHead { display: grid; grid-template-columns: 150px 112px 1fr 140px;
+  background: #f1f5f9; font-size: 10px; font-weight: 700; color: #6b7280; letter-spacing: 0.06em; }
+.courtHead > div { padding: 8px 12px; }
+.courtRow { display: grid; grid-template-columns: 150px 112px 1fr 140px; border-top: 1px solid #e5e7eb; align-items: start; }
+.courtRow > div { padding: 11px 12px; }
+.courtLaw { font-size: 13px; font-weight: 700; color: #111827; line-height: 1.4; }
+.courtStatus .tag { margin-inline-start: 0; }
+.courtLegal { font-size: 12.5px; color: #374151; line-height: 1.6; }
+.courtDate { font-size: 12.5px; font-weight: 700; color: #0075C4; }
+
+/* timeline (אירועים בולטים) */
+.tl { list-style: none; margin: 4px 6px 0 0; padding: 0 20px 0 0; border-right: 2px solid #0075C4; }
+.tl li { position: relative; padding-bottom: 16px; font-size: 13px; line-height: 1.6; color: #374151; }
+.tl li:last-child { padding-bottom: 2px; }
+.tl li::before { content: ''; position: absolute; right: -26px; top: 5px; width: 10px; height: 10px;
+  border-radius: 50%; background: #0075C4; border: 2px solid #fff; }
+.tlMilestone::before { background: #d97706 !important; }
+.tlDate { font-weight: 700; color: #0075C4; font-variant-numeric: tabular-nums; }
+.tlMilestone .tlDate { color: #d97706; }
+
+/* sources footer */
+.srcFoot { margin-top: 28px; padding-top: 12px; border-top: 1px solid #e5e7eb;
+  font-size: 11px; color: #9ca3af; line-height: 1.8; }
+.srcLink { color: #0075C4; text-decoration: none; }
+.srcLink:hover { text-decoration: underline; }
+
 /* ============ INTRO SEQUENCE (overlay) ============ */
 .intro { position: fixed; inset: 0; z-index: 1000; background: #fff; overflow-y: auto; scroll-snap-type: y mandatory; }
 .introSection { min-height: 100vh; scroll-snap-align: start; display: flex; flex-direction: column;
@@ -168,6 +248,13 @@
   .hlRow > .hlMain { grid-column: 1; }
   .hlRow > .hlX { grid-column: 2; grid-row: 1 / 4; }
   .hlPanel { grid-column: 1 / -1; }
+  .permGrid { grid-template-columns: 1fr; }
+  .courtHead { display: none; }
+  .courtRow { grid-template-columns: 1fr; border-top: 2px solid #e5e7eb; }
+  .courtRow:first-of-type { border-top: 1px solid #e5e7eb; }
+  .courtRow > div { padding: 3px 12px; }
+  .courtRow > div:first-child { padding-top: 10px; }
+  .courtRow > div:last-child { padding-bottom: 10px; }
   .calGrid { grid-template-columns: 1fr; }
   .calCol { flex-direction: row; }
   .calHead { min-width: 70px; display: flex; align-items: center; justify-content: center; }
