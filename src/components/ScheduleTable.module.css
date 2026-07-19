@@ -124,6 +124,50 @@
   font-size: 12px; font-weight: 700; padding: 7px 14px; border-radius: 4px; text-decoration: none; font-family: inherit;
 }
 
+/* ===== Recess schedule (לו"ז פגרה) — arena → day → items ===== */
+.rcSekiraLink {
+  margin-inline-start: auto; font-size: 12px; font-weight: 700; color: #0075C4;
+  background: none; border: none; cursor: pointer; font-family: inherit; padding: 0;
+}
+.rcSekiraLink:hover { text-decoration: underline; }
+
+.rcDay { margin-top: 14px; }
+.rcDayName {
+  font-size: 13px; font-weight: 800; color: #0075C4;
+  padding: 6px 2px; font-variant-numeric: tabular-nums;
+}
+.rcTbl { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; }
+
+.rcRow {
+  display: grid;
+  grid-template-columns: 96px 1fr 44px;
+  align-items: start;
+  cursor: pointer;
+  border-bottom: 1px solid #e5e7eb;
+  position: relative;
+  transition: background 0.12s;
+  animation: rowRise 0.35s both;
+}
+.rcRow:last-child { border-bottom: none; }
+.rcRow::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0; bottom: 0;
+  width: 3px;
+  background: #0075C4;
+}
+.rcRow:hover { background: #f8fafc; }
+.rcRow > div { padding: 11px 12px; }
+
+.rcTagCell { padding-top: 12px; }
+.rcTag {
+  display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 9px;
+  border-radius: 4px; border: 1px solid; white-space: nowrap;
+}
+.rcNoTag { color: #cbd5e1; }
+.rcSummary { font-size: 12px; color: #6b7280; line-height: 1.6; margin-top: 3px; }
+
 /* ===== Timeline (אירועים בולטים) table — reuses .panel/.chev/.cX/.open ===== */
 .tlTable { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; }
 .tlHead {
@@ -157,6 +201,11 @@
   .row > .cTopic { grid-column: 1; }
   .row > .cX { grid-column: 2; grid-row: 1 / 4; }
   .panel { grid-column: 1 / -1; }
+
+  .rcRow { grid-template-columns: 1fr 40px; }
+  .rcRow > .rcTagCell { grid-column: 1; padding-bottom: 0; }
+  .rcRow > .cTopic { grid-column: 1; }
+  .rcRow > .cX { grid-column: 2; grid-row: 1 / 3; }
 
   .tlHead { display: none; }
   .tlRow { grid-template-columns: 1fr 40px; }

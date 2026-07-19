@@ -228,10 +228,23 @@ const RECESS_TABS = [
   { id: 'events', label: 'אירועים בולטים', intro: 'לוח האירועים של השבועיים הקרובים.' },
 ] as const;
 
-type RecessTabId = typeof RECESS_TABS[number]['id'];
+export type RecessTabId = typeof RECESS_TABS[number]['id'];
 
-export default function SekiraView({ onOpenCalculator }: { onOpenCalculator?: () => void }) {
-  const [tab, setTab] = useState<RecessTabId>('knesset');
+export default function SekiraView({ onOpenCalculator, externalTab, onExternalConsumed }: {
+  onOpenCalculator?: () => void;
+  // Deep-link from another tab (e.g. a schedule arena's "לסקירה המלאה"):
+  // open on this sekira tab, then let the parent clear the request.
+  externalTab?: RecessTabId | null;
+  onExternalConsumed?: () => void;
+}) {
+  const [tab, setTab] = useState<RecessTabId>(externalTab ?? 'knesset');
+
+  useEffect(() => {
+    if (externalTab) {
+      setTab(externalTab);
+      onExternalConsumed?.();
+    }
+  }, [externalTab, onExternalConsumed]);
 
   return (
     <div className={styles.wrap} style={{ padding: '24px', maxWidth: 1080, margin: '0 auto', width: '100%' }}>

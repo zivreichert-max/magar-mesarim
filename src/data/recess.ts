@@ -47,10 +47,8 @@ export const KNESSET_BLOCKS: KnessetBlock[] = [
       paras: [
         {
           text: `בתקופת הפגרה פועלת **ועדת הסכמות** בת שני חברים: **ח"כ אופיר כץ**, יו"ר הקואליציה (מייצג את כל סיעות הקואליציה) ו**ח"כ מירב בן ארי**, מרכזת האופוזיציה (מייצגת את כל סיעות האופוזיציה). כינוס ועדה — ביוזמת הממשלה, יו"ר הוועדה או שליש מחבריה — מחייב **אישור מראש של ועדת ההסכמות**. הפניות נעשות באמצעות מזכירות הכנסת, והיועצת המשפטית לכנסת מחווה דעתה על כל פנייה.`,
-          // TODO: החלטת ועדת הכנסת (סימוכין 2026-115247) — כשה-PDF יועלה אל
-          // public/docs/knesset-committee-recess-decision-17-07-2026.pdf להוסיף
-          // כאן קישור { label: 'החלטת ועדת הכנסת (PDF)', url: '/docs/…' }
           links: [
+            { label: 'החלטת ועדת הכנסת (PDF)', url: '/docs/knesset-committee-recess-decision-17-07-2026.pdf' },
             { label: 'הודעת דוברות הכנסת — סיקור', url: 'https://ch10.co.il/news/1087541/' },
           ],
         },
@@ -136,10 +134,9 @@ export const GOV_CARDS: RCard[] = [
     title: 'מכתב היועמ"שית, 17.7.2026',
     paras: [
       {
-        // TODO: מכתב היועמ"שית — כשה-PDF יועלה אל
-        // public/docs/agc-election-period-letter-17-07-2026.pdf להוסיף כאן קישור.
         text: `עם היציאה לפגרת הבחירות הפכה הממשלה ל**ממשלה יוצאת**: ממשיכה לכהן, אך מרחב הפעולה שלה שונה מזה של ממשלה רגילה. המכתב (גלי בהרב-מיארה למזכיר הממשלה יוסי פוקס, מס' 004-99-2026-017760) מציב שלושה עיקרים:`,
         links: [
+          { label: 'המכתב המלא (PDF)', url: '/docs/agc-election-period-letter-17-07-2026.pdf' },
           { label: 'סיקור — וואלה', url: 'https://news.walla.co.il/item/3854214' },
           { label: 'סיקור וציטוטים — ערוץ 7', url: 'https://www.inn.co.il/news/701745' },
         ],
@@ -335,10 +332,8 @@ export const TIMELINE: TimelineItem[] = [
 export interface SourceRef { text: string; url?: string; }
 
 export const SOURCES: SourceRef[] = [
-  // TODO: PDF → public/docs/knesset-committee-recess-decision-17-07-2026.pdf, ואז url: '/docs/…'
-  { text: `החלטת ועדת הכנסת בדבר פעילות הכנסת בפגרת הבחירות לכנסת ה-26 (17.7.2026, סימוכין 2026-115247)` },
-  // TODO: PDF → public/docs/agc-election-period-letter-17-07-2026.pdf, ואז url: '/docs/…'
-  { text: `מכתב היועצת המשפטית לממשלה למזכיר הממשלה, "קבלת החלטות על ידי הממשלה והשרים בתקופת בחירות" (17.7.2026, מס' 004-99-2026-017760)` },
+  { text: `החלטת ועדת הכנסת בדבר פעילות הכנסת בפגרת הבחירות לכנסת ה-26 (17.7.2026, סימוכין 2026-115247)`, url: '/docs/knesset-committee-recess-decision-17-07-2026.pdf' },
+  { text: `מכתב היועצת המשפטית לממשלה למזכיר הממשלה, "קבלת החלטות על ידי הממשלה והשרים בתקופת בחירות" (17.7.2026, מס' 004-99-2026-017760)`, url: '/docs/agc-election-period-letter-17-07-2026.pdf' },
   { text: `סדר היום לישיבת הממשלה מס' 157 (15.7.2026) והנספחים`, url: '/docs/gov-meeting-157-agenda-15-07-2026.pdf' },
   { text: 'הודעת דוברות הכנסת על הסדרי הפגרה', url: 'https://ch10.co.il/news/1087541/' },
 ];

@@ -15,6 +15,7 @@ import IntakeButton from '@/components/IntakeButton';
 import RequestButton from '@/components/RequestButton';
 import type { Paper } from '@/data/papers';
 import type { CalcId } from '@/components/CalculatorsHub';
+import type { RecessTabId } from '@/components/SekiraView';
 
 // Tab views are code-split: each drags in its own generated data files
 // (schedule, timeline, sekira, papers, workplans…), and without dynamic()
@@ -40,7 +41,7 @@ type ViewId = 'sekira' | 'messages' | 'schedule' | 'requests' | 'papers' | 'work
 // `title` (header heading) defaults to the tab label when omitted.
 const TABS: { id: ViewId; label: string; title?: string; fullOnly?: boolean }[] = [
   { id: 'sekira',     label: 'סקירה' },
-  { id: 'schedule',   label: 'לו"ז', title: 'לו"ז שבועי' },
+  { id: 'schedule',   label: 'לו"ז', title: 'לו"ז לתקופת הפגרה' },
   { id: 'updates',    label: 'עדכונים אוטומטיים', fullOnly: true },
   { id: 'papers',     label: 'ניירות עמדה' },
   { id: 'workplans',  label: 'תכניות עבודה' },
@@ -84,6 +85,7 @@ export default function Home() {
   );
   const [paperToOpen, setPaperToOpen] = useState<Paper | null>(null);
   const [calcToOpen, setCalcToOpen] = useState<CalcId | null>(null);
+  const [sekiraTabToOpen, setSekiraTabToOpen] = useState<RecessTabId | null>(null);
   const sessionStarted = useRef(false);
 
   // Deep-link from the sekira's "מוכן למליאה" teaser → open the calculators
@@ -91,6 +93,13 @@ export default function Home() {
   function openPlenumCalculator() {
     setCalcToOpen('plenum');
     setActiveView('calculator');
+    window.scrollTo(0, 0);
+  }
+
+  // Cross-link from a schedule arena → the matching sekira tab
+  function openSekiraTab(tab: RecessTabId) {
+    setSekiraTabToOpen(tab);
+    setActiveView('sekira');
     window.scrollTo(0, 0);
   }
 
@@ -237,7 +246,13 @@ export default function Home() {
         ))}
       </div>
 
-      {activeView === 'sekira' && <SekiraView onOpenCalculator={openPlenumCalculator} />}
+      {activeView === 'sekira' && (
+        <SekiraView
+          onOpenCalculator={openPlenumCalculator}
+          externalTab={sekiraTabToOpen}
+          onExternalConsumed={() => setSekiraTabToOpen(null)}
+        />
+      )}
 
       {activeView === 'messages' ? (
         <>
@@ -291,7 +306,7 @@ export default function Home() {
           </main>
         </>
       ) : activeView === 'schedule' ? (
-        <ScheduleView />
+        <ScheduleView onOpenSekira={openSekiraTab} />
       ) : null}
 
       {activeView === 'requests' && role === 'full' && <ClientRequestsView />}
