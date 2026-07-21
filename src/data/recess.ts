@@ -287,7 +287,7 @@ export const GOV_CARDS: RCard[] = [
 
 /* ─────────────── טאב 3 · בג"ץ ─────────────── */
 
-export const COURT_INTRO = `מרכז הכובד של המעקב אחר חקיקת הכנסת ה-25 עובר מהוועדות אל בג"ץ. שישה תיקים על השולחן:`;
+export const COURT_INTRO = `מרכז הכובד של המעקב אחר חקיקת הכנסת ה-25 עובר מהוועדות אל בג"ץ. שבעה תיקים על השולחן:`;
 
 export interface CourtRow { law: string; status: Tag; legal: string; date: string; links?: RLink[]; }
 
@@ -345,6 +345,17 @@ export const COURT_ROWS: CourtRow[] = [
     date: '—',
     links: [
       { label: 'סיקור העתירה — ישראל היום', url: 'https://www.israelhayom.co.il/news/law/article/21000205' },
+    ],
+  },
+  {
+    law: `חוק מח"ש (תיקון מס' 45 לפקודת המשטרה)`,
+    status: { label: 'עתירות תלויות', kind: 'pending' },
+    legal: `אושר ב-10.6 בניגוד לעמדת הייעוץ המשפטי לממשלה; מוציא את מח"ש מפרקליטות המדינה ומכפיף אותה לשר המשפטים, וסמכויות ההעמדה לדין עוברות מהיועמ"שית למנהל המחלקה. עתרו התנועה לאיכות השלטון ו-23 ניצבים לשעבר, בהם ארבעה מפכ"לים (אלשיך, אהרונישקי, קראדי ופלד). שר המשפטים כבר פרסם מכרז לראש מח"ש חדש; העותרים מבקשים צו ביניים שיקפיא כל יישום, כולל המינוי`,
+    date: '— (ממתין להחלטה על צו ביניים)',
+    links: [
+      { label: 'המכרז ועמדת היועמ"שית — ynet', url: 'https://www.ynet.co.il/news/article/hytjvcjefx' },
+      { label: 'העתירות — כלכליסט', url: 'https://www.calcalist.co.il/local_news/article/bknwyqu11mg' },
+      { label: 'ניתוח החוק — גלובס', url: 'https://www.globes.co.il/news/article.aspx?did=1001545585' },
     ],
   },
 ];
