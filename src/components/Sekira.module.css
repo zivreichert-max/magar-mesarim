@@ -176,6 +176,19 @@
 .tlDate { font-weight: 700; color: #0075C4; font-variant-numeric: tabular-nums; }
 .tlMilestone .tlDate { color: #d97706; }
 
+/* today indicator on the timeline */
+.tlPast { opacity: 0.5; }
+.tlPast::before { background: #9ca3af !important; }
+.tlNow { padding-bottom: 16px; }
+.tlNow::before { content: ''; position: absolute; right: -28px; top: 3px; width: 10px; height: 10px;
+  border-radius: 50%; background: #fff !important; border: 3px solid #dc2626; }
+.tlNowLbl { display: inline-block; font-size: 12px; font-weight: 800; color: #fff;
+  background: #dc2626; border-radius: 4px; padding: 2px 12px; }
+.tlToday::before { background: #dc2626 !important; }
+.tlToday .tlDate { color: #dc2626; }
+.tlTodayChip { display: inline-block; font-size: 10px; font-weight: 800; color: #fff;
+  background: #dc2626; border-radius: 3px; padding: 0 7px; margin-inline-start: 6px; vertical-align: 1px; }
+
 /* link-button from the plenum-ready teaser to the calculator */
 .calcLink { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 700; color: #fff;
   background: #0075C4; border: none; border-radius: 6px; padding: 7px 16px; cursor: pointer; font-family: inherit; }

@@ -172,18 +172,52 @@ export function CourtTab() {
   );
 }
 
+const HEB_DAYS = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'שבת'];
+
+function parseTlDate(d: string): Date | null {
+  const m = d.match(/(\d{1,2})\.(\d{1,2})/);
+  if (!m) return null;
+  return new Date(new Date().getFullYear(), parseInt(m[2]) - 1, parseInt(m[1]));
+}
+
 export function EventsTab() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const items = TIMELINE.map(t => ({ t, time: parseTlDate(t.date)?.getTime() ?? null }));
+  const hasTodayItem = items.some(x => x.time === today);
+  // Where the "we are here" marker slots in when no event falls on today:
+  // before the first future event (or after everything if all are past)
+  let markerIdx = items.findIndex(x => x.time !== null && x.time > today);
+  if (markerIdx === -1) markerIdx = items.length;
+
+  const todayLabel = `היום · ${HEB_DAYS[now.getDay()]}, ${now.getDate()}.${now.getMonth() + 1}`;
+  const marker = (
+    <li key="now" className={styles.tlNow}>
+      <span className={styles.tlNowLbl}>{todayLabel}</span>
+    </li>
+  );
+
   return (
     <div className={styles.topicBlock}>
       <ul className={styles.tl}>
-        {TIMELINE.map((t, i) => (
-          <li key={i} className={t.milestone ? styles.tlMilestone : ''}>
-            <span className={styles.tlDate}>{t.date}</span>
+        {items.flatMap((x, i) => [
+          ...(!hasTodayItem && i === markerIdx ? [marker] : []),
+          <li
+            key={i}
+            className={[
+              x.t.milestone ? styles.tlMilestone : '',
+              x.time !== null && x.time < today ? styles.tlPast : '',
+              x.time === today ? styles.tlToday : '',
+            ].filter(Boolean).join(' ')}
+          >
+            <span className={styles.tlDate}>{x.t.date}</span>
+            {x.time === today && <span className={styles.tlTodayChip}>היום</span>}
             {' · '}
-            <Rich text={t.text} />
-            <Links links={t.links} />
-          </li>
-        ))}
+            <Rich text={x.t.text} />
+            <Links links={x.t.links} />
+          </li>,
+        ])}
+        {!hasTodayItem && markerIdx === items.length && marker}
       </ul>
     </div>
   );
