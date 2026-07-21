@@ -230,21 +230,16 @@ export function EventsTab() {
 function waClean(s: string): string {
   return s.replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
 }
-function waShort(s: string, maxWords = 12): string {
-  const words = waClean(s).split(' ');
-  return words.length <= maxWords ? waClean(s) : words.slice(0, maxWords).join(' ') + '…';
+// Title + the hand-written brief when one exists — the brief is a complete
+// sentence and is NEVER auto-truncated; without one, the title stands alone.
+function waItem(title: string, brief?: string): string {
+  const t = waClean(title);
+  return brief ? `- ${t}: ${waClean(brief)}` : `- ${t}`;
 }
 
-// Title + a one-to-two-line snippet, e.g. "- כותרת: תחילת התקציר…"
-function waItem(title: string, snippet?: string): string {
-  const t = waShort(title);
-  const s = snippet ? waShort(snippet, 18) : '';
-  return s ? `- ${t}: ${s}` : `- ${t}`;
-}
-
-// Message is built from the live sekira data at open time — each item is the
-// title plus a short snippet of its summary; no per-item links (the single
-// site link goes at the end).
+// Message is built from the live sekira data at open time; snippets come from
+// the curated `brief` fields in recess.ts. No per-item links (the single site
+// link goes at the end).
 function buildWhatsappMessage(): string {
   const now = new Date();
   const dateStr = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}`;
@@ -252,24 +247,24 @@ function buildWhatsappMessage(): string {
 
   const knesset: string[] = [];
   for (const b of KNESSET_BLOCKS) {
-    if (b.type === 'card') knesset.push(waItem(b.card.title, b.card.paras[0]?.text));
-    else if (b.type === 'expandable') knesset.push(waItem(b.exp.summary, b.exp.paras[0]?.text));
+    if (b.type === 'card') knesset.push(waItem(b.card.title, b.card.brief));
+    else if (b.type === 'expandable') knesset.push(waItem(b.exp.summary, b.exp.brief));
     // permGrid — covered by the ועדת ההסכמות card title
   }
 
   // Gov: the news items are the expandables; a card without them contributes its title
   const gov: string[] = [];
   for (const c of GOV_CARDS) {
-    if (c.expandables?.length) c.expandables.forEach(e => gov.push(waItem(e.summary, e.paras[0]?.text)));
-    else gov.push(waItem(c.title, c.paras[0]?.text));
+    if (c.expandables?.length) c.expandables.forEach(e => gov.push(waItem(e.summary, e.brief)));
+    else gov.push(waItem(c.title, c.brief));
   }
 
-  const court = COURT_ROWS.map(r => `- ${waClean(r.law)} — ${r.status.label}: ${waShort(r.legal, 16)}`);
+  const court = COURT_ROWS.map(r => waItem(`${r.law} — ${r.status.label}`, r.brief));
 
-  // Events: today onward only — the message is forward-looking
+  // Events: today onward only — the message is forward-looking; full text, no truncation
   const events = TIMELINE
     .filter(t => { const d = parseTlDate(t.date); return !d || d.getTime() >= today; })
-    .map(t => `- ${t.date} · ${waShort(t.text, 18)}`);
+    .map(t => `- ${t.date} · ${waClean(t.text)}`);
 
   const site = typeof window !== 'undefined' ? window.location.origin : '';
   return [
