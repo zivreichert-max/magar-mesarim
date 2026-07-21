@@ -230,10 +230,11 @@ export function EventsTab() {
 function waClean(s: string): string {
   return s.replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
 }
-// Title + the hand-written brief when one exists — the brief is a complete
-// sentence and is NEVER auto-truncated; without one, the title stands alone.
+// Title (WhatsApp-bolded) + the hand-written brief when one exists — the
+// brief is a complete sentence and is NEVER auto-truncated; without one,
+// the title stands alone.
 function waItem(title: string, brief?: string): string {
-  const t = waClean(title);
+  const t = `*${waClean(title)}*`;
   return brief ? `- ${t}: ${waClean(brief)}` : `- ${t}`;
 }
 
@@ -264,7 +265,7 @@ function buildWhatsappMessage(): string {
   // Events: today onward only — the message is forward-looking; full text, no truncation
   const events = TIMELINE
     .filter(t => { const d = parseTlDate(t.date); return !d || d.getTime() >= today; })
-    .map(t => `- ${t.date} · ${waClean(t.text)}`);
+    .map(t => `- *${t.date}* · ${waClean(t.text)}`);
 
   const site = typeof window !== 'undefined' ? window.location.origin : '';
   return [
