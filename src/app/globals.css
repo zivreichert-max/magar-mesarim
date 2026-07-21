@@ -93,11 +93,15 @@ body {
   button, [role="button"] { touch-action: manipulation; }
 }
 
-/* ===== Sekira print view (הורדת PDF via browser print) ===== */
+/* ===== Sekira print view (הורדת PDF via browser print) =====
+   The print root is portaled to <body>; in print, every OTHER body child is
+   display:none (removes its layout entirely — no trailing blank pages). */
 .sekira-print-root { display: none; }
 @media print {
-  body * { visibility: hidden; }
-  .sekira-print-root { display: block; visibility: visible; position: absolute; top: 0; right: 0; left: 0; padding: 0 6mm; }
-  .sekira-print-root * { visibility: visible; }
-  .sekira-print-section { break-inside: avoid-page; margin-bottom: 18px; }
+  body > *:not(.sekira-print-root) { display: none !important; }
+  .sekira-print-root { display: block; padding: 0 2mm; }
+  /* overflow:hidden boxes become monolithic in print fragmentation —
+     force them breakable so sections flow without near-empty pages */
+  .sekira-print-root * { overflow: visible !important; }
+  .sekira-print-section { margin-bottom: 18px; }
 }

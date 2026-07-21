@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   RECESS_TITLE, RECESS_UPDATED, ELECTION_LABEL, daysToElection,
   KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, TIMELINE, SOURCES,
@@ -234,8 +235,16 @@ function waShort(s: string, maxWords = 12): string {
   return words.length <= maxWords ? waClean(s) : words.slice(0, maxWords).join(' ') + '…';
 }
 
-// Message is built from the live sekira data at open time — titles only, no
-// per-item links; the single site link goes at the end.
+// Title + a one-to-two-line snippet, e.g. "- כותרת: תחילת התקציר…"
+function waItem(title: string, snippet?: string): string {
+  const t = waShort(title);
+  const s = snippet ? waShort(snippet, 18) : '';
+  return s ? `- ${t}: ${s}` : `- ${t}`;
+}
+
+// Message is built from the live sekira data at open time — each item is the
+// title plus a short snippet of its summary; no per-item links (the single
+// site link goes at the end).
 function buildWhatsappMessage(): string {
   const now = new Date();
   const dateStr = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}`;
@@ -243,24 +252,24 @@ function buildWhatsappMessage(): string {
 
   const knesset: string[] = [];
   for (const b of KNESSET_BLOCKS) {
-    if (b.type === 'card') knesset.push(waShort(b.card.title));
-    else if (b.type === 'expandable') knesset.push(waShort(b.exp.summary));
+    if (b.type === 'card') knesset.push(waItem(b.card.title, b.card.paras[0]?.text));
+    else if (b.type === 'expandable') knesset.push(waItem(b.exp.summary, b.exp.paras[0]?.text));
     // permGrid — covered by the ועדת ההסכמות card title
   }
 
   // Gov: the news items are the expandables; a card without them contributes its title
   const gov: string[] = [];
   for (const c of GOV_CARDS) {
-    if (c.expandables?.length) c.expandables.forEach(e => gov.push(waShort(e.summary)));
-    else gov.push(waShort(c.title));
+    if (c.expandables?.length) c.expandables.forEach(e => gov.push(waItem(e.summary, e.paras[0]?.text)));
+    else gov.push(waItem(c.title, c.paras[0]?.text));
   }
 
-  const court = COURT_ROWS.map(r => `${waClean(r.law)} — ${r.status.label}`);
+  const court = COURT_ROWS.map(r => `- ${waClean(r.law)} — ${r.status.label}: ${waShort(r.legal, 16)}`);
 
   // Events: today onward only — the message is forward-looking
   const events = TIMELINE
     .filter(t => { const d = parseTlDate(t.date); return !d || d.getTime() >= today; })
-    .map(t => `${t.date} · ${waShort(t.text)}`);
+    .map(t => `- ${t.date} · ${waShort(t.text, 18)}`);
 
   const site = typeof window !== 'undefined' ? window.location.origin : '';
   return [
@@ -268,16 +277,16 @@ function buildWhatsappMessage(): string {
     `${daysToElection()} ימים ליום הבחירות (27.10.2026)`,
     '',
     '*כנסת*',
-    ...knesset.map(l => `- ${l}`),
+    ...knesset,
     '',
     '*ממשלה*',
-    ...gov.map(l => `- ${l}`),
+    ...gov,
     '',
     '*בג"ץ*',
-    ...court.map(l => `- ${l}`),
+    ...court,
     '',
     '*אירועים בולטים*',
-    ...events.map(l => `- ${l}`),
+    ...events,
     '',
     `לסקירה המלאה: ${site}`,
   ].join('\n');
@@ -385,6 +394,10 @@ export default function SekiraView({ onOpenCalculator, externalTab, onExternalCo
 }) {
   const [tab, setTab] = useState<RecessTabId>(externalTab ?? 'knesset');
   const [shareOpen, setShareOpen] = useState(false);
+  // Portal target for the print-only version — rendered as a direct child of
+  // <body> so print CSS can display:none everything else (no blank pages)
+  const [printHost, setPrintHost] = useState<HTMLElement | null>(null);
+  useEffect(() => setPrintHost(document.body), []);
 
   useEffect(() => {
     if (externalTab) {
@@ -392,6 +405,20 @@ export default function SekiraView({ onOpenCalculator, externalTab, onExternalCo
       onExternalConsumed?.();
     }
   }, [externalTab, onExternalConsumed]);
+
+  // The browser uses document.title as the PDF filename and page header —
+  // swap it for the print, restore afterwards
+  function printPdf() {
+    const prev = document.title;
+    document.title = `זמן בחירות - סקירה - ${daysToElection()} יום לבחירות`;
+    const restore = () => {
+      document.title = prev;
+      window.removeEventListener('afterprint', restore);
+    };
+    window.addEventListener('afterprint', restore);
+    window.print();
+    setTimeout(restore, 2000);
+  }
 
   return (
     <div className={styles.wrap} style={{ padding: '24px', maxWidth: 1080, margin: '0 auto', width: '100%' }}>
@@ -406,28 +433,31 @@ export default function SekiraView({ onOpenCalculator, externalTab, onExternalCo
         <button type="button" className={styles.waBtn} onClick={() => setShareOpen(true)}>
           שיתוף בוואטסאפ
         </button>
-        <button type="button" className={styles.pdfBtn} onClick={() => window.print()}>
+        <button type="button" className={styles.pdfBtn} onClick={printPdf}>
           הורדת PDF
         </button>
       </div>
 
       {shareOpen && <ShareModal onClose={() => setShareOpen(false)} />}
 
-      {/* Full print version — hidden on screen; window.print() renders it and
-          the user saves as PDF from the browser dialog (clean Hebrew RTL) */}
-      <div className="sekira-print-root">
-        <div className={styles.heading}>
-          <h1>{RECESS_TITLE}</h1>
-          <div className={styles.headingSub}>
-            {RECESS_UPDATED} · {daysToElection()} {ELECTION_LABEL}
+      {/* Full print version — portaled to <body> and hidden on screen;
+          window.print() renders ONLY it (clean Hebrew RTL, no blank pages) */}
+      {printHost && createPortal(
+        <div className={`sekira-print-root ${styles.wrap}`}>
+          <div className={styles.heading}>
+            <h1>זמן בחירות — סקירה</h1>
+            <div className={styles.headingSub}>
+              {RECESS_UPDATED} · {daysToElection()} {ELECTION_LABEL}
+            </div>
           </div>
-        </div>
-        <div className="sekira-print-section"><div className={styles.printArena}>כנסת</div><KnessetTab printMode /></div>
-        <div className="sekira-print-section"><div className={styles.printArena}>ממשלה</div><GovTab printMode /></div>
-        <div className="sekira-print-section"><div className={styles.printArena}>בג"ץ</div><CourtTab /></div>
-        <div className="sekira-print-section"><div className={styles.printArena}>אירועים בולטים</div><EventsTab /></div>
-        <Sources />
-      </div>
+          <div className="sekira-print-section"><div className={styles.printArena}>כנסת</div><KnessetTab printMode /></div>
+          <div className="sekira-print-section"><div className={styles.printArena}>ממשלה</div><GovTab printMode /></div>
+          <div className="sekira-print-section"><div className={styles.printArena}>בג"ץ</div><CourtTab /></div>
+          <div className="sekira-print-section"><div className={styles.printArena}>אירועים בולטים</div><EventsTab /></div>
+          <Sources />
+        </div>,
+        printHost
+      )}
 
       <div className={styles.subTabs} style={{ maxWidth: 640, margin: '0 auto 22px' }}>
         {RECESS_TABS.map(t => (
