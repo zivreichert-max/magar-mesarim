@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   RECESS_TITLE, RECESS_UPDATED, ELECTION_LABEL, daysToElection,
   KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, TIMELINE, SOURCES,
@@ -76,9 +76,9 @@ function PlenumReadyTeaser({ onOpenCalculator }: { onOpenCalculator?: () => void
   );
 }
 
-function ExpView({ exp, onOpenCalculator }: { exp: RExpandable; onOpenCalculator?: () => void }) {
+function ExpView({ exp, onOpenCalculator, printMode }: { exp: RExpandable; onOpenCalculator?: () => void; printMode?: boolean }) {
   return (
-    <details className={styles.exp}>
+    <details className={styles.exp} open={printMode || undefined}>
       <summary className={styles.expSum}>
         <span>{exp.summary}</span>
         {exp.dynamic === 'plenumReady'
@@ -94,7 +94,7 @@ function ExpView({ exp, onOpenCalculator }: { exp: RExpandable; onOpenCalculator
   );
 }
 
-function CardView({ card, onOpenCalculator }: { card: RCard; onOpenCalculator?: () => void }) {
+function CardView({ card, onOpenCalculator, printMode }: { card: RCard; onOpenCalculator?: () => void; printMode?: boolean }) {
   return (
     <div className={styles.topicBlock}>
       <div className={styles.topicName}>
@@ -102,7 +102,7 @@ function CardView({ card, onOpenCalculator }: { card: RCard; onOpenCalculator?: 
         {card.tag && <TagChip tag={card.tag} />}
       </div>
       {card.paras.map((p, i) => <ParaView key={i} p={p} />)}
-      {card.expandables?.map((e, i) => <ExpView key={i} exp={e} onOpenCalculator={onOpenCalculator} />)}
+      {card.expandables?.map((e, i) => <ExpView key={i} exp={e} onOpenCalculator={onOpenCalculator} printMode={printMode} />)}
     </div>
   );
 }
@@ -127,25 +127,25 @@ function PermBox({ list, kind }: { list: PermList; kind: 'green' | 'amber' }) {
 
 /* ───── tab bodies (also reused by SekiraIntro) ───── */
 
-export function KnessetTab({ onOpenCalculator }: { onOpenCalculator?: () => void }) {
+export function KnessetTab({ onOpenCalculator, printMode }: { onOpenCalculator?: () => void; printMode?: boolean }) {
   return (
     <>
       {KNESSET_BLOCKS.map((b, i) =>
-        b.type === 'card' ? <CardView key={i} card={b.card} onOpenCalculator={onOpenCalculator} />
+        b.type === 'card' ? <CardView key={i} card={b.card} onOpenCalculator={onOpenCalculator} printMode={printMode} />
         : b.type === 'permGrid' ? (
           <div key={i} className={styles.permGrid}>
             <PermBox list={b.green} kind="green" />
             <PermBox list={b.amber} kind="amber" />
           </div>
         )
-        : <ExpView key={i} exp={b.exp} />
+        : <ExpView key={i} exp={b.exp} printMode={printMode} />
       )}
     </>
   );
 }
 
-export function GovTab() {
-  return <>{GOV_CARDS.map((c, i) => <CardView key={i} card={c} />)}</>;
+export function GovTab({ printMode }: { printMode?: boolean }) {
+  return <>{GOV_CARDS.map((c, i) => <CardView key={i} card={c} printMode={printMode} />)}</>;
 }
 
 export function CourtTab() {
@@ -223,6 +223,118 @@ export function EventsTab() {
   );
 }
 
+/* ───── WhatsApp export ───── */
+
+// Strip data markers and squeeze whitespace for one-line message items
+function waClean(s: string): string {
+  return s.replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
+}
+function waShort(s: string, maxWords = 12): string {
+  const words = waClean(s).split(' ');
+  return words.length <= maxWords ? waClean(s) : words.slice(0, maxWords).join(' ') + '…';
+}
+
+// Message is built from the live sekira data at open time — titles only, no
+// per-item links; the single site link goes at the end.
+function buildWhatsappMessage(): string {
+  const now = new Date();
+  const dateStr = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}`;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+  const knesset: string[] = [];
+  for (const b of KNESSET_BLOCKS) {
+    if (b.type === 'card') knesset.push(waShort(b.card.title));
+    else if (b.type === 'expandable') knesset.push(waShort(b.exp.summary));
+    // permGrid — covered by the ועדת ההסכמות card title
+  }
+
+  // Gov: the news items are the expandables; a card without them contributes its title
+  const gov: string[] = [];
+  for (const c of GOV_CARDS) {
+    if (c.expandables?.length) c.expandables.forEach(e => gov.push(waShort(e.summary)));
+    else gov.push(waShort(c.title));
+  }
+
+  const court = COURT_ROWS.map(r => `${waClean(r.law)} — ${r.status.label}`);
+
+  // Events: today onward only — the message is forward-looking
+  const events = TIMELINE
+    .filter(t => { const d = parseTlDate(t.date); return !d || d.getTime() >= today; })
+    .map(t => `${t.date} · ${waShort(t.text)}`);
+
+  const site = typeof window !== 'undefined' ? window.location.origin : '';
+  return [
+    `*סקירה שבועית — זמן בחירות* · ${dateStr}`,
+    `${daysToElection()} ימים ליום הבחירות (27.10.2026)`,
+    '',
+    '*כנסת*',
+    ...knesset.map(l => `- ${l}`),
+    '',
+    '*ממשלה*',
+    ...gov.map(l => `- ${l}`),
+    '',
+    '*בג"ץ*',
+    ...court.map(l => `- ${l}`),
+    '',
+    '*אירועים בולטים*',
+    ...events.map(l => `- ${l}`),
+    '',
+    `לסקירה המלאה: ${site}`,
+  ].join('\n');
+}
+
+function ShareModal({ onClose }: { onClose: () => void }) {
+  const [text, setText] = useState(buildWhatsappMessage);
+  const [copied, setCopied] = useState(false);
+  const taRef = useRef<HTMLTextAreaElement>(null);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+    } catch {
+      // Fallback for browsers without the async clipboard API (older mobile)
+      const ta = taRef.current;
+      if (ta) {
+        ta.focus();
+        ta.select();
+        try { document.execCommand('copy'); setCopied(true); } catch { /* ignore */ }
+      }
+    }
+    setTimeout(() => setCopied(false), 2500);
+  }
+
+  return (
+    <div className={styles.shareOverlay} onClick={onClose}>
+      <div className={styles.shareModal} onClick={e => e.stopPropagation()}>
+        <div className={styles.shareTitle}>שיתוף הסקירה בוואטסאפ</div>
+        <div className={styles.shareHint}>אפשר לערוך את הטקסט לפני ההעתקה או השליחה.</div>
+        <textarea
+          ref={taRef}
+          className={styles.shareTa}
+          dir="rtl"
+          value={text}
+          onChange={e => setText(e.target.value)}
+        />
+        <div className={styles.shareBtns}>
+          <button type="button" className={styles.shareCopy} onClick={copy}>
+            {copied ? 'הועתק ✓' : 'העתקה'}
+          </button>
+          <a
+            className={styles.shareWa}
+            href={`https://wa.me/?text=${encodeURIComponent(text)}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            פתיחה בוואטסאפ
+          </a>
+          <button type="button" className={styles.shareCancel} onClick={onClose}>סגירה</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Countdown() {
   // Computed at render time (so each visit shows the current count) and
   // re-checked hourly, so a tab left open across midnight ticks down too.
@@ -272,6 +384,7 @@ export default function SekiraView({ onOpenCalculator, externalTab, onExternalCo
   onExternalConsumed?: () => void;
 }) {
   const [tab, setTab] = useState<RecessTabId>(externalTab ?? 'knesset');
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     if (externalTab) {
@@ -288,6 +401,33 @@ export default function SekiraView({ onOpenCalculator, externalTab, onExternalCo
       </div>
 
       <Countdown />
+
+      <div className={styles.exportRow}>
+        <button type="button" className={styles.waBtn} onClick={() => setShareOpen(true)}>
+          שיתוף בוואטסאפ
+        </button>
+        <button type="button" className={styles.pdfBtn} onClick={() => window.print()}>
+          הורדת PDF
+        </button>
+      </div>
+
+      {shareOpen && <ShareModal onClose={() => setShareOpen(false)} />}
+
+      {/* Full print version — hidden on screen; window.print() renders it and
+          the user saves as PDF from the browser dialog (clean Hebrew RTL) */}
+      <div className="sekira-print-root">
+        <div className={styles.heading}>
+          <h1>{RECESS_TITLE}</h1>
+          <div className={styles.headingSub}>
+            {RECESS_UPDATED} · {daysToElection()} {ELECTION_LABEL}
+          </div>
+        </div>
+        <div className="sekira-print-section"><div className={styles.printArena}>כנסת</div><KnessetTab printMode /></div>
+        <div className="sekira-print-section"><div className={styles.printArena}>ממשלה</div><GovTab printMode /></div>
+        <div className="sekira-print-section"><div className={styles.printArena}>בג"ץ</div><CourtTab /></div>
+        <div className="sekira-print-section"><div className={styles.printArena}>אירועים בולטים</div><EventsTab /></div>
+        <Sources />
+      </div>
 
       <div className={styles.subTabs} style={{ maxWidth: 640, margin: '0 auto 22px' }}>
         {RECESS_TABS.map(t => (

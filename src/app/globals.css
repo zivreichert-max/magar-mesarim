@@ -92,3 +92,12 @@ body {
   * { -webkit-tap-highlight-color: transparent; }
   button, [role="button"] { touch-action: manipulation; }
 }
+
+/* ===== Sekira print view (הורדת PDF via browser print) ===== */
+.sekira-print-root { display: none; }
+@media print {
+  body * { visibility: hidden; }
+  .sekira-print-root { display: block; visibility: visible; position: absolute; top: 0; right: 0; left: 0; padding: 0 6mm; }
+  .sekira-print-root * { visibility: visible; }
+  .sekira-print-section { break-inside: avoid-page; margin-bottom: 18px; }
+}

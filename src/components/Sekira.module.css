@@ -194,6 +194,58 @@
   background: #0075C4; border: none; border-radius: 6px; padding: 7px 16px; cursor: pointer; font-family: inherit; }
 .calcLink:hover { background: #0c447c; }
 
+/* ====== EXPORT (WhatsApp share + PDF) ====== */
+.exportRow { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.waBtn {
+  background: #25D366; color: #fff; border: none; border-radius: 8px; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 700; padding: 9px 20px; transition: background 0.15s;
+}
+.waBtn:hover { background: #1eb356; }
+.pdfBtn {
+  background: #fff; color: #0075C4; border: 1px solid #0075C4; border-radius: 8px; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 700; padding: 9px 20px; transition: all 0.15s;
+}
+.pdfBtn:hover { background: #e9f2fa; }
+
+.shareOverlay {
+  position: fixed; inset: 0; z-index: 200; background: rgba(17, 24, 39, 0.55);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.shareModal {
+  background: #fff; border-radius: 10px; width: 100%; max-width: 560px;
+  padding: 20px; direction: rtl; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  display: flex; flex-direction: column; max-height: 90vh;
+}
+.shareTitle { font-size: 16px; font-weight: 900; color: #0c447c; margin-bottom: 4px; }
+.shareHint { font-size: 12px; color: #6b7280; margin-bottom: 10px; }
+.shareTa {
+  width: 100%; min-height: 300px; flex: 1; resize: vertical;
+  font-family: inherit; font-size: 13px; line-height: 1.6; color: #111827;
+  border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: #f9fafb;
+}
+.shareTa:focus { outline: 2px solid #0075C4; background: #fff; }
+.shareBtns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.shareCopy {
+  background: #0075C4; color: #fff; border: none; border-radius: 8px; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 700; padding: 10px 22px;
+}
+.shareCopy:hover { background: #0c447c; }
+.shareWa {
+  background: #25D366; color: #fff; border-radius: 8px; text-decoration: none;
+  font-size: 13px; font-weight: 700; padding: 10px 22px; display: inline-block;
+}
+.shareWa:hover { background: #1eb356; }
+.shareCancel {
+  background: #fff; color: #6b7280; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 700; padding: 10px 18px; margin-inline-start: auto;
+}
+
+/* print-view arena heading */
+.printArena {
+  font-size: 17px; font-weight: 900; color: #0c447c;
+  border-bottom: 2px solid #0c447c; padding-bottom: 4px; margin: 18px 0 10px;
+}
+
 /* sources footer */
 .srcFoot { margin-top: 28px; padding-top: 12px; border-top: 1px solid #e5e7eb;
   font-size: 11px; color: #9ca3af; line-height: 1.8; }
