@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   RECESS_TITLE, RECESS_UPDATED, ELECTION_LABEL, daysToElection,
-  KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, COURT_CARDS, TIMELINE, SOURCES,
+  KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, TIMELINE, SOURCES,
   RPara, RCard, RExpandable, Tag, TagKind, PermList,
 } from '@/data/recess';
 import { READY_SECOND_THIRD, PLENUM_AS_OF } from '@/data/plenumReady';
@@ -21,14 +21,23 @@ export function TagChip({ tag }: { tag: Tag }) {
   return <span className={`${styles.tag} ${TAG_STYLE[tag.kind]}`}>{tag.label}</span>;
 }
 
-// Inline marker in data text: **bold**
+// Inline markers in data text: **bold** and [label](url)
 export function Rich({ text }: { text: string }) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
   return (
     <>
-      {parts.map((p, i) =>
-        p.startsWith('**') ? <strong key={i}>{p.slice(2, -2)}</strong> : p
-      )}
+      {parts.map((p, i) => {
+        if (p.startsWith('**')) return <strong key={i}>{p.slice(2, -2)}</strong>;
+        const link = p.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+        if (link) {
+          return (
+            <a key={i} href={link[2]} target="_blank" rel="noreferrer" className={styles.inlineLink}>
+              {link[1]}
+            </a>
+          );
+        }
+        return p;
+      })}
     </>
   );
 }
@@ -169,9 +178,6 @@ export function CourtTab() {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 16 }}>
-        {COURT_CARDS.map((c, i) => <CardView key={i} card={c} />)}
-      </div>
     </>
   );
 }
@@ -230,9 +236,13 @@ export function EventsTab() {
 
 /* ───── WhatsApp export ───── */
 
-// Strip data markers and squeeze whitespace for one-line message items
+// Strip data markers ( **bold**, [label](url) ) and squeeze whitespace
 function waClean(s: string): string {
-  return s.replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
+  return s
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\*\*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 // Title (WhatsApp-bolded) + the hand-written brief when one exists — the
 // brief is a complete sentence and is NEVER auto-truncated; without one,
@@ -264,10 +274,7 @@ function buildWhatsappMessage(): string {
     else gov.push(waItem(c.title, c.brief));
   }
 
-  const court = [
-    ...COURT_ROWS.map(r => waItem(`${r.law} — ${r.status.label}`, r.brief)),
-    ...COURT_CARDS.map(c => waItem(c.title, c.brief)),
-  ];
+  const court = COURT_ROWS.map(r => waItem(`${r.law} — ${r.status.label}`, r.brief));
 
   // Events: today onward only — the message is forward-looking; full text, no truncation
   const events = TIMELINE
