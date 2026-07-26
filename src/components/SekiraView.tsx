@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   RECESS_TITLE, RECESS_UPDATED, ELECTION_LABEL, daysToElection,
-  KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, TIMELINE, SOURCES,
+  KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, COURT_CARDS, TIMELINE, SOURCES,
   RPara, RCard, RExpandable, Tag, TagKind, PermList,
 } from '@/data/recess';
 import { READY_SECOND_THIRD, PLENUM_AS_OF } from '@/data/plenumReady';
@@ -169,6 +169,9 @@ export function CourtTab() {
           </div>
         ))}
       </div>
+      <div style={{ marginTop: 16 }}>
+        {COURT_CARDS.map((c, i) => <CardView key={i} card={c} />)}
+      </div>
     </>
   );
 }
@@ -215,6 +218,7 @@ export function EventsTab() {
             {x.time === today && <span className={styles.tlTodayChip}>היום</span>}
             {' · '}
             <Rich text={x.t.text} />
+            {x.t.todo && <TagChip tag={{ label: '[TODO קישור]', kind: 'need' }} />}
             <Links links={x.t.links} />
           </li>,
         ])}
@@ -260,7 +264,10 @@ function buildWhatsappMessage(): string {
     else gov.push(waItem(c.title, c.brief));
   }
 
-  const court = COURT_ROWS.map(r => waItem(`${r.law} — ${r.status.label}`, r.brief));
+  const court = [
+    ...COURT_ROWS.map(r => waItem(`${r.law} — ${r.status.label}`, r.brief)),
+    ...COURT_CARDS.map(c => waItem(c.title, c.brief)),
+  ];
 
   // Events: today onward only — the message is forward-looking; full text, no truncation
   const events = TIMELINE
