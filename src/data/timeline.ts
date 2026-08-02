@@ -10,6 +10,14 @@ export interface TimelineEvent {
 
 export const TIMELINE: TimelineEvent[] = [
   {
+    title: `הפריימריז של המפלגה הדמוקטית לסנאט במישגן`,
+    dateStart: `2026-04-08`,
+    category: `גיאופוליטי`,
+    importance: `ודאי`,
+    detail: `עבדול אל-סייד האנטי ישראלי צפוי לנצח`,
+    url: `https://www.maariv.co.il/news/world/article-1351072`,
+  },
+  {
     title: `ביטול הטבות בתחבורה ציבורית וארנונה למשתמטים`,
     dateStart: `2026-05-31`,
     category: `בג"ץ`,
