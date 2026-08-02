@@ -23,7 +23,7 @@ export const RECESS_SCHEDULE: RecessScheduleArena[] = [
     label: `כנסת`,
     days: [
       {
-        day: `יום ראשון, 2.8`,
+        day: `יום שני, 3.8`,
         items: [
           {
             tag: `ישיבה חסויה`,
