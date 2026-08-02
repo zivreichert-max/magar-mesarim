@@ -390,6 +390,5 @@ export interface SourceRef { text: string; url?: string; }
 export const SOURCES: SourceRef[] = [
   { text: `החלטת ועדת הכנסת בדבר פעילות הכנסת בפגרת הבחירות לכנסת ה-26 (17.7.2026, סימוכין 2026-115247)`, url: '/docs/knesset-committee-recess-decision-17-07-2026.pdf' },
   { text: `מכתב היועצת המשפטית לממשלה למזכיר הממשלה, "קבלת החלטות על ידי הממשלה והשרים בתקופת בחירות" (17.7.2026, מס' 004-99-2026-017760)`, url: '/docs/agc-election-period-letter-17-07-2026.pdf' },
-  { text: `סדר היום לישיבת הממשלה, 26.7.2026`, url: 'https://www.gov.il/he/pages/seder-gov240726' },
   { text: 'הודעת דוברות הכנסת על הסדרי הפגרה', url: 'https://ch10.co.il/news/1087541/' },
 ];
