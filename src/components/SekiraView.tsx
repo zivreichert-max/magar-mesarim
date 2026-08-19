@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   RECESS_TITLE, RECESS_UPDATED, ELECTION_LABEL, daysToElection,
-  KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, TIMELINE, SOURCES,
+  KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, COURT_EXPANDABLES, TIMELINE, SOURCES,
   RPara, RCard, RExpandable, Tag, TagKind, PermList,
 } from '@/data/recess';
 import { READY_SECOND_THIRD, PLENUM_AS_OF } from '@/data/plenumReady';
@@ -158,7 +158,7 @@ export function GovTab({ printMode }: { printMode?: boolean }) {
   return <>{GOV_CARDS.map((c, i) => <CardView key={i} card={c} printMode={printMode} />)}</>;
 }
 
-export function CourtTab() {
+export function CourtTab({ printMode }: { printMode?: boolean }) {
   return (
     <>
       <div className={styles.sectionIntro}>{COURT_INTRO}</div>
@@ -178,6 +178,7 @@ export function CourtTab() {
           </div>
         ))}
       </div>
+      {COURT_EXPANDABLES.map((e, i) => <ExpView key={i} exp={e} printMode={printMode} />)}
     </>
   );
 }
@@ -462,7 +463,7 @@ export default function SekiraView({ onOpenCalculator, externalTab, onExternalCo
           </div>
           <div className="sekira-print-section"><div className={styles.printArena}>כנסת</div><KnessetTab printMode /></div>
           <div className="sekira-print-section"><div className={styles.printArena}>ממשלה</div><GovTab printMode /></div>
-          <div className="sekira-print-section"><div className={styles.printArena}>בג"ץ</div><CourtTab /></div>
+          <div className="sekira-print-section"><div className={styles.printArena}>בג"ץ</div><CourtTab printMode /></div>
           <div className="sekira-print-section"><div className={styles.printArena}>אירועים בולטים</div><EventsTab /></div>
           <Sources />
         </div>,
