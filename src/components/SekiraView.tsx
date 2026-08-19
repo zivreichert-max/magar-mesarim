@@ -164,7 +164,7 @@ export function CourtTab({ printMode }: { printMode?: boolean }) {
       <div className={styles.sectionIntro}>{COURT_INTRO}</div>
       <div className={styles.courtTable}>
         <div className={styles.courtHead}>
-          <div>החוק</div><div>סטטוס</div><div>מצב משפטי</div><div>תאריך מפתח</div>
+          <div>ההליך</div><div>סטטוס</div><div>מצב משפטי</div><div>תאריך מפתח</div>
         </div>
         {COURT_ROWS.map((r, i) => (
           <div key={i} className={styles.courtRow}>
