@@ -106,7 +106,7 @@ export const TIMELINE: TimelineEvent[] = [
   {
     title: `פד - ריבית`,
     dateStart: `2026-06-17`,
-    category: `כלכלי`,
+    category: `כלכלה`,
     importance: `ודאי`,
     detail: `המועד הבא שבו הפד יחליט על הריבית הוא בישיבת ה־FOMC הקרובה: שלישי–רביעי, 16–17 ביוני 2026. ההודעה על ההחלטה תפורסם ביום רביעי, 17 ביוני 2026 בשעה 14:00 שעון מזרח ארה״ב, כלומר בערך 21:00 שעון ישראל. מסיבת העיתונאים מתוכננת ל־14:30 שעון מזרח ארה״ב, כלומר 21:30 בישראל.`,
     url: `https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm`,
@@ -158,7 +158,7 @@ export const TIMELINE: TimelineEvent[] = [
   {
     title: `בנק ישראל — ריבית + תחזית Q3`,
     dateStart: `2026-07-06`,
-    category: `כלכלי`,
+    category: `כלכלה`,
     importance: `ודאי`,
     detail: `תאריך מאושר; תחזית רבעונית Q3`,
   },
