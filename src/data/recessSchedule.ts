@@ -15,47 +15,13 @@ export interface RecessScheduleDay { day: string; items: RecessScheduleItem[]; }
 export type RecessArenaId = 'knesset' | 'gov' | 'court' | 'events';
 export interface RecessScheduleArena { arena: RecessArenaId; label: string; days: RecessScheduleDay[]; }
 
-export const RECESS_SCHEDULE_TITLE = `לו"ז לתקופת הפגרה 2.8–23.8`;
+export const RECESS_SCHEDULE_TITLE = `לו"ז לתקופת הפגרה 17.9–4.10`;
 
 export const RECESS_SCHEDULE: RecessScheduleArena[] = [
   {
     arena: 'knesset',
     label: `כנסת`,
     days: [
-      {
-        day: `יום שני, 3.8`,
-        items: [
-          {
-            tag: `ישיבה חסויה`,
-            title: `ועדת החוץ והביטחון — ישיבה חסויה (12:00)`,
-            summary: `נושא הישיבה לא פורסם.`,
-            sources: [],
-          },
-        ],
-      },
-      {
-        day: `יום שלישי, 4.8`,
-        items: [
-          {
-            tag: `דיון`,
-            title: `ועדת הכספים — פניות תקציביות שנותרו ללא דיון`,
-            summary: `בדיון ב-29.7 הונחו 33 פניות בהיקף כ-16 מיליארד ש"ח, מהן כ-653 מיליון ש"ח כספים קואליציוניים. הדיון ננעל לפני שהוועדה הגיעה לרוב הפניות בחינוך ובהתיישבות.`,
-            detail: `טרם פורסמה הודעה רשמית על כינוס. לפי מידע שהתקבל, באוצר נערכים להעלאת הפניות שנותרו ביום שלישי. פירוט הפניות שנותרו — בטאב כנסת בסקירה.`,
-            sources: [],
-          },
-        ],
-      },
-      {
-        day: `יום חמישי, 6.8`,
-        items: [
-          {
-            tag: `דיון`,
-            title: `ועדת החינוך — היערכות לפתיחת שנת הלימודים תשפ"ז (11:00)`,
-            summary: `הוועדה מתכנסת בעקבות פנייה מ-23.7 של אגודת היועצים החינוכיים בישראל ליו"ר הוועדה ח"כ צבי סוכות, המבקשת דיונים בחיזוק מערך הייעוץ החינוכי ובהגדלת תקני שפ"י.`,
-            sources: [],
-          },
-        ],
-      },
     ],
   },
   {
@@ -68,6 +34,18 @@ export const RECESS_SCHEDULE: RecessScheduleArena[] = [
     arena: 'court',
     label: `בג"ץ`,
     days: [
+      {
+        day: `יום חמישי, 24.9`,
+        items: [
+          {
+            tag: `דיון`,
+            title: `בג"ץ: דיון בעתירת ההעברות התקציביות בפגרה`,
+            sources: [
+              { label: `דבר, 24.8.26`, url: `https://www.davar1.co.il/694431/` },
+            ],
+          },
+        ],
+      },
     ],
   },
   {
@@ -75,64 +53,161 @@ export const RECESS_SCHEDULE: RecessScheduleArena[] = [
     label: `אירועים בולטים`,
     days: [
       {
-        day: `יום שלישי, 4.8`,
+        day: `יום ראשון, 20.9`,
         items: [
           {
-            tag: `אירוע`,
-            title: `פריימריז המפלגה הדמוקרטית לסנאט במישיגן`,
-            summary: `התאריך טרם אומת.`,
-            sources: [],
-          },
-        ],
-      },
-      {
-        day: `יום רביעי, 12.8`,
-        items: [
-          {
-            tag: `אירוע`,
-            title: `פרסום אתרי ההצבעה הסופיים בפריימריז בליכוד`,
-            summary: `לפי לוח הזמנים הרשמי של הפריימריז בליכוד.`,
+            tag: `חופשה`,
+            title: `ערב יום כיפור: אין לימודים; יום עבודה, מקוצר במקומות עבודה רבים`,
             sources: [
-              { label: `ערוץ 14`, url: `https://www.c14.co.il/article/1628487` },
+              { label: `משרד החינוך, מהלך שנת הלימודים תשפ"ז`, url: `https://parents.education.gov.il/gov-education/vacations-camps-leisure/schedule` },
+              { label: `כל זכות, זכותון עובדים בחגים`, url: `https://www.kolzchut.org.il/he/%D7%96%D7%9B%D7%95%D7%AA%D7%95%D7%9F_%D7%A2%D7%95%D7%91%D7%93%D7%99%D7%9D_%D7%91%D7%97%D7%92%D7%99%D7%9D` },
             ],
           },
         ],
       },
       {
-        day: `יום שני, 17.8`,
+        day: `יום שני, 21.9`,
         items: [
           {
-            tag: `אירוע`,
-            title: `פריימריז בליכוד`,
-            summary: `הקלפיות פתוחות 10:00–20:00. זכות הצבעה — מי שהתפקדו עד 17.4.2025; זכות התמודדות — מי שהתפקדו עד 21.7.2023.`,
+            tag: `חופשה`,
+            title: `יום כיפור`,
             sources: [
-              { label: `ערוץ 14`, url: `https://www.c14.co.il/article/1628487` },
+              { label: `משרד החינוך, מהלך שנת הלימודים תשפ"ז`, url: `https://parents.education.gov.il/gov-education/vacations-camps-leisure/schedule` },
             ],
           },
         ],
       },
       {
-        day: `יום חמישי, 20.8`,
+        day: `יום שלישי, 22.9`,
         items: [
           {
-            tag: `אירוע`,
-            title: `פרסום תוצאות הפריימריז בליכוד`,
-            summary: `לפי לוח הזמנים הרשמי של הפריימריז בליכוד.`,
+            tag: `חופשה`,
+            title: `22-24.9 · ימי הגשר: אין לימודים; ימי עבודה רגילים במשק`,
             sources: [
-              { label: `ערוץ 14`, url: `https://www.c14.co.il/article/1628487` },
+              { label: `משרד החינוך, מהלך שנת הלימודים תשפ"ז`, url: `https://parents.education.gov.il/gov-education/vacations-camps-leisure/schedule` },
+            ],
+          },
+          {
+            tag: `אירוע`,
+            title: `22-28.9 · הדיון הכללי בעצרת הכללית של האו"ם`,
+            summary: `טרם ידוע מה המועד הספציפי שבו נתניהו צפוי לנאום.`,
+            sources: [
+              { label: `האו"ם, נשיאות העצרת הכללית`, url: `https://www.un.org/pga/81/event/general-debate-of-the-eighty-first-session-of-the-general-assembly/` },
+              { label: `i24NEWS, 14.9.26`, url: `https://www.i24news.tv/he/news/news/diplomacy/artc-aed554c6` },
             ],
           },
         ],
       },
       {
-        day: `יום ראשון, 23.8`,
+        day: `יום רביעי, 23.9`,
         items: [
           {
-            tag: `דדליין`,
-            title: `מועד אחרון להגשת ערעורים על תוצאות הפריימריז`,
-            summary: `לפי לוח הזמנים הרשמי של הפריימריז בליכוד.`,
+            tag: `אירוע`,
+            title: `OECD: תחזית הביניים הכלכלית`,
             sources: [
-              { label: `ערוץ 14`, url: `https://www.c14.co.il/article/1628487` },
+              { label: `OECD`, url: `https://www.oecd.org/en/events/2026/09/launch-oecd-interim-economic-outlook.html` },
+            ],
+          },
+          {
+            tag: `דיון`,
+            title: `ועדת הבחירות המרכזית: דיוני פסילת רשימות ומועמדים (יום 1) (09:00-20:30)`,
+            sources: [
+              { label: `אמס, 16.9.26`, url: `https://www.emess.co.il/radio/1929785` },
+              { label: `ישראל היום, 16.9.26`, url: `https://www.israelhayom.co.il/news/law/article/21430915` },
+            ],
+          },
+        ],
+      },
+      {
+        day: `יום חמישי, 24.9`,
+        items: [
+          {
+            tag: `דיון`,
+            title: `ועדת הבחירות המרכזית: דיוני פסילת רשימות ומועמדים (יום 2) (09:00-17:00)`,
+            sources: [
+              { label: `אמס, 16.9.26`, url: `https://www.emess.co.il/radio/1929785` },
+              { label: `ישראל היום, 16.9.26`, url: `https://www.israelhayom.co.il/news/law/article/21430915` },
+            ],
+          },
+        ],
+      },
+      {
+        day: `יום שישי, 25.9`,
+        items: [
+          {
+            tag: `חופשה`,
+            title: `25-26.9 · ערב סוכות וסוכות`,
+            sources: [
+              { label: `משרד החינוך, מהלך שנת הלימודים תשפ"ז`, url: `https://parents.education.gov.il/gov-education/vacations-camps-leisure/schedule` },
+            ],
+          },
+        ],
+      },
+      {
+        day: `יום ראשון, 27.9`,
+        items: [
+          {
+            tag: `מועד`,
+            title: `ועדת הבחירות המרכזית: אישור סופי של רשימות המועמדים`,
+            sources: [
+              { label: `דבר, 8.9.26`, url: `https://www.davar1.co.il/696375/` },
+            ],
+          },
+          {
+            tag: `חופשה`,
+            title: `27.9-1.10 · חול המועד: אין לימודים; ימי עבודה רגילים במשק`,
+            sources: [
+              { label: `משרד החינוך, מהלך שנת הלימודים תשפ"ז`, url: `https://parents.education.gov.il/gov-education/vacations-camps-leisure/schedule` },
+            ],
+          },
+        ],
+      },
+      {
+        day: `יום שלישי, 29.9`,
+        items: [
+          {
+            tag: `אירוע`,
+            title: `OECD: Education at a Glance 2026`,
+            sources: [
+              { label: `OECD`, url: `https://www.oecd.org/en/events/2026/09/education-at-a-glance-2026.html` },
+            ],
+          },
+          {
+            tag: `אירוע`,
+            title: `WIPO: מדד החדשנות העולמי 2026 (14:30)`,
+            sources: [
+              { label: `WIPO`, url: `https://www.wipo.int/en/web/global-innovation-index/w/news/2026/save-the-date-gii-2026` },
+            ],
+          },
+          {
+            tag: `אירוע`,
+            title: `האו"ם: כינוס רם-דרג ליום הבינלאומי לחיסול מוחלט של נשק גרעיני`,
+            sources: [
+              { label: `האו"ם, כינוסים רמי-דרג במושב ה-81`, url: `https://www.un.org/en/ga/81/meetings/` },
+            ],
+          },
+        ],
+      },
+      {
+        day: `יום שישי, 2.10`,
+        items: [
+          {
+            tag: `חופשה`,
+            title: `2-3.10 · הושענא רבה ושמחת תורה`,
+            sources: [
+              { label: `משרד החינוך, מהלך שנת הלימודים תשפ"ז`, url: `https://parents.education.gov.il/gov-education/vacations-camps-leisure/schedule` },
+            ],
+          },
+        ],
+      },
+      {
+        day: `יום ראשון, 4.10`,
+        items: [
+          {
+            tag: `חופשה`,
+            title: `חזרה ללימודים (בחטיבות העליונות 5.10)`,
+            sources: [
+              { label: `משרד החינוך, מהלך שנת הלימודים תשפ"ז`, url: `https://parents.education.gov.il/gov-education/vacations-camps-leisure/schedule` },
             ],
           },
         ],

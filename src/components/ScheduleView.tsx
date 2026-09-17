@@ -1,7 +1,8 @@
 'use client';
 import { useState, useMemo } from 'react';
-import { RECESS_SCHEDULE, RECESS_SCHEDULE_TITLE, RecessScheduleItem, RecessArenaId } from '@/data/recessSchedule';
+import { RECESS_SCHEDULE, RECESS_SCHEDULE_TITLE, RecessScheduleItem } from '@/data/recessSchedule';
 import { TIMELINE, TimelineEvent } from '@/data/timeline';
+import { ARENA_TO_SEKIRA_TAB } from '@/data/recess';
 import { safeUrl } from '@/lib/urls';
 import styles from './ScheduleTable.module.css';
 
@@ -71,8 +72,8 @@ function evMonth(e: TimelineEvent) { return parseInt(e.dateStart.slice(5, 7)); }
 function inMonthTab(e: TimelineEvent, m: number) { return m === 6 ? evMonth(e) <= 6 : evMonth(e) === m; }
 
 export default function ScheduleView({ onOpenSekira }: {
-  // Cross-link: opens the סקירה tab on the arena matching a schedule section
-  onOpenSekira?: (tab: RecessArenaId) => void;
+  // Cross-link: opens the סקירה on the tab mapped from this schedule arena
+  onOpenSekira?: (tab: string) => void;
 }) {
   const [subView, setSubView] = useState<'weekly' | 'timeline'>('weekly');
   const [tlCat, setTlCat] = useState('הכל');
@@ -131,11 +132,11 @@ export default function ScheduleView({ onOpenSekira }: {
               <section key={arena.arena} className={styles.day}>
                 <div className={styles.dayhead}>
                   <h2>{arena.label}</h2>
-                  {onOpenSekira && (
+                  {onOpenSekira && ARENA_TO_SEKIRA_TAB[arena.arena] && (
                     <button
                       type="button"
                       className={styles.rcSekiraLink}
-                      onClick={() => onOpenSekira(arena.arena)}
+                      onClick={() => onOpenSekira(ARENA_TO_SEKIRA_TAB[arena.arena])}
                     >
                       לסקירה המלאה ←
                     </button>

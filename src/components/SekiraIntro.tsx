@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import { RECESS_TITLE, RECESS_UPDATED, ELECTION_LABEL, daysToElection } from '@/data/recess';
-import { KnessetTab, GovTab, CourtTab, EventsTab } from './SekiraView';
+import { RECESS_TITLE, RECESS_UPDATED, ELECTION_LABEL, daysToElection, SEKIRA_TABS } from '@/data/recess';
+import { TabBody } from './SekiraView';
 import styles from './Sekira.module.css';
 
 // First-entry onboarding overlay. Self-contained: sits above the app after the
@@ -35,12 +35,16 @@ export default function SekiraIntro({ onEnter }: { onEnter: () => void }) {
     if (el) el.scrollTo({ top: i * el.clientHeight, behavior: 'smooth' });
   }
 
-  const ARENAS = [
-    { tag: 'זירה ראשונה', title: 'הכנסת — מה מותר ומה טעון אישור', desc: 'הדיונים המתקיימים בפגרה ולוח הזמנים של התקופה.', body: <KnessetTab />, bg: '#fff' },
-    { tag: 'זירה שנייה', title: 'הממשלה — ממשלה יוצאת תחת חובת איפוק', desc: 'ההחלטות של הממשלה היוצאת בתקופת הבחירות.', body: <GovTab />, bg: '#f9fafb' },
-    { tag: 'זירה שלישית', title: 'בג"ץ — ההליכים התלויים ועומדים', desc: 'מעקב אחר העתירות שעל שולחן בית המשפט.', body: <CourtTab />, bg: '#fff' },
-    { tag: 'זירה רביעית', title: 'לוח אירועים — השבועיים הקרובים', desc: 'התאריכים שקובעים את קצב התקופה.', body: <EventsTab />, bg: '#f9fafb' },
-  ];
+  // One slide per sekira tab, straight from SEKIRA_TABS — a tab added there
+  // (e.g. כנסת, once the 26th Knesset convenes) shows up here automatically.
+  const ORDINALS = ['ראשונה', 'שנייה', 'שלישית', 'רביעית', 'חמישית', 'שישית', 'שביעית'];
+  const ARENAS = SEKIRA_TABS.map((t, i) => ({
+    tag: ORDINALS[i] ? `זירה ${ORDINALS[i]}` : 'זירה נוספת',
+    title: t.heading ?? t.label,
+    desc: t.intro ?? '',
+    body: <TabBody tab={t} />,
+    bg: i % 2 === 0 ? '#fff' : '#f9fafb',
+  }));
 
   return (
     <div className={styles.intro} ref={introRef}>
@@ -65,7 +69,7 @@ export default function SekiraIntro({ onEnter }: { onEnter: () => void }) {
             <div style={{ textAlign: 'center', marginBottom: 28 }}>
               <span className={styles.arenaTag}>{a.tag}</span>
               <div className={styles.arenaTitle}>{a.title}</div>
-              <div className={styles.arenaDesc} style={{ margin: '0 auto' }}>{a.desc}</div>
+              {a.desc && <div className={styles.arenaDesc} style={{ margin: '0 auto' }}>{a.desc}</div>}
             </div>
             <div className={styles.wrap}>{a.body}</div>
             {i === ARENAS.length - 1 && (

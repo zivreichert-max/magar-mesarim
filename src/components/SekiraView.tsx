@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   RECESS_TITLE, RECESS_UPDATED, ELECTION_LABEL, daysToElection,
-  KNESSET_BLOCKS, GOV_CARDS, COURT_INTRO, COURT_ROWS, COURT_EXPANDABLES, TIMELINE, SOURCES,
-  RPara, RCard, RExpandable, Tag, TagKind, PermList,
+  SEKIRA_TABS, COURT_INTRO, COURT_ROWS, COURT_EXPANDABLES, SOURCES,
+  RPara, RCard, RExpandable, Tag, TagKind, PermList, SekiraTab,
 } from '@/data/recess';
 import { READY_SECOND_THIRD, PLENUM_AS_OF } from '@/data/plenumReady';
 import styles from './Sekira.module.css';
@@ -60,6 +60,7 @@ function ParaView({ p }: { p: RPara }) {
     <div className={`${styles.rPara} ${p.muted ? styles.rMuted : ''}`}>
       {p.head && <span className={styles.rParaHead}>{p.head} — </span>}
       <Rich text={p.text} />
+      {p.todo && <TagChip tag={{ label: '[TODO קישור]', kind: 'need' }} />}
       <Links links={p.links} />
     </div>
   );
@@ -137,10 +138,17 @@ function PermBox({ list, kind }: { list: PermList; kind: 'green' | 'amber' }) {
 
 /* ───── tab bodies (also reused by SekiraIntro) ───── */
 
-export function KnessetTab({ onOpenCalculator, printMode }: { onOpenCalculator?: () => void; printMode?: boolean }) {
+// One renderer for every tab — the tab strip, the print version and the intro
+// carousel all walk SEKIRA_TABS, so adding a tab (e.g. restoring כנסת after the
+// 26th Knesset convenes) is a data edit in recess.ts, not a code change.
+export function TabBody({ tab, onOpenCalculator, printMode }: {
+  tab: SekiraTab;
+  onOpenCalculator?: () => void;
+  printMode?: boolean;
+}) {
   return (
     <>
-      {KNESSET_BLOCKS.map((b, i) =>
+      {tab.blocks.map((b, i) =>
         b.type === 'card' ? <CardView key={i} card={b.card} onOpenCalculator={onOpenCalculator} printMode={printMode} />
         : b.type === 'permGrid' ? (
           <div key={i} className={styles.permGrid}>
@@ -148,14 +156,11 @@ export function KnessetTab({ onOpenCalculator, printMode }: { onOpenCalculator?:
             <PermBox list={b.amber} kind="amber" />
           </div>
         )
+        : b.type === 'courtTable' ? <CourtTab key={i} printMode={printMode} />
         : <ExpView key={i} exp={b.exp} printMode={printMode} />
       )}
     </>
   );
-}
-
-export function GovTab({ printMode }: { printMode?: boolean }) {
-  return <>{GOV_CARDS.map((c, i) => <CardView key={i} card={c} printMode={printMode} />)}</>;
 }
 
 export function CourtTab({ printMode }: { printMode?: boolean }) {
@@ -183,58 +188,6 @@ export function CourtTab({ printMode }: { printMode?: boolean }) {
   );
 }
 
-const HEB_DAYS = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי', 'שבת'];
-
-function parseTlDate(d: string): Date | null {
-  const m = d.match(/(\d{1,2})\.(\d{1,2})/);
-  if (!m) return null;
-  return new Date(new Date().getFullYear(), parseInt(m[2]) - 1, parseInt(m[1]));
-}
-
-export function EventsTab() {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const items = TIMELINE.map(t => ({ t, time: parseTlDate(t.date)?.getTime() ?? null }));
-  const hasTodayItem = items.some(x => x.time === today);
-  // Where the "we are here" marker slots in when no event falls on today:
-  // before the first future event (or after everything if all are past)
-  let markerIdx = items.findIndex(x => x.time !== null && x.time > today);
-  if (markerIdx === -1) markerIdx = items.length;
-
-  const todayLabel = `היום · ${HEB_DAYS[now.getDay()]}, ${now.getDate()}.${now.getMonth() + 1}`;
-  const marker = (
-    <li key="now" className={styles.tlNow}>
-      <span className={styles.tlNowLbl}>{todayLabel}</span>
-    </li>
-  );
-
-  return (
-    <div className={styles.topicBlock}>
-      <ul className={styles.tl}>
-        {items.flatMap((x, i) => [
-          ...(!hasTodayItem && i === markerIdx ? [marker] : []),
-          <li
-            key={i}
-            className={[
-              x.t.milestone ? styles.tlMilestone : '',
-              x.time !== null && x.time < today ? styles.tlPast : '',
-              x.time === today ? styles.tlToday : '',
-            ].filter(Boolean).join(' ')}
-          >
-            <span className={styles.tlDate}>{x.t.date}</span>
-            {x.time === today && <span className={styles.tlTodayChip}>היום</span>}
-            {' · '}
-            <Rich text={x.t.text} />
-            {x.t.todo && <TagChip tag={{ label: '[TODO קישור]', kind: 'need' }} />}
-            <Links links={x.t.links} />
-          </li>,
-        ])}
-        {!hasTodayItem && markerIdx === items.length && marker}
-      </ul>
-    </div>
-  );
-}
-
 /* ───── WhatsApp export ───── */
 
 // Strip data markers ( **bold**, [label](url) ) and squeeze whitespace
@@ -259,46 +212,30 @@ function waItem(title: string, brief?: string): string {
 function buildWhatsappMessage(): string {
   const now = new Date();
   const dateStr = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}`;
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-  const knesset: string[] = [];
-  for (const b of KNESSET_BLOCKS) {
-    if (b.type === 'card') knesset.push(waItem(b.card.title, b.card.brief));
-    else if (b.type === 'expandable') knesset.push(waItem(b.exp.summary, b.exp.brief));
-    // permGrid — covered by the ועדת ההסכמות card title
+  // One section per tab, in SEKIRA_TABS order; the בג"ץ tab contributes its
+  // tracking-table rows instead of cards.
+  const sections: string[] = [];
+  for (const t of SEKIRA_TABS) {
+    const lines: string[] = [];
+    for (const b of t.blocks) {
+      if (b.type === 'card') lines.push(waItem(b.card.title, b.card.brief));
+      else if (b.type === 'expandable') lines.push(waItem(b.exp.summary, b.exp.brief));
+      else if (b.type === 'courtTable') {
+        COURT_ROWS.forEach(r => lines.push(waItem(`${r.law} — ${r.status.label}`, r.brief)));
+      }
+      // permGrid — covered by the card title above it
+    }
+    if (!lines.length) continue;
+    sections.push(`*${t.label}*`, ...lines, '');
   }
-
-  // Gov: the news items are the expandables; a card without them contributes its title
-  const gov: string[] = [];
-  for (const c of GOV_CARDS) {
-    if (c.expandables?.length) c.expandables.forEach(e => gov.push(waItem(e.summary, e.brief)));
-    else gov.push(waItem(c.title, c.brief));
-  }
-
-  const court = COURT_ROWS.map(r => waItem(`${r.law} — ${r.status.label}`, r.brief));
-
-  // Events: today onward only — the message is forward-looking; full text, no truncation
-  const events = TIMELINE
-    .filter(t => { const d = parseTlDate(t.date); return !d || d.getTime() >= today; })
-    .map(t => `- *${t.date}* · ${waClean(t.text)}`);
 
   const site = typeof window !== 'undefined' ? window.location.origin : '';
   return [
     `*סקירה שבועית — זמן בחירות* · ${dateStr}`,
     `${daysToElection()} ימים ליום הבחירות (27.10.2026)`,
     '',
-    '*כנסת*',
-    ...knesset,
-    '',
-    '*ממשלה*',
-    ...gov,
-    '',
-    '*בג"ץ*',
-    ...court,
-    '',
-    '*אירועים בולטים*',
-    ...events,
-    '',
+    ...sections,
     `לסקירה המלאה: ${site}`,
   ].join('\n');
 }
@@ -387,14 +324,8 @@ function Sources() {
   );
 }
 
-const RECESS_TABS = [
-  { id: 'knesset', label: 'כנסת', intro: 'מה מותר ומה טעון אישור בתקופת הפגרה.' },
-  { id: 'gov', label: 'ממשלה', intro: 'ממשלה יוצאת — חובת איפוק, מסננת משפטית, והחלטות הרגע האחרון.' },
-  { id: 'court', label: 'בג"ץ', intro: '' },
-  { id: 'events', label: 'אירועים בולטים', intro: 'לוח האירועים של השבועיים הקרובים.' },
-] as const;
-
-export type RecessTabId = typeof RECESS_TABS[number]['id'];
+// The tab strip is the data in recess.ts — no hardcoded list here.
+export type RecessTabId = string;
 
 export default function SekiraView({ onOpenCalculator, externalTab, onExternalConsumed }: {
   onOpenCalculator?: () => void;
@@ -403,7 +334,7 @@ export default function SekiraView({ onOpenCalculator, externalTab, onExternalCo
   externalTab?: RecessTabId | null;
   onExternalConsumed?: () => void;
 }) {
-  const [tab, setTab] = useState<RecessTabId>(externalTab ?? 'knesset');
+  const [tab, setTab] = useState<RecessTabId>(externalTab ?? SEKIRA_TABS[0].id);
   const [shareOpen, setShareOpen] = useState(false);
   // Portal target for the print-only version — rendered as a direct child of
   // <body> so print CSS can display:none everything else (no blank pages)
@@ -461,17 +392,19 @@ export default function SekiraView({ onOpenCalculator, externalTab, onExternalCo
               {RECESS_UPDATED} · {daysToElection()} {ELECTION_LABEL}
             </div>
           </div>
-          <div className="sekira-print-section"><div className={styles.printArena}>כנסת</div><KnessetTab printMode /></div>
-          <div className="sekira-print-section"><div className={styles.printArena}>ממשלה</div><GovTab printMode /></div>
-          <div className="sekira-print-section"><div className={styles.printArena}>בג"ץ</div><CourtTab printMode /></div>
-          <div className="sekira-print-section"><div className={styles.printArena}>אירועים בולטים</div><EventsTab /></div>
+          {SEKIRA_TABS.map(t => (
+            <div key={t.id} className="sekira-print-section">
+              <div className={styles.printArena}>{t.label}</div>
+              <TabBody tab={t} printMode />
+            </div>
+          ))}
           <Sources />
         </div>,
         printHost
       )}
 
       <div className={styles.subTabs} style={{ maxWidth: 640, margin: '0 auto 22px' }}>
-        {RECESS_TABS.map(t => (
+        {SEKIRA_TABS.map(t => (
           <button
             key={t.id}
             type="button"
@@ -483,14 +416,15 @@ export default function SekiraView({ onOpenCalculator, externalTab, onExternalCo
         ))}
       </div>
 
-      {RECESS_TABS.find(t => t.id === tab)?.intro && (
-        <div className={styles.sectionIntro}>{RECESS_TABS.find(t => t.id === tab)!.intro}</div>
-      )}
-
-      {tab === 'knesset' && <KnessetTab onOpenCalculator={onOpenCalculator} />}
-      {tab === 'gov' && <GovTab />}
-      {tab === 'court' && <CourtTab />}
-      {tab === 'events' && <EventsTab />}
+      {(() => {
+        const cur = SEKIRA_TABS.find(t => t.id === tab) ?? SEKIRA_TABS[0];
+        return (
+          <>
+            {cur.intro && <div className={styles.sectionIntro}>{cur.intro}</div>}
+            <TabBody tab={cur} onOpenCalculator={onOpenCalculator} />
+          </>
+        );
+      })()}
 
       <Sources />
     </div>
