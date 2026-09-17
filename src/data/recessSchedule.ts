@@ -22,6 +22,20 @@ export const RECESS_SCHEDULE: RecessScheduleArena[] = [
     arena: 'knesset',
     label: `כנסת`,
     days: [
+      {
+        day: `יום רביעי, 23.9`,
+        items: [
+          {
+            tag: `דיון`,
+            title: `ועדת הכספים: אישור העברות להוצאות הביטחון`,
+            summary: `ועדת הכספים תתכנס כדי לאשר 11.758 מיליארד ש"ח עבור הוצאות הביטחון של צה"ל ומשרד הביטחון, מתוך חבילה של 14.748 מיליארד ש"ח שתקועה בכנסת מאז 2.8.`,
+            sources: [
+              { label: `ynet`, url: `https://www.ynet.co.il/economy/article/hywaynktze` },
+              { label: `ביזפורטל, 17.9.26`, url: `https://www.bizportal.co.il/general/news/article/20042518` },
+            ],
+          },
+        ],
+      },
     ],
   },
   {
