@@ -325,25 +325,55 @@ export const TIMELINE: TimelineEvent[] = [
     url: `https://he.wikipedia.org/wiki/מתקפת_הזימוניות_וההקשרים`,
   },
   {
-    title: `יום כיפור תשפ"ז`,
+    title: `רצף חופשת יום כיפור וסוכות`,
     dateStart: `2026-09-20`,
-    dateEnd: `2026-09-21`,
-    category: `חגים`,
+    dateEnd: `2026-10-03`,
+    category: `צום/חגים`,
     importance: `ודאי`,
+    detail: `מערכת החינוך סגורה ברצף מ-20.9 עד 3.10. בתוך התקופה יש 8 ימי עבודה מלאים במשק שבהם אין לימודים: שלושת ימי הגשר בין יום כיפור לסוכות (22-24.9) וחמשת ימי חול המועד (27.9-1.10).
+
+20.9, ערב יום כיפור: אין לימודים. זהו יום עבודה, ובמקומות עבודה רבים נהוג בו יום מקוצר מכוח הסכם קיבוצי, צו הרחבה או נוהג.
+21.9, יום כיפור: חג ושבתון, יום חופש משותף להורים ולילדים.
+22-24.9, ימי הגשר: אין לימודים; ימי עבודה רגילים במשק.
+25-26.9, ערב סוכות וסוכות: שישי ושבת.
+27.9-1.10, חול המועד: אין לימודים. לפי חוקי העבודה אלה ימי עבודה רגילים; בחלק ממקומות העבודה חלים הסדרים מיטיבים או חופשה מרוכזת.
+2-3.10, הושענא רבה ושמחת תורה: שישי ושבת.
+4.10: חזרה ללימודים בגנים, ביסודי ובחטיבות הביניים. בחטיבות העליונות אסרו חג הוא יום חופשה, והלימודים מתחדשים ב-5.10.`,
+    url: `https://parents.education.gov.il/gov-education/vacations-camps-leisure/schedule`,
   },
   {
-    title: `עצרת האו"ם — שבוע הנאומים`,
-    dateStart: `2026-09-21`,
-    dateEnd: `2026-09-25`,
+    title: `שבוע הנאומים בעצרת האו"ם`,
+    dateStart: `2026-09-22`,
+    dateEnd: `2026-09-28`,
     category: `גיאופוליטי`,
     importance: `ודאי`,
-    detail: `ישראל בדרך כלל מציגה עמדות; שנה קריטית עם תיק ICC`,
+    detail: `הדיון הכללי של המושב ה-81 של העצרת הכללית מתקיים בניו יורק ב-22-26.9 וב-28.9. לשכת ראש הממשלה הודיעה ב-14.9 שנתניהו ימריא לנאום בעצרת, ולפי הדיווח הוא צפוי לשוב לפני סוכות. טרם ידוע מה המועד הספציפי שבו נתניהו צפוי לנאום.`,
+    url: `https://www.un.org/pga/81/event/general-debate-of-the-eighty-first-session-of-the-general-assembly/`,
   },
   {
-    title: `סוכות`,
-    dateStart: `2026-09-25`,
-    dateEnd: `2026-10-02`,
-    category: `חגים`,
+    title: `תחזית הביניים של ה-OECD`,
+    dateStart: `2026-09-23`,
+    category: `כלכלה`,
+    importance: `ודאי`,
+    detail: `עדכון תחזיות הצמיחה והאינפלציה לכלכלה העולמית, למדינות ה-G20, לגוש האירו ולכלל ה-OECD. דוח הביניים מפרסם תחזיות למדינות ה-G20 ולסיכומים האזוריים בלבד, ולכן ישראל אינה מופיעה בו בנפרד.`,
+    url: `https://www.oecd.org/en/events/2026/09/launch-oecd-interim-economic-outlook.html`,
+  },
+  {
+    title: `דיוני הפסילות בוועדת הבחירות`,
+    dateStart: `2026-09-23`,
+    dateEnd: `2026-09-24`,
+    category: `בחירות`,
+    importance: `ודאי`,
+    detail: `ועדת הבחירות המרכזית, בראשות השופט נעם סולברג, תדון בבקשות לפסילת רשימות ומועמדים לכנסת ה-26 לפי סעיף 7א לחוק-יסוד: הכנסת.
+23.9: 09:00-20:30. 24.9: 09:00-17:00. הדיונים יועברו בפול של ערוץ הכנסת ובשידור חי בפלטפורמות הוועדה.
+לפי הדיווחים, בין הרשימות שנגדן הוגשו בקשות: רע"ם (שלוש בקשות נפרדות), עוצמה יהודית, הדמוקרטים, הציונות הדתית וזהות, בל"ד והרשימה המשותפת. בין המועמדים: ח"כ עופר כסיף ויו"ר בל"ד סאמי אבו שחאדה. חלק מהבקשות נמחקו על הסף. הרשימה המלאה של הבקשות שיידונו מתפרסמת באתר ועדת הבחירות.
+על החלטה לפסול רשימה ניתן לערער לבית המשפט העליון. פסילת מועמד טעונה אישור של בית המשפט העליון.`,
+    url: `https://www.emess.co.il/radio/1929785`,
+  },
+  {
+    title: `דיון בבג"ץ בעתירת ההעברות התקציביות`,
+    dateStart: `2026-09-24`,
+    category: `בג"ץ`,
     importance: `ודאי`,
   },
   {
@@ -365,7 +395,14 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `נכס לקואלציה`,
-    url: `https://he.wikipedia.org/wiki/חיסול_חסן_נסראללה`,
+  },
+  {
+    title: `אישור סופי של רשימות המועמדים`,
+    dateStart: `2026-09-27`,
+    category: `בחירות`,
+    importance: `ודאי`,
+    detail: `המועד שקבעה ועדת הבחירות המרכזית לאישור הסופי של רשימות המועמדים, לאחר בדיקת הרשימות ודיוני הפסילות.`,
+    url: `https://www.davar1.co.il/696375/`,
   },
   {
     title: `26 שנה לפרוץ האינתיפאדה השנייה`,
@@ -373,15 +410,31 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `סוף ספטמבר 2000`,
-    url: `https://he.wikipedia.org/wiki/האינתיפאדה_השנייה`,
+    url: `https://he.wikipedia.org/wiki/חיסול_חסן_נסראללה`,
   },
   {
-    title: `בנק ישראל — ריבית + תחזית Q4`,
-    dateStart: `2026-10-01`,
-    dateEnd: `2026-10-31`,
-    category: `כלכלי`,
-    importance: `הערכה`,
-    detail: `הערכה; תאריך מדויק טרם פורסם`,
+    title: `Education at a Glance 2026`,
+    dateStart: `2026-09-29`,
+    category: `חינוך`,
+    importance: `ודאי`,
+    detail: `הדוח ההשוואתי השנתי של ה-OECD על מערכות החינוך במדינות הארגון, ובהן ישראל. הפוקוס השנה: המחסור במורים והשפעתו על הכיתות.`,
+    url: `https://www.oecd.org/en/events/2026/09/education-at-a-glance-2026.html`,
+  },
+  {
+    title: `מדד החדשנות העולמי 2026`,
+    dateStart: `2026-09-29`,
+    category: `כלכלה`,
+    importance: `ודאי`,
+    detail: `WIPO תפרסם את Global Innovation Index 2026, המשווה את ביצועי החדשנות של כ-140 כלכלות, ובהן ישראל. אירוע ההשקה: 14:30-16:30 שעון ישראל.`,
+    url: `https://www.wipo.int/en/web/global-innovation-index/w/news/2026/save-the-date-gii-2026`,
+  },
+  {
+    title: `כינוס האו"ם ליום חיסול הנשק הגרעיני`,
+    dateStart: `2026-09-29`,
+    category: `גיאופוליטי`,
+    importance: `ודאי`,
+    detail: `כינוס רם-דרג של העצרת הכללית לציון היום הבינלאומי לחיסול מוחלט של נשק גרעיני, לפי לוח הכינוסים הזמני של המושב ה-81.`,
+    url: `https://www.un.org/en/ga/81/meetings/`,
   },
   {
     title: `53 שנה למלחמת יום הכיפורים`,
@@ -389,13 +442,14 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `6.10.1973`,
-    url: `https://he.wikipedia.org/wiki/מלחמת_יום_הכיפורים`,
+    url: `https://www.boi.org.il/en/economic-roles/monetary-policy/interest-rate-announcement-dates-2026/`,
   },
   {
     title: `השביעי באוקטובר`,
     dateStart: `2026-10-07`,
     category: `פוליטי`,
     importance: `ודאי`,
+    url: `https://he.wikipedia.org/wiki/מלחמת_יום_הכיפורים`,
   },
   {
     title: `3 שנים לנאום 'הניצחון המוחלט' של נתניהו`,
@@ -403,7 +457,6 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `השימוש הראשון בכנסת 12.10.2023; הבטחה שנותרה שנויה במחלוקת`,
-    url: `https://www.youtube.com/watch?v=1ZQd-0J3QGU`,
   },
   {
     title: `3 שנים לפינוי יישובי עוטף עזה/הדרום (החלטה 950)`,
@@ -411,13 +464,22 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `פינוי 0-7 ק"מ מהרצועה אושר 12.10.2023`,
-    url: `https://www.gov.il/he/pages/dec950_2023`,
+    url: `https://www.youtube.com/watch?v=1ZQd-0J3QGU`,
   },
   {
     title: `תחילת שידורי תעמולת הבחירות בטלווזיה וברדיו`,
     dateStart: `2026-10-13`,
     category: `פוליטי`,
     importance: `ודאי`,
+    url: `https://www.gov.il/he/pages/dec950_2023`,
+  },
+  {
+    title: `מדד המחירים לצרכן לספטמבר ומדד מחירי הדירות`,
+    dateStart: `2026-10-15`,
+    category: `כלכלה`,
+    importance: `ודאי`,
+    detail: `הלמ"ס מפרסמת את מדד המחירים לצרכן לספטמבר ואת מדד מחירי הדירות, בשעה 18:30. זה המדד האחרון שיתפרסם לפני הבחירות.`,
+    url: `https://www.cbs.gov.il/he/Pages/%D7%AA%D7%97%D7%96%D7%99%D7%AA-%D7%A4%D7%A8%D7%A1%D7%95%D7%9D.aspx`,
   },
   {
     title: `3 שנים לפינוי יישובי הצפון (החלטה 975)`,
@@ -425,13 +487,21 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `פינוי גבול לבנון אושר 18.10.2023; החזרה נקבעה רק ל-1.3.2025`,
-    url: `https://www.gov.il/he/pages/dec975_2023`,
   },
   {
     title: `פתיחת הצבעה בנציגויות ישראל בחו"ל`,
     dateStart: `2026-10-20`,
     category: `פוליטי`,
     importance: `ודאי`,
+    url: `https://www.gov.il/he/pages/dec975_2023`,
+  },
+  {
+    title: `החלטת ריבית, תחזית מקרו ומסיבת עיתונאים`,
+    dateStart: `2026-10-21`,
+    category: `כלכלה`,
+    importance: `ודאי`,
+    detail: `החלטת הריבית האחרונה של בנק ישראל לפני הבחירות, בליווי תחזית המקרו של חטיבת המחקר ומסיבת עיתונאים של הנגיד.`,
+    url: `https://he.wikipedia.org/wiki/האינתיפאדה_השנייה`,
   },
   {
     title: `32 שנה להסכם השלום עם ירדן`,
@@ -439,13 +509,13 @@ export const TIMELINE: TimelineEvent[] = [
     category: `יום שנה`,
     importance: `ודאי`,
     detail: `26.10.1994`,
-    url: `https://he.wikipedia.org/wiki/הסכם_השלום_בין_ישראל_לירדן`,
   },
   {
     title: `יום הבחירות לכנסת`,
     dateStart: `2026-10-27`,
     category: `פוליטי`,
     importance: `ודאי`,
+    url: `https://he.wikipedia.org/wiki/הסכם_השלום_בין_ישראל_לירדן`,
   },
   {
     title: `פרסום התוצאות הסופיות והרשמיות`,
