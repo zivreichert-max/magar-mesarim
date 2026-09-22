@@ -104,10 +104,10 @@ export const RECESS_SCHEDULE: RecessScheduleArena[] = [
           {
             tag: `אירוע`,
             title: `22-28.9 · הדיון הכללי בעצרת הכללית של האו"ם`,
-            summary: `טרם ידוע מה המועד הספציפי שבו נתניהו צפוי לנאום.`,
+            summary: `נתניהו צפוי לנאום ביום חמישי 24.9, בסביבות השעה 21:00 שעון ישראל (מוערך).`,
             sources: [
               { label: `האו"ם, נשיאות העצרת הכללית`, url: `https://www.un.org/pga/81/event/general-debate-of-the-eighty-first-session-of-the-general-assembly/` },
-              { label: `i24NEWS, 14.9.26`, url: `https://www.i24news.tv/he/news/news/diplomacy/artc-aed554c6` },
+              { label: `mako, 22.9.26`, url: `https://www.mako.co.il/news-world/2026_q3/Article-77218b3c1e7c0a1027.htm` },
             ],
           },
         ],
@@ -191,13 +191,6 @@ export const RECESS_SCHEDULE: RecessScheduleArena[] = [
             title: `WIPO: מדד החדשנות העולמי 2026 (14:30)`,
             sources: [
               { label: `WIPO`, url: `https://www.wipo.int/en/web/global-innovation-index/w/news/2026/save-the-date-gii-2026` },
-            ],
-          },
-          {
-            tag: `אירוע`,
-            title: `האו"ם: כינוס רם-דרג ליום הבינלאומי לחיסול מוחלט של נשק גרעיני`,
-            sources: [
-              { label: `האו"ם, כינוסים רמי-דרג במושב ה-81`, url: `https://www.un.org/en/ga/81/meetings/` },
             ],
           },
         ],
