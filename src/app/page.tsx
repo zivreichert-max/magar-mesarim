@@ -31,15 +31,17 @@ const KnessetUpdates = dynamic(() => import('@/components/KnessetUpdates'), { lo
 const CalculatorsHub = dynamic(() => import('@/components/CalculatorsHub'), { loading: viewLoading });
 const SekiraView = dynamic(() => import('@/components/SekiraView'), { loading: viewLoading });
 const SekiraIntro = dynamic(() => import('@/components/SekiraIntro'), { loading: viewLoading });
+const OfficeView = dynamic(() => import('@/components/office/OfficeView'), { loading: viewLoading });
 import { getSharedMessageIds, startSession, pingSession, pingSessionBeacon } from '@/lib/supabase';
 
 type AppState = 'password' | 'name' | 'ready';
 
-type ViewId = 'sekira' | 'messages' | 'schedule' | 'requests' | 'papers' | 'workplans' | 'updates' | 'calculator';
+type ViewId = 'office' | 'sekira' | 'messages' | 'schedule' | 'requests' | 'papers' | 'workplans' | 'updates' | 'calculator';
 
 // Order matters: first = rightmost tab (RTL). סקירה is the natural entry point.
 // `title` (header heading) defaults to the tab label when omitted.
 const TABS: { id: ViewId; label: string; title?: string; fullOnly?: boolean }[] = [
+  { id: 'office',     label: 'לשכה', title: 'לשכת ח"כ', fullOnly: true },
   { id: 'sekira',     label: 'סקירה' },
   { id: 'schedule',   label: 'לו"ז', title: 'לו"ז לתקופת הפגרה' },
   { id: 'updates',    label: 'עדכונים אוטומטיים', fullOnly: true },
@@ -173,7 +175,10 @@ export default function Home() {
       setAuthorName(client.name);
       setAppState('ready');
     } else {
-      // Full role: existing flow
+      // Full role: the לשכה workspace is the admin's entry point — no
+      // onboarding overlay in front of it
+      setActiveView('office');
+      setIntroDone(true);
       const stored = localStorage.getItem('author_name');
       if (stored) {
         setAuthorName(stored);
@@ -245,6 +250,8 @@ export default function Home() {
           </button>
         ))}
       </div>
+
+      {activeView === 'office' && role === 'full' && <OfficeView />}
 
       {activeView === 'sekira' && (
         <SekiraView

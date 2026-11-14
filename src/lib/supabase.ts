@@ -515,3 +515,39 @@ export async function getPollTrackerData(): Promise<PollTrackerData> {
     events: (events.data ?? []) as PollEventRow[],
   };
 }
+
+// ─── office weekly schedule: manual events for ANY week ──────────────────────
+// The לשכה tab lets the admin add events the official feeds don't carry
+// (cabinet meetings, reported plenum votes). Same table as the old weekly
+// לו"ז manual events, but addressed by an explicit week id (Sunday ISO date)
+// so the "next week" view can hold its own rows.
+
+export async function getManualEventsForWeek(weekId: string): Promise<ManualScheduleEvent[]> {
+  const { data, error } = await supabase
+    .from('manual_schedule_events')
+    .select('*')
+    .eq('week_id', weekId);
+  if (error) {
+    console.error('getManualEventsForWeek failed:', error.message);
+    return [];
+  }
+  return (data ?? []) as ManualScheduleEvent[];
+}
+
+export async function addManualEventForWeek(
+  weekId: string,
+  ev: Omit<ManualScheduleEvent, 'id' | 'week_id'>
+): Promise<ManualScheduleEvent> {
+  const { data, error } = await supabase
+    .from('manual_schedule_events')
+    .insert({ ...ev, week_id: weekId })
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return data as ManualScheduleEvent;
+}
+
+export async function deleteManualEvent(id: string): Promise<void> {
+  const { error } = await supabase.from('manual_schedule_events').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}

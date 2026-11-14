@@ -64,7 +64,7 @@ async function fetchSource(source: typeof SOURCES[number]): Promise<GovAgendaIte
     if (!res.ok) return [];
     const data = await res.json() as { results?: Record<string, unknown>[] };
 
-    return (data.results ?? []).slice(0, 3).map(r => {
+    return (data.results ?? []).slice(0, 5).map(r => {
       const tags = r.tags as Record<string, Record<string, { title: string }[]>> | undefined;
       const publishDate = tags?.metaData?.['תאריך פרסום']?.[0]?.title ?? '';
       const descField = (r.description as string) ?? '';
