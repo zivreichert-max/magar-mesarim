@@ -8,17 +8,20 @@ import {
 import { localIso, anchorSunday, normalizeTime } from '@/lib/scheduleUtils';
 import { safeUrl } from '@/lib/urls';
 import type { GovAgendaItem } from '@/app/api/gov-agenda/route';
+import { KEY_DATES } from '@/data/keyDates';
 import s from './Office.module.css';
 
 // Weekly schedule for the לשכה tab — ONE lean table for the whole week:
 // day → time / body / topic. Sources: Knesset committees + plenum (Supabase,
 // filled by sync-knesset.mjs), government + ministerial-committee agendas
-// (gov.il via /api/gov-agenda), and manual rows the admin adds.
+// (gov.il via /api/gov-agenda), Supreme Court hearings (the בג"ץ rows of
+// the key-dates workbook), and manual rows the admin adds.
 
 const DAYS = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי'];
 const SHORT = (d: string) => d.replace('יום ', '');
 
-type Kind = 'cm' | 'pl' | 'gov' | 'manual';
+type Kind = 'cm' | 'pl' | 'gov' | 'court' | 'manual';
+const COURT_CATEGORY = 'בג"ץ';
 interface Row {
   key: string;
   time: string;       // '' when unknown
@@ -31,10 +34,13 @@ interface Row {
   manualId?: string;
 }
 
-const COLORS: Record<'gov' | 'pl' | 'cm', string> = { gov: '#111827', pl: '#1e3a7b', cm: '#0075C4' };
+const COLORS: Record<'gov' | 'pl' | 'cm' | 'court', string> = {
+  gov: '#111827', pl: '#1e3a7b', cm: '#0075C4', court: '#7c3aed',
+};
 
 // Manual rows carry a free-text body — color them like the matching arena
 function colorFor(row: Row): string {
+  if (row.kind === 'court' || /בג"ץ|בית המשפט/.test(row.body)) return COLORS.court;
   if (row.kind === 'pl' || /מליאה/.test(row.body)) return COLORS.pl;
   if (row.kind === 'gov' || /ממשלה|קבינט|שרים/.test(row.body)) return COLORS.gov;
   return COLORS.cm;
@@ -117,6 +123,14 @@ export default function OfficeWeek() {
       map.get(dayName)!.push({
         key: `g${g.url}`, time: '', body: g.label, topic: g.description,
         url: safeUrl(g.url), kind: 'gov',
+      });
+    }
+    for (const k of KEY_DATES) {
+      const dayName = k.category === COURT_CATEGORY ? isoOf[k.date] : undefined;
+      if (!dayName) continue;
+      map.get(dayName)!.push({
+        key: `c${k.date}${k.title}`, time: k.time, body: COURT_CATEGORY, topic: k.title,
+        url: safeUrl(k.url), kind: 'court',
       });
     }
     for (const m of manual) {
@@ -256,6 +270,7 @@ export default function OfficeWeek() {
       <div className={s.meta}>
         <span>ועדות ומליאה: אתר הכנסת{lastSync ? ` · סונכרן ${new Date(lastSync).toLocaleString('he-IL', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''}</span>
         <span>ממשלה וועדת שרים: gov.il</span>
+        <span>בג&quot;ץ: אקסל המועדים</span>
       </div>
     </>
   );

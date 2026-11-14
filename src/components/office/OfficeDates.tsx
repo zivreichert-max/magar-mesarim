@@ -36,13 +36,21 @@ function countdown(n: number): string {
   return `בעוד ${n} ימים`;
 }
 
-export default function OfficeDates() {
+interface OfficeDatesProps {
+  only?: string;      // show a single category (the בג"ץ section)
+  title?: string;
+  subtitle?: string;
+  emptyText?: string;
+}
+
+export default function OfficeDates({ only, title = 'מועדים', subtitle = 'כנסת המעבר', emptyText = 'אין מועדים קרובים' }: OfficeDatesProps) {
   const [today] = useState(() => localIso(new Date()));
   const [open, setOpen] = useState<string | null>(null);
   const [showPast, setShowPast] = useState(false);
 
-  const upcoming = KEY_DATES.filter(d => d.date >= today);
-  const past = KEY_DATES.filter(d => d.date < today).reverse();
+  const all = only ? KEY_DATES.filter(d => d.category === only) : KEY_DATES;
+  const upcoming = all.filter(d => d.date >= today);
+  const past = all.filter(d => d.date < today).reverse();
 
   const renderRow = (d: KeyDate, isPast: boolean) => {
     const id = `${d.date}|${d.title}`;
@@ -63,7 +71,11 @@ export default function OfficeDates() {
             {d.title}
             {d.certainty && d.certainty !== 'ודאי' && <span className={s.tag} style={{ marginInlineStart: 8 }}>{d.certainty}</span>}
           </span>
-          <span className={s.dateCount}>{isPast ? '' : countdown(daysUntil(d.date, today))}</span>
+          <span className={s.dateCount}>
+            {d.time && <span dir="ltr">{d.time}</span>}
+            {d.time && !isPast && ' · '}
+            {isPast ? '' : countdown(daysUntil(d.date, today))}
+          </span>
         </button>
         {expanded && (
           <div className={s.detail}>
@@ -78,12 +90,12 @@ export default function OfficeDates() {
   return (
     <>
       <div className={s.mast}>
-        <h1>מועדים</h1>
-        <span className={s.mastDate}>כנסת המעבר</span>
+        <h1>{title}</h1>
+        <span className={s.mastDate}>{subtitle}</span>
       </div>
 
       <div className={s.tbl}>
-        {upcoming.length === 0 && <div className={s.none}>אין מועדים קרובים</div>}
+        {upcoming.length === 0 && <div className={s.none}>{emptyText}</div>}
         {upcoming.map(d => renderRow(d, false))}
       </div>
 

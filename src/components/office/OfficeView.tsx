@@ -12,12 +12,13 @@ const OfficeGov = dynamic(() => import('./OfficeGov'), { loading });
 const OfficeLegislation = dynamic(() => import('./OfficeLegislation'), { loading });
 const OfficeDates = dynamic(() => import('./OfficeDates'), { loading });
 
-type SectionId = 'week' | 'laws' | 'gov' | 'dates';
+type SectionId = 'week' | 'laws' | 'gov' | 'court' | 'dates';
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'week', label: 'לו"ז שבועי' },
   { id: 'laws', label: 'רמזור חקיקה' },
   { id: 'gov', label: 'ממשלה' },
+  { id: 'court', label: 'בג"ץ' },
   { id: 'dates', label: 'מועדים' },
 ];
 
@@ -41,6 +42,14 @@ export default function OfficeView() {
       {section === 'week' && <OfficeWeek />}
       {section === 'laws' && <OfficeLegislation />}
       {section === 'gov' && <OfficeGov />}
+      {section === 'court' && (
+        <OfficeDates
+          only='בג"ץ'
+          title='בג"ץ'
+          subtitle="דיונים קרובים"
+          emptyText='לא הוזנו דיונים קרובים. מוסיפים שורה בקטגוריה בג"ץ באקסל המועדים.'
+        />
+      )}
       {section === 'dates' && <OfficeDates />}
     </div>
   );
