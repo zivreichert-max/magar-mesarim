@@ -551,3 +551,60 @@ export async function deleteManualEvent(id: string): Promise<void> {
   const { error } = await supabase.from('manual_schedule_events').delete().eq('id', id);
   if (error) throw new Error(error.message);
 }
+
+// ─── office (לשכה) protected data ────────────────────────────────────────────
+// The legislation tracker lives in tables the anon key cannot read. All access
+// goes through the office_get() Postgres function, which checks an access key
+// (admin key or an MK's personal code) against hashes stored in the DB.
+// Nothing sensitive is in this repo — it is public.
+
+export interface OfficeItem {
+  id: number;
+  name: string;
+  essence: string;
+  chapter: string;
+  kind: string;
+  ready: string;
+  undo: boolean;
+  link: string;
+  // admin-only fields
+  mk_yashar?: string;
+  mk_beyahad?: string;
+  mk_democrats?: string;
+  mk_beitenu?: string;
+  missing?: string;
+  notes?: string;
+}
+
+export interface OfficeData {
+  role: 'admin' | 'mk';
+  updated: string | null;
+  items: OfficeItem[];
+  mks?: { name: string; party: string }[]; // admin
+  name?: string;                             // mk
+  party?: string;                            // mk
+}
+
+export type OfficeResult =
+  | { status: 'ok'; data: OfficeData }
+  | { status: 'badkey' }
+  | { status: 'setup' }   // the one-time SQL setup has not been run yet
+  | { status: 'error'; message: string };
+
+export async function getOfficeData(key: string): Promise<OfficeResult> {
+  const { data, error } = await supabase.rpc('office_get', { p_key: key });
+  if (error) {
+    // PGRST202 = function not found in the schema cache → setup not run
+    if (error.code === 'PGRST202' || /office_get/.test(error.message)) return { status: 'setup' };
+    return { status: 'error', message: error.message };
+  }
+  const d = data as ({ ok: boolean } & Partial<OfficeData>) | null;
+  if (!d || !d.ok) return { status: 'badkey' };
+  return {
+    status: 'ok',
+    data: {
+      role: d.role as OfficeData['role'], updated: d.updated ?? null, items: d.items ?? [],
+      mks: d.mks, name: d.name, party: d.party,
+    },
+  };
+}

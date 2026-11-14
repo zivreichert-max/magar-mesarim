@@ -9,11 +9,13 @@ import s from './Office.module.css';
 const loading = () => <div className={s.none}>טוען…</div>;
 const OfficeWeek = dynamic(() => import('./OfficeWeek'), { loading });
 const OfficeGov = dynamic(() => import('./OfficeGov'), { loading });
+const OfficeLegislation = dynamic(() => import('./OfficeLegislation'), { loading });
 
-type SectionId = 'week' | 'gov';
+type SectionId = 'week' | 'laws' | 'gov';
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'week', label: 'לו"ז שבועי' },
+  { id: 'laws', label: 'רמזור חקיקה' },
   { id: 'gov', label: 'ממשלה' },
 ];
 
@@ -35,6 +37,7 @@ export default function OfficeView() {
         ))}
       </div>
       {section === 'week' && <OfficeWeek />}
+      {section === 'laws' && <OfficeLegislation />}
       {section === 'gov' && <OfficeGov />}
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   getWeeklyKnessetSessions, KnessetSessionRow,
   getManualEventsForWeek, addManualEventForWeek, deleteManualEvent, ManualScheduleEvent,
@@ -72,9 +72,14 @@ export default function OfficeWeek() {
   const days = useMemo(() => weekDays(offset, new Date(`${dayStamp}T12:00:00`)), [offset, dayStamp]);
   const weekId = days[0].iso;
 
-  const loadManual = useCallback(async () => {
-    setManual(await getManualEventsForWeek(weekId));
-  }, [weekId]);
+  // Bumping the tick re-runs the manual-events fetch after an add/delete
+  const [manualTick, setManualTick] = useState(0);
+  const loadManual = () => setManualTick(t => t + 1);
+  useEffect(() => {
+    let cancelled = false;
+    getManualEventsForWeek(weekId).then(rows => { if (!cancelled) setManual(rows); });
+    return () => { cancelled = true; };
+  }, [weekId, manualTick]);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,8 +95,6 @@ export default function OfficeWeek() {
     })();
     return () => { cancelled = true; };
   }, []);
-
-  useEffect(() => { loadManual(); }, [loadManual]);
 
   const byDay = useMemo(() => {
     const map = new Map<string, Row[]>();
@@ -146,14 +149,14 @@ export default function OfficeWeek() {
         summary: '', detail: '', source: '', category: form.body.trim(), color: '',
       });
       setForm(f => ({ ...f, time: '', topic: '' }));
-      await loadManual();
+      loadManual();
     } catch (e) {
       setErr(`השמירה נכשלה: ${(e as Error).message}`);
     }
   }
 
   async function remove(id: string) {
-    try { await deleteManualEvent(id); await loadManual(); }
+    try { await deleteManualEvent(id); loadManual(); }
     catch (e) { setErr(`המחיקה נכשלה: ${(e as Error).message}`); }
   }
 
