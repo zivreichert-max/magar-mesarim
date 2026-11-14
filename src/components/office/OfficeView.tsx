@@ -10,13 +10,15 @@ const loading = () => <div className={s.none}>טוען…</div>;
 const OfficeWeek = dynamic(() => import('./OfficeWeek'), { loading });
 const OfficeGov = dynamic(() => import('./OfficeGov'), { loading });
 const OfficeLegislation = dynamic(() => import('./OfficeLegislation'), { loading });
+const OfficeDates = dynamic(() => import('./OfficeDates'), { loading });
 
-type SectionId = 'week' | 'laws' | 'gov';
+type SectionId = 'week' | 'laws' | 'gov' | 'dates';
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'week', label: 'לו"ז שבועי' },
   { id: 'laws', label: 'רמזור חקיקה' },
   { id: 'gov', label: 'ממשלה' },
+  { id: 'dates', label: 'מועדים' },
 ];
 
 export default function OfficeView() {
@@ -39,6 +41,7 @@ export default function OfficeView() {
       {section === 'week' && <OfficeWeek />}
       {section === 'laws' && <OfficeLegislation />}
       {section === 'gov' && <OfficeGov />}
+      {section === 'dates' && <OfficeDates />}
     </div>
   );
 }
