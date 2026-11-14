@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { MESSAGES, Message, Topic } from '@/data/messages';
 import { Client } from '@/data/clients';
 import dynamic from 'next/dynamic';
-import PasswordGate from '@/components/PasswordGate';
+import PasswordGate, { MkAccess } from '@/components/PasswordGate';
 import NamePrompt from '@/components/NamePrompt';
 import Header from '@/components/Header';
 import FilterBar from '@/components/FilterBar';
@@ -32,6 +32,7 @@ const CalculatorsHub = dynamic(() => import('@/components/CalculatorsHub'), { lo
 const SekiraView = dynamic(() => import('@/components/SekiraView'), { loading: viewLoading });
 const SekiraIntro = dynamic(() => import('@/components/SekiraIntro'), { loading: viewLoading });
 const OfficeView = dynamic(() => import('@/components/office/OfficeView'), { loading: viewLoading });
+const MkOffice = dynamic(() => import('@/components/office/MkOffice'), { loading: viewLoading });
 import { getSharedMessageIds, startSession, pingSession, pingSessionBeacon } from '@/lib/supabase';
 
 type AppState = 'password' | 'name' | 'ready';
@@ -75,6 +76,8 @@ export default function Home() {
   );
   const [role, setRole] = useState<'full' | 'client'>('full');
   const [activeClient, setActiveClient] = useState<Client | null>(null);
+  // Set when an MK entered with a personal code — they get their own view only
+  const [mkAccess, setMkAccess] = useState<MkAccess | null>(null);
   const [allowedMessageIds, setAllowedMessageIds] = useState<number[] | null>(null);
   const [sharesError, setSharesError] = useState(false);
   const [sharesRetry, setSharesRetry] = useState(0);
@@ -113,7 +116,7 @@ export default function Home() {
 
   // When client role becomes ready, fetch allowed message IDs
   useEffect(() => {
-    if (appState === 'ready' && role === 'client' && activeClient) {
+    if (appState === 'ready' && role === 'client' && activeClient && !mkAccess) {
       let cancelled = false;
       getSharedMessageIds(activeClient.id)
         .then(ids => {
@@ -127,7 +130,7 @@ export default function Home() {
         });
       return () => { cancelled = true; };
     }
-  }, [appState, role, activeClient, sharesRetry]);
+  }, [appState, role, activeClient, sharesRetry, mkAccess]);
 
   // Usage analytics — one session row per entry, heartbeat keeps duration fresh
   useEffect(() => {
@@ -137,9 +140,11 @@ export default function Home() {
     let sessionId: string | null = null;
     let interval: ReturnType<typeof setInterval> | null = null;
 
-    const label = role === 'client'
-      ? (activeClient?.name ?? 'מפלגה לא ידועה')
-      : (authorName || 'צוות');
+    const label = mkAccess
+      ? mkAccess.name
+      : role === 'client'
+        ? (activeClient?.name ?? 'מפלגה לא ידועה')
+        : (authorName || 'צוות');
 
     startSession({
       client_id: activeClient?.id ?? null,
@@ -164,11 +169,19 @@ export default function Home() {
       document.removeEventListener('visibilitychange', finalPing);
       window.removeEventListener('pagehide', onPageHide);
     };
-  }, [appState, role, activeClient, authorName]);
+  }, [appState, role, activeClient, authorName, mkAccess]);
 
-  function handleUnlock(unlockedRole: 'full' | 'client', client: Client | null) {
+  function handleUnlock(unlockedRole: 'full' | 'client', client: Client | null, mk?: MkAccess) {
     setRole(unlockedRole);
     setActiveClient(client);
+
+    if (mk) {
+      // Personal MK code: straight into the MK view
+      setMkAccess(mk);
+      setAuthorName(mk.name);
+      setAppState('ready');
+      return;
+    }
 
     if (unlockedRole === 'client' && client) {
       // Skip NamePrompt for clients — use their registered name
@@ -219,6 +232,9 @@ export default function Home() {
 
   if (appState === 'password') return <PasswordGate onUnlock={handleUnlock} />;
   if (appState === 'name') return <NamePrompt onName={handleName} />;
+
+  // An MK with a personal code sees only the products assigned to them
+  if (mkAccess) return <MkOffice access={mkAccess} client={activeClient} />;
 
   // First-entry onboarding overlay — sits above the app; "כניסה"/"דלג" reveals it
   if (!introDone) return <SekiraIntro onEnter={enterFromIntro} />;

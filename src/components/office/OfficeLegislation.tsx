@@ -76,7 +76,7 @@ export default function OfficeLegislation({ fixedKey }: { fixedKey?: string }) {
   }, [key, fixedKey]);
 
   function submitKey() {
-    const k = draft.trim();
+    const k = draft.trim().toUpperCase(); // generated keys are uppercase
     if (!k) return;
     setPhase('loading');
     setKey(k);
@@ -259,7 +259,7 @@ export default function OfficeLegislation({ fixedKey }: { fixedKey?: string }) {
       </div>
 
       <div className={s.meta}>
-        <span>מקור: אקסל מיפוי חברי הכנסת{updated ? ` · עודכן ${updated}` : ''}</span>
+        <span>מקור: אקסל מיפוי חברי הכנסת{updated && <> · עודכן <span dir="ltr">{updated}</span></>}</span>
         {isAdmin && (
           <button
             type="button" className={s.del} style={{ fontSize: 11.5 }}

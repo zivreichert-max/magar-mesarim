@@ -1,10 +1,9 @@
-import { Client } from '@/data/clients';
-
 interface HeaderProps {
   count: number;
   total: number;
   role: 'full' | 'client';
-  activeClient: Client | null;
+  // A party account, or an MK badge (the MK name in the party color)
+  activeClient: { name: string; color: string } | null;
   viewTitle?: string;
 }
 

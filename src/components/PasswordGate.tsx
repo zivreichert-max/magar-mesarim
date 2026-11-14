@@ -2,19 +2,29 @@
 
 import { useState, useRef, KeyboardEvent } from 'react';
 import { CLIENTS, Client } from '@/data/clients';
+import { getOfficeData } from '@/lib/supabase';
 
 const FULL_PASSWORD = '61218384';
 
+// An MK who entered with a personal code — sees only their own לשכה view
+export interface MkAccess {
+  key: string;
+  name: string;
+  party: string;
+}
+
 interface PasswordGateProps {
-  onUnlock: (role: 'full' | 'client', client: Client | null) => void;
+  onUnlock: (role: 'full' | 'client', client: Client | null, mk?: MkAccess) => void;
 }
 
 export default function PasswordGate({ onUnlock }: PasswordGateProps) {
   const [value, setValue] = useState('');
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const [checking, setChecking] = useState(false);
 
-  function handleSubmit() {
+  async function handleSubmit() {
+    if (checking) return;
     if (value === FULL_PASSWORD) {
       onUnlock('full', null);
       return;
@@ -23,6 +33,19 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
     if (matchedClient) {
       onUnlock('client', matchedClient);
       return;
+    }
+    // Not a site password — it may be a personal MK code. Codes are verified
+    // in the database (hashed there); none are stored in this app.
+    const code = value.trim().toUpperCase();
+    if (code.length >= 6) {
+      setChecking(true);
+      const res = await getOfficeData(code);
+      setChecking(false);
+      if (res.status === 'ok' && res.data.role === 'mk' && res.data.name) {
+        const party = CLIENTS.find(c => c.id === res.data.party) ?? null;
+        onUnlock('client', party, { key: code, name: res.data.name, party: res.data.party ?? '' });
+        return;
+      }
     }
     setError('סיסמה שגויה');
     setValue('');
@@ -123,7 +146,7 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
             fontSize: 15,
           }}
         >
-          כניסה
+          {checking ? 'בודק…' : 'כניסה'}
         </button>
       </div>
 
