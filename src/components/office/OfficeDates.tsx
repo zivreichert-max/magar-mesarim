@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { KEY_DATES, KeyDate } from '@/data/keyDates';
 import { localIso } from '@/lib/scheduleUtils';
 import { safeUrl } from '@/lib/urls';
+import BotAsk from './BotAsk';
+import { dateQuestions } from './botQuestions';
 import s from './Office.module.css';
 
 // מועדים — long-range key dates of the transition Knesset (government
@@ -57,7 +59,8 @@ export default function OfficeDates({ only, title = 'מועדים', subtitle = '
     const id = `${d.date}|${d.title}`;
     const expanded = open === id;
     const url = safeUrl(d.url);
-    const hasMore = !!(d.detail || url);
+    const questions = dateQuestions(d);
+    const hasMore = !!(d.detail || url || questions.length);
     return (
       <div key={id}>
         <button
@@ -82,6 +85,7 @@ export default function OfficeDates({ only, title = 'מועדים', subtitle = '
           <div className={s.detail}>
             {d.detail && <div>{d.detail}</div>}
             {url && <a href={url} target="_blank" rel="noopener noreferrer">מקור ↗</a>}
+            <BotAsk questions={questions} />
           </div>
         )}
       </div>

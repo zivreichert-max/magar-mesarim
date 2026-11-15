@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getOfficeData, setOfficeAssignment, OfficeData, OfficeItem, OfficeMk } from '@/lib/supabase';
 import { safeUrl } from '@/lib/urls';
+import BotAsk from './BotAsk';
+import { lawQuestions } from './botQuestions';
 import s from './Office.module.css';
 
 // רמזור חקיקה — the organization's products (bills, gov decisions, other) as
@@ -316,6 +318,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
                         )}
 
                         {link && <div style={{ marginTop: 10 }}><a href={link} target="_blank" rel="noopener noreferrer">פתיחת המסמך ↗</a></div>}
+                        {isAdmin && <BotAsk questions={lawQuestions(it)} />}
                       </div>
                     )}
                   </div>

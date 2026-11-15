@@ -10,6 +10,8 @@ import { localIso, anchorSunday, normalizeTime } from '@/lib/scheduleUtils';
 import { safeUrl } from '@/lib/urls';
 import type { GovAgendaItem } from '@/app/api/gov-agenda/route';
 import { KEY_DATES } from '@/data/keyDates';
+import BotAsk from './BotAsk';
+import { weekQuestions } from './botQuestions';
 import s from './Office.module.css';
 
 // Weekly schedule — ONE lean table for the whole week: day → time / body /
@@ -290,7 +292,8 @@ export default function OfficeWeek({ adminKey }: { adminKey: string }) {
                 {rows.length === 0 && <div className={s.none}>לא פורסמו דיונים</div>}
                 {rows.map(r => {
                   const paper = papers ? safeUrl(papers[r.key]) : null;
-                  const expandable = !!(r.url || canAttach || r.manualId);
+                  const questions = weekQuestions(r, d.iso);
+                  const expandable = !!(r.url || canAttach || r.manualId || questions.length);
                   const expanded = expandable && open === r.key;
                   const cls = `${s.row} ${expandable ? s.rowClick : ''} ${r.cancelled ? s.cancelled : ''}`;
                   return (
@@ -343,6 +346,7 @@ export default function OfficeWeek({ adminKey }: { adminKey: string }) {
                               )}
                             </>
                           )}
+                          <BotAsk questions={questions} />
                           {r.manualId && (
                             <div className={s.inline} style={{ marginTop: 10 }}>
                               <button type="button" className={s.btn} onClick={() => remove(r.manualId!)}>מחיקת האירוע</button>

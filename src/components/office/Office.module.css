@@ -132,6 +132,17 @@
 .inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
 .inline input { flex: 1; min-width: 180px; }
 
+/* Ready-made questions for the chatbot, inside a row's detail */
+.bot { margin-top: 10px; }
+.botChips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.botChip {
+  font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 5px 10px;
+  border: 2px solid var(--ink); background: #fff; color: var(--ink); cursor: pointer;
+}
+.botChip:hover, .botChipOn { background: var(--lime); }
+.botNote { margin-top: 6px; font-size: 12.5px; color: var(--mute); line-height: 1.55; }
+.botNote span { color: var(--ink); }
+
 /* ── Weekly schedule: day cell + rows ───────────────────────────────────── */
 .thead { display: grid; grid-template-columns: 92px 68px 200px 1fr; }
 .day { display: grid; grid-template-columns: 92px 1fr; border-top: 2px solid var(--ink); }

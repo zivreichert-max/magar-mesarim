@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { safeUrl } from '@/lib/urls';
+import BotAsk from './BotAsk';
+import { budgetQuestions } from './botQuestions';
 import s from './Office.module.css';
 
 // פניות תקציב — budget-change requests on the Finance Committee's table.
@@ -213,6 +215,7 @@ export default function OfficeBudget() {
                   <div className={s.lbl}>דברי הסבר</div>
                   <div style={{ whiteSpace: 'pre-wrap' }}>{r.description || 'לא פורסמו דברי הסבר.'}</div>
                   {r.pdf && <a href={r.pdf} target="_blank" rel="noopener noreferrer">הפנייה המלאה ב-PDF ↗</a>}
+                  <BotAsk questions={budgetQuestions(r, new Date().getFullYear())} />
                 </div>
               )}
             </div>
