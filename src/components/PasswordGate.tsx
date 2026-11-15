@@ -14,7 +14,9 @@ export interface MkAccess {
 }
 
 interface PasswordGateProps {
-  onUnlock: (role: 'full' | 'client', client: Client | null, mk?: MkAccess) => void;
+  // `adminKey` (full role only) is the typed admin password: the protected
+  // legislation tracker is unlocked with it, so the admin logs in exactly once
+  onUnlock: (role: 'full' | 'client', client: Client | null, mk?: MkAccess, adminKey?: string) => void;
 }
 
 export default function PasswordGate({ onUnlock }: PasswordGateProps) {
@@ -26,7 +28,7 @@ export default function PasswordGate({ onUnlock }: PasswordGateProps) {
   async function handleSubmit() {
     if (checking) return;
     if (value === FULL_PASSWORD) {
-      onUnlock('full', null);
+      onUnlock('full', null, undefined, value);
       return;
     }
     const matchedClient = CLIENTS.find(c => c.password === value);

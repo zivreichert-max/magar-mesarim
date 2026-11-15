@@ -591,7 +591,19 @@ export type OfficeResult =
   | { status: 'setup' }   // the one-time SQL setup has not been run yet
   | { status: 'error'; message: string };
 
-export async function getOfficeData(key: string): Promise<OfficeResult> {
+/** Resolves within 15s no matter what — a stuck request becomes an error
+ *  the UI can show (with a retry), never an endless spinner. */
+export function getOfficeData(key: string): Promise<OfficeResult> {
+  const timeout = new Promise<OfficeResult>(resolve =>
+    setTimeout(() => resolve({ status: 'error', message: 'הטעינה נמשכה יותר מדי זמן' }), 15_000)
+  );
+  const run = fetchOfficeData(key).catch(
+    (e: unknown): OfficeResult => ({ status: 'error', message: e instanceof Error ? e.message : 'שגיאת רשת' })
+  );
+  return Promise.race([run, timeout]);
+}
+
+async function fetchOfficeData(key: string): Promise<OfficeResult> {
   const { data, error } = await supabase.rpc('office_get', { p_key: key });
   if (error) {
     // PGRST202 = function not found in the schema cache → setup not run

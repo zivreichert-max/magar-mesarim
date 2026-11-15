@@ -87,19 +87,24 @@ export default function OfficeWeek() {
     return () => { cancelled = true; };
   }, [weekId, manualTick]);
 
+  // The two feeds load independently: the table appears as soon as the
+  // Knesset sessions arrive, and government rows join when gov.il answers
+  // (or are skipped after 8s) — a slow feed never blocks the schedule.
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      const [sess, govRes] = await Promise.all([
-        getWeeklyKnessetSessions(),
-        fetch('/api/gov-agenda').then(r => (r.ok ? r.json() : { items: [] })).catch(() => ({ items: [] })),
-      ]);
-      if (cancelled) return;
-      setSessions(sess);
-      setGov((govRes as { items?: GovAgendaItem[] }).items ?? []);
-      setLoading(false);
-    })();
-    return () => { cancelled = true; };
+    getWeeklyKnessetSessions()
+      .catch(() => [] as KnessetSessionRow[])
+      .then(sess => { if (!cancelled) { setSessions(sess); setLoading(false); } });
+
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8_000);
+    fetch('/api/gov-agenda', { signal: ctrl.signal })
+      .then(r => (r.ok ? r.json() : { items: [] }))
+      .catch(() => ({ items: [] }))
+      .then((d: { items?: GovAgendaItem[] }) => { if (!cancelled) setGov(d.items ?? []); })
+      .finally(() => clearTimeout(timer));
+
+    return () => { cancelled = true; ctrl.abort(); clearTimeout(timer); };
   }, []);
 
   const byDay = useMemo(() => {

@@ -78,6 +78,9 @@ export default function Home() {
   const [activeClient, setActiveClient] = useState<Client | null>(null);
   // Set when an MK entered with a personal code — they get their own view only
   const [mkAccess, setMkAccess] = useState<MkAccess | null>(null);
+  // The admin password as typed at the gate — also unlocks the protected
+  // legislation tracker, so the לשכה tab never asks for a second credential
+  const [adminKey, setAdminKey] = useState('');
   const [allowedMessageIds, setAllowedMessageIds] = useState<number[] | null>(null);
   const [sharesError, setSharesError] = useState(false);
   const [sharesRetry, setSharesRetry] = useState(0);
@@ -171,9 +174,10 @@ export default function Home() {
     };
   }, [appState, role, activeClient, authorName, mkAccess]);
 
-  function handleUnlock(unlockedRole: 'full' | 'client', client: Client | null, mk?: MkAccess) {
+  function handleUnlock(unlockedRole: 'full' | 'client', client: Client | null, mk?: MkAccess, key?: string) {
     setRole(unlockedRole);
     setActiveClient(client);
+    setAdminKey(unlockedRole === 'full' ? (key ?? '') : '');
 
     if (mk) {
       // Personal MK code: straight into the MK view
@@ -267,7 +271,7 @@ export default function Home() {
         ))}
       </div>
 
-      {activeView === 'office' && role === 'full' && <OfficeView />}
+      {activeView === 'office' && role === 'full' && <OfficeView adminKey={adminKey} />}
 
       {activeView === 'sekira' && (
         <SekiraView

@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 // Fonts are self-hosted via next/font, so no external font origins are needed.
-// connect-src allows Supabase (data) — everything else stays same-origin.
+// connect-src allows Supabase (data) and the Knesset website API (live budget
+// requests in the לשכה tab) — everything else stays same-origin.
 // script-src needs 'unsafe-inline' for Next's inline runtime bootstrap.
 // React dev mode needs eval() for debugging features; production never does.
 const scriptSrc = process.env.NODE_ENV === 'development'
@@ -14,7 +15,7 @@ const CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co",
+  "connect-src 'self' https://*.supabase.co https://www.knesset.gov.il",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

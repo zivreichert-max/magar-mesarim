@@ -20,7 +20,7 @@ export default function MkOffice({ access, client }: MkOfficeProps) {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       <Header count={0} total={0} role="client" activeClient={badge} viewTitle="הלשכה שלי" />
       <div className={s.wrap}>
-        <OfficeLegislation fixedKey={access.key} />
+        <OfficeLegislation accessKey={access.key} />
       </div>
     </div>
   );

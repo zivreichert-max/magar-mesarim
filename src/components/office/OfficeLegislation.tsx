@@ -9,12 +9,11 @@ import s from './Office.module.css';
 // רמזור חקיקה — the organization's products (bills, gov decisions, other) as
 // headlines grouped by chapter: readiness light, type, and which MK received
 // each one. Source of truth is the Excel workbook; update-legislation.py syncs
-// it into protected Supabase tables, read here through an access key.
+// it into protected Supabase tables.
 //
-// `fixedKey` = an MK's personal code (MK view: only their own products).
-// Without it this is the admin view, which asks once for the office key.
-
-const KEY_STORE = 'office_key';
+// There is no separate prompt here: whoever is logged in passes their own
+// credential as `accessKey` (the admin password, or an MK's personal code) and
+// the database decides what they may see — everything, or only their products.
 
 const PARTY_COLS = [
   { col: 'mk_yashar', id: 'yashar' },
@@ -36,15 +35,13 @@ const lightOf = (it: OfficeItem) => (it.ready === 'כן' ? s.lgreen : it.ready =
 const kindOf = (it: OfficeItem) => it.kind || 'אחר';
 
 type StatusFilter = 'all' | 'ready' | 'notready' | 'assigned';
+type Phase = 'loading' | 'ready' | 'denied' | 'setup' | 'error';
 
-export default function OfficeLegislation({ fixedKey }: { fixedKey?: string }) {
-  const [key, setKey] = useState<string>(() =>
-    fixedKey ?? (typeof window !== 'undefined' ? (localStorage.getItem(KEY_STORE) ?? '') : '')
-  );
-  const [draft, setDraft] = useState('');
-  const [phase, setPhase] = useState<'nokey' | 'loading' | 'ready' | 'badkey' | 'setup' | 'error'>(key ? 'loading' : 'nokey');
+export default function OfficeLegislation({ accessKey }: { accessKey: string }) {
+  const [phase, setPhase] = useState<Phase>('loading');
   const [data, setData] = useState<OfficeData | null>(null);
   const [errMsg, setErrMsg] = useState('');
+  const [attempt, setAttempt] = useState(0); // bumped by "נסה שוב"
 
   const [search, setSearch] = useState('');
   const [kind, setKind] = useState('all');
@@ -54,17 +51,15 @@ export default function OfficeLegislation({ fixedKey }: { fixedKey?: string }) {
   const [openItem, setOpenItem] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!key) return;
     let cancelled = false;
-    getOfficeData(key).then(res => {
+    // getOfficeData never hangs: it resolves with an error after a timeout
+    getOfficeData(accessKey).then(res => {
       if (cancelled) return;
       if (res.status === 'ok') {
         setData(res.data);
         setPhase('ready');
-        if (!fixedKey) { try { localStorage.setItem(KEY_STORE, key); } catch { /* ignore */ } }
       } else if (res.status === 'badkey') {
-        if (!fixedKey) { try { localStorage.removeItem(KEY_STORE); } catch { /* ignore */ } }
-        setPhase('badkey');
+        setPhase('denied');
       } else if (res.status === 'setup') {
         setPhase('setup');
       } else {
@@ -73,14 +68,9 @@ export default function OfficeLegislation({ fixedKey }: { fixedKey?: string }) {
       }
     });
     return () => { cancelled = true; };
-  }, [key, fixedKey]);
+  }, [accessKey, attempt]);
 
-  function submitKey() {
-    const k = draft.trim().toUpperCase(); // generated keys are uppercase
-    if (!k) return;
-    setPhase('loading');
-    setKey(k);
-  }
+  const retry = () => { setPhase('loading'); setAttempt(a => a + 1); };
 
   const isAdmin = data?.role === 'admin';
   const items = useMemo(() => data?.items ?? [], [data]);
@@ -128,23 +118,25 @@ export default function OfficeLegislation({ fixedKey }: { fixedKey?: string }) {
     );
   }
 
-  if (phase === 'error') {
-    return <div className={s.gate}><h2>שגיאה בטעינה</h2><p>{errMsg}</p></div>;
-  }
-
-  if (phase === 'nokey' || phase === 'badkey' || !data) {
+  if (phase === 'denied') {
     return (
       <div className={s.gate}>
-        <h2>רמזור חקיקה</h2>
-        <p>{phase === 'badkey' ? 'הקוד לא זוהה. נסו שוב.' : 'הזינו את מפתח הלשכה (פעם אחת במכשיר הזה).'}</p>
-        <div className={s.gateRow}>
-          <input
-            type="password" value={draft} autoFocus aria-label="מפתח לשכה"
-            onChange={e => setDraft(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') submitKey(); }}
-          />
-          <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={submitKey}>כניסה</button>
-        </div>
+        <h2>הרמזור לא זמין בכניסה הזו</h2>
+        <p>
+          הסיסמה שאיתה נכנסת לא מחוברת לרמזור. כדי לחבר את סיסמת המנהל יש להריץ{' '}
+          <span className={s.code}>py update-legislation.py</span>.
+        </p>
+        <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={retry}>נסה שוב</button>
+      </div>
+    );
+  }
+
+  if (phase === 'error' || !data) {
+    return (
+      <div className={s.gate}>
+        <h2>הרמזור לא נטען</h2>
+        <p>{errMsg || 'שגיאה לא צפויה'}</p>
+        <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={retry}>נסה שוב</button>
       </div>
     );
   }
@@ -260,14 +252,6 @@ export default function OfficeLegislation({ fixedKey }: { fixedKey?: string }) {
 
       <div className={s.meta}>
         <span>מקור: אקסל מיפוי חברי הכנסת{updated && <> · עודכן <span dir="ltr">{updated}</span></>}</span>
-        {isAdmin && (
-          <button
-            type="button" className={s.del} style={{ fontSize: 11.5 }}
-            onClick={() => { try { localStorage.removeItem(KEY_STORE); } catch { /* ignore */ } setData(null); setKey(''); setPhase('nokey'); }}
-          >
-            החלפת מפתח
-          </button>
-        )}
       </div>
     </>
   );

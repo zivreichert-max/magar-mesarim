@@ -8,21 +8,25 @@ import s from './Office.module.css';
 // sections are code-split so the tab opens instantly on the weekly schedule.
 const loading = () => <div className={s.none}>טוען…</div>;
 const OfficeWeek = dynamic(() => import('./OfficeWeek'), { loading });
+const OfficeBudget = dynamic(() => import('./OfficeBudget'), { loading });
 const OfficeGov = dynamic(() => import('./OfficeGov'), { loading });
 const OfficeLegislation = dynamic(() => import('./OfficeLegislation'), { loading });
 const OfficeDates = dynamic(() => import('./OfficeDates'), { loading });
 
-type SectionId = 'week' | 'laws' | 'gov' | 'court' | 'dates';
+type SectionId = 'week' | 'budget' | 'laws' | 'gov' | 'court' | 'dates';
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'week', label: 'לו"ז שבועי' },
+  { id: 'budget', label: 'פניות תקציב' },
   { id: 'laws', label: 'רמזור חקיקה' },
   { id: 'gov', label: 'ממשלה' },
   { id: 'court', label: 'בג"ץ' },
   { id: 'dates', label: 'מועדים' },
 ];
 
-export default function OfficeView() {
+// `adminKey` is the password the admin logged in with — it also unlocks the
+// protected legislation tracker, so no section asks for anything further.
+export default function OfficeView({ adminKey }: { adminKey: string }) {
   const [section, setSection] = useState<SectionId>('week');
 
   return (
@@ -40,7 +44,8 @@ export default function OfficeView() {
         ))}
       </div>
       {section === 'week' && <OfficeWeek />}
-      {section === 'laws' && <OfficeLegislation />}
+      {section === 'budget' && <OfficeBudget />}
+      {section === 'laws' && <OfficeLegislation accessKey={adminKey} />}
       {section === 'gov' && <OfficeGov />}
       {section === 'court' && (
         <OfficeDates
