@@ -10,9 +10,10 @@
 // Questions are self-contained (the bot does not rely on earlier turns) and
 // carry explicit dates/years. They only ASK — no legal claim is asserted.
 
-/** Address of the bot's chat screen. Empty = the site only copies the
- *  question; once set, a link to open the bot appears next to it. */
-export const BOT_URL = '';
+/** Address of the bot. Opening it sends a logged-out user through the bot's
+ *  own sign-in and back. (Never use a sign-in redirect URL here — those carry
+ *  a one-time state and stop working.) */
+export const BOT_URL = 'https://botnim.co.il/';
 
 export interface BotQuestion {
   label: string; // short chip text

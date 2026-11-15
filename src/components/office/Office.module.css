@@ -41,6 +41,7 @@
 }
 .navItem:hover { background: var(--blue-deep); }
 .navOn, .navOn:hover { background: #fff; color: var(--ink); border-color: var(--ink); }
+.navLink { display: block; text-decoration: none; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.4); padding-top: 14px; }
 
 .sideFoot {
   margin-top: auto; border-top: 1px solid rgba(255, 255, 255, 0.4); padding-top: 12px;
@@ -237,6 +238,12 @@ a.li:hover { background: #f8fafc; }
 .mk button { font-family: inherit; border: none; background: none; cursor: pointer; font-size: 13px; line-height: 1; padding: 0 1px; color: var(--mute); }
 .mk button:hover { color: #dc2626; }
 .assignRow { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
+.pChip {
+  font-family: inherit; font-size: 12.5px; font-weight: 700; padding: 4px 10px; cursor: pointer;
+  color: var(--ink); background: #fff; border: 2px solid var(--c);
+}
+.pChip:hover, .pChipOn { background: color-mix(in srgb, var(--c) 22%, #fff); }
+.pChipOn { box-shadow: inset 0 -3px 0 var(--c); }
 
 /* Messages inside a section (setup needed, no access, load error) */
 .notice { max-width: 440px; margin: 40px auto; text-align: center; }
@@ -313,6 +320,7 @@ a.li:hover { background: #f8fafc; }
   .nav { flex-direction: row; overflow-x: auto; gap: 6px; margin-top: 10px; padding-bottom: 2px; scrollbar-width: none; -ms-overflow-style: none; }
   .nav::-webkit-scrollbar { display: none; }
   .navItem { white-space: nowrap; font-size: 13.5px; padding: 7px 11px; flex-shrink: 0; }
+  .navLink { margin-top: 0; border-top: none; padding-top: 7px; }
   .wrap { padding: 18px 14px 80px; }
   .mast h1 { font-size: 26px; }
 

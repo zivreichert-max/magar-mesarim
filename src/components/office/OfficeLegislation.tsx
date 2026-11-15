@@ -10,7 +10,10 @@ import s from './Office.module.css';
 // רמזור חקיקה — the organization's products (bills, gov decisions, other) as
 // headlines grouped by chapter: readiness light, type, and which MKs received
 // each one. Products come from the Excel workbook (update-legislation.py);
-// the assignment of products to MKs is made HERE, on the site.
+// the EXPOSURE of products to MKs is decided HERE, on the site: pick a party
+// (the change-bloc parties and the Arab parties only), then an MK from its
+// list. An exposed MK is the one who will get access to that product once
+// the site opens for MKs.
 //
 // There is no separate prompt: whoever is logged in passes their own
 // credential as `accessKey` (the admin password, or an MK's personal code) and
@@ -25,6 +28,8 @@ const PARTY_COLORS: [RegExp, string][] = [
   [/ביחד|beyahad/, '#16a34a'],
   [/ביתנו|yisrael-b/, '#1d4ed8'],
   [/^ישר|yashar/, '#6b7280'],
+  [/רע.?ם/, '#0f766e'],
+  [/משותפת/, '#b45309'],
 ];
 const partyColor = (party: string) => PARTY_COLORS.find(([re]) => re.test(party))?.[1] ?? '#9ca3af';
 
@@ -46,17 +51,21 @@ function assignees(it: OfficeItem): Assignee[] {
 const lightOf = (it: OfficeItem) => (it.ready === 'כן' ? s.lgreen : it.ready === 'לא' ? s.lred : s.lgray);
 const kindOf = (it: OfficeItem) => it.kind || 'אחר';
 
-// MKs grouped by party for the "assign" menu — the partner bloc first
-const BLOC_ORDER = ['גוש השינוי', 'המפלגות הערביות', 'גוש נתניהו'];
-function groupMks(mks: OfficeMk[]): { party: string; mks: OfficeMk[] }[] {
-  const groups: { party: string; bloc: string; mks: OfficeMk[] }[] = [];
+// Products can be exposed only to MKs of the change bloc and the Arab
+// parties: ישר, ביחד, הדמוקרטים, ישראל ביתנו, רע"ם, המשותפת — in that order.
+const EXPOSE_BLOCS = ['גוש השינוי', 'המפלגות הערביות'];
+const partyRank = (p: string) =>
+  /ביתנו/.test(p) ? 3 : /^ישר/.test(p) ? 0 : /ביחד/.test(p) ? 1 : /דמוקרט/.test(p) ? 2 : /רע.?ם/.test(p) ? 4 : /משותפת/.test(p) ? 5 : 9;
+function exposureParties(mks: OfficeMk[]): { party: string; mks: OfficeMk[] }[] {
+  const hasBlocs = mks.some(m => m.bloc);
+  const groups: { party: string; mks: OfficeMk[] }[] = [];
   for (const m of mks) {
+    if (hasBlocs && !EXPOSE_BLOCS.includes(m.bloc ?? '')) continue;
     let g = groups.find(x => x.party === m.party);
-    if (!g) { g = { party: m.party, bloc: m.bloc ?? '', mks: [] }; groups.push(g); }
+    if (!g) { g = { party: m.party, mks: [] }; groups.push(g); }
     g.mks.push(m);
   }
-  const rank = (bloc: string) => { const i = BLOC_ORDER.indexOf(bloc); return i < 0 ? BLOC_ORDER.length : i; };
-  return groups.sort((a, b) => rank(a.bloc) - rank(b.bloc));
+  return groups.sort((a, b) => partyRank(a.party) - partyRank(b.party));
 }
 
 type StatusFilter = 'all' | 'ready' | 'notready' | 'assigned';
@@ -75,6 +84,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
   const [mk, setMk] = useState('');
   const [openChapters, setOpenChapters] = useState<Set<string>>(new Set());
   const [openItem, setOpenItem] = useState<number | null>(null);
+  const [pickParty, setPickParty] = useState(''); // step 1 of exposing the open product
 
   useEffect(() => {
     let cancelled = false;
@@ -101,7 +111,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
   const isAdmin = data?.role === 'admin';
   const canAssign = isAdmin && (data?.v ?? 1) >= 2;
   const items = useMemo(() => data?.items ?? [], [data]);
-  const mkGroups = useMemo(() => groupMks(data?.mks ?? []), [data]);
+  const parties = useMemo(() => exposureParties(data?.mks ?? []), [data]);
 
   // MKs that already hold at least one product — the filter menu
   const assignedMks = useMemo(() => {
@@ -151,7 +161,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
     const ok = await setOfficeAssignment(accessKey, it.name, mkName, on);
     if (!ok) {
       apply(!on);
-      setAssignErr('השיוך לא נשמר. נסו שוב.');
+      setAssignErr('החשיפה לא נשמרה. נסו שוב.');
     }
   }
 
@@ -210,7 +220,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
         <div className={`${s.mastTools} ${s.stats}`}>
           <span><b>{items.length}</b> תוצרים</span>
           <span><span className={`${s.light} ${s.lgreen}`} /> <b>{readyCount}</b> מוכנים</span>
-          {isAdmin && <span><b>{assignedCount}</b> שויכו לח&quot;כ</span>}
+          {isAdmin && <span><b>{assignedCount}</b> נחשפו לח&quot;כים</span>}
         </div>
       </div>
 
@@ -225,7 +235,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
             <option value="all">כל הסטטוסים</option>
             <option value="ready">מוכן להנחה</option>
             <option value="notready">לא מוכן</option>
-            <option value="assigned">שויך לח&quot;כ</option>
+            <option value="assigned">נחשף לח&quot;כ</option>
           </select>
           <select value={mk} onChange={e => setMk(e.target.value)} aria-label='ח"כ'>
             <option value="">כל הח&quot;כים</option>
@@ -267,7 +277,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
                 const link = safeUrl(it.link);
                 return (
                   <div key={it.id}>
-                    <button type="button" className={s.item} onClick={() => { setAssignErr(''); setOpenItem(expanded ? null : it.id); }}>
+                    <button type="button" className={s.item} onClick={() => { setAssignErr(''); setPickParty(''); setOpenItem(expanded ? null : it.id); }}>
                       <span className={`${s.light} ${lightOf(it)}`} title={it.ready === 'כן' ? 'מוכן להנחה' : it.ready === 'לא' ? 'לא מוכן' : 'לא סומן'} />
                       <span className={s.itemName}>
                         {it.name}
@@ -290,28 +300,50 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
 
                         {isAdmin && (
                           <>
-                            <div className={s.lbl}>שיוך לח&quot;כ</div>
-                            {canAssign ? (
-                              <div className={`${s.assignRow} ${s.inline}`}>
+                            <div className={s.lbl}>חשיפה לח&quot;כים</div>
+                            {who.length > 0 && (
+                              <div className={s.assignRow}>
                                 {who.map(a => (
                                   <span key={a.name} className={s.mk} style={{ ['--c' as string]: partyColor(a.party) }} title={a.party}>
                                     {a.name}
-                                    <button type="button" aria-label={`הסרת ${a.name}`} title="הסרה" onClick={() => setAssigned(it, a.name, false)}>×</button>
+                                    {canAssign && (
+                                      <button type="button" aria-label={`הסרת ${a.name}`} title="הסרה" onClick={() => setAssigned(it, a.name, false)}>×</button>
+                                    )}
                                   </span>
                                 ))}
-                                <select value="" aria-label='שיוך ח"כ' onChange={e => { if (e.target.value) setAssigned(it, e.target.value, true); }}>
-                                  <option value="">+ שיוך ח&quot;כ</option>
-                                  {mkGroups.map(grp => (
-                                    <optgroup key={grp.party} label={grp.party}>
-                                      {grp.mks.filter(m => !who.some(a => a.name === m.name)).map(m => (
-                                        <option key={m.name} value={m.name}>{m.name}</option>
-                                      ))}
-                                    </optgroup>
-                                  ))}
-                                </select>
                               </div>
+                            )}
+                            {canAssign ? (
+                              <>
+                                <div className={s.assignRow}>
+                                  {parties.map(p => (
+                                    <button
+                                      key={p.party} type="button"
+                                      className={`${s.pChip} ${pickParty === p.party ? s.pChipOn : ''}`}
+                                      style={{ ['--c' as string]: partyColor(p.party) }}
+                                      aria-pressed={pickParty === p.party}
+                                      onClick={() => setPickParty(pickParty === p.party ? '' : p.party)}
+                                    >
+                                      {p.party}
+                                    </button>
+                                  ))}
+                                </div>
+                                {pickParty && (
+                                  <div className={s.inline}>
+                                    <select
+                                      value="" aria-label={`בחירת ח"כ מתוך ${pickParty}`}
+                                      onChange={e => { if (e.target.value) setAssigned(it, e.target.value, true); }}
+                                    >
+                                      <option value="">בחירת ח&quot;כ מתוך {pickParty}</option>
+                                      {(parties.find(p => p.party === pickParty)?.mks ?? [])
+                                        .filter(m => !who.some(a => a.name === m.name))
+                                        .map(m => <option key={m.name} value={m.name}>{m.name}</option>)}
+                                    </select>
+                                  </div>
+                                )}
+                              </>
                             ) : (
-                              <div>שיוך מהאתר ייפתח אחרי עדכון חד-פעמי של מסד הנתונים.</div>
+                              <div>בחירת הח&quot;כים מהאתר תיפתח אחרי עדכון חד-פעמי של מסד הנתונים.</div>
                             )}
                             {assignErr && <div className={s.err}>{assignErr}</div>}
                           </>
@@ -331,7 +363,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
 
       <div className={s.meta}>
         <span>תוצרים: אקסל מיפוי חברי הכנסת{updated && <> · עודכן <span dir="ltr">{updated}</span></>}</span>
-        {isAdmin && <span>שיוך לח&quot;כים: נעשה כאן באתר</span>}
+        {isAdmin && <span>חשיפה לח&quot;כים: נקבעת כאן באתר</span>}
       </div>
     </>
   );

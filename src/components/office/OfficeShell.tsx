@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Brand from './Brand';
+import { BOT_URL } from './botQuestions';
 import s from './Office.module.css';
 
 // הלשכה — the whole site for the admin: a side panel with the sections and a
@@ -60,6 +61,11 @@ export default function OfficeShell({ adminKey, userName, onLogout }: OfficeShel
               {x.label}
             </button>
           ))}
+          {BOT_URL && (
+            <a className={`${s.navItem} ${s.navLink}`} href={BOT_URL} target="_blank" rel="noopener noreferrer">
+              בוט-נים ↗
+            </a>
+          )}
         </nav>
         <div className={s.sideFoot}>
           <div className={s.avatar}>{(userName || 'מ').trim().charAt(0)}</div>
@@ -81,8 +87,16 @@ export default function OfficeShell({ adminKey, userName, onLogout }: OfficeShel
             <OfficeDates
               only='בג"ץ'
               title='בג"ץ'
-              subtitle="דיונים קרובים"
+              subtitle="דיונים במעקב"
               emptyText='לא הוזנו דיונים קרובים. מוסיפים שורה בקטגוריה בג"ץ באקסל המועדים.'
+              note={
+                <>
+                  <span>רשימה ידנית: מוצגים רק דיונים שהוזנו באקסל המועדים, לא יומן בית המשפט המלא.</span>
+                  <a href="https://www.court.gov.il/ngcs.web.site/homepage.aspx" target="_blank" rel="noopener noreferrer" style={{ color: '#1f72c4', fontWeight: 700 }}>
+                    יומן הדיונים המלא בנט המשפט ↗
+                  </a>
+                </>
+              }
             />
           )}
           {section === 'dates' && <OfficeDates />}

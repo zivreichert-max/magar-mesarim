@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import { KEY_DATES, KeyDate } from '@/data/keyDates';
 import { localIso } from '@/lib/scheduleUtils';
 import { safeUrl } from '@/lib/urls';
@@ -44,9 +44,10 @@ interface OfficeDatesProps {
   title?: string;
   subtitle?: string;
   emptyText?: string;
+  note?: ReactNode;   // replaces the default source line under the table
 }
 
-export default function OfficeDates({ only, title = 'מועדים', subtitle = 'כנסת המעבר', emptyText = 'אין מועדים קרובים' }: OfficeDatesProps) {
+export default function OfficeDates({ only, title = 'מועדים', subtitle = 'כנסת המעבר', emptyText = 'אין מועדים קרובים', note }: OfficeDatesProps) {
   const [today] = useState(() => localIso(new Date()));
   const [open, setOpen] = useState<string | null>(null);
   const [showPast, setShowPast] = useState(false);
@@ -113,7 +114,9 @@ export default function OfficeDates({ only, title = 'מועדים', subtitle = '
         </>
       )}
 
-      <div className={s.meta}><span>מקור: אקסל &quot;מועדים - כנסת המעבר&quot; · &quot;מחושב&quot; = חישוב לפי החוק, לא פרסום רשמי</span></div>
+      <div className={s.meta}>
+        {note ?? <span>מקור: אקסל &quot;מועדים - כנסת המעבר&quot; · &quot;מחושב&quot; = חישוב לפי החוק, לא פרסום רשמי</span>}
+      </div>
     </>
   );
 }
