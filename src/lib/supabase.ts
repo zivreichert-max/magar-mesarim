@@ -568,7 +568,8 @@ export interface OfficeItem {
   undo: boolean;
   link: string;
   // admin-only fields
-  mk_yashar?: string;
+  assigned?: { name: string; party: string }[]; // v2: edited on the site
+  mk_yashar?: string;                            // v1 (Excel columns) — legacy fallback
   mk_beyahad?: string;
   mk_democrats?: string;
   mk_beitenu?: string;
@@ -576,11 +577,18 @@ export interface OfficeItem {
   notes?: string;
 }
 
+export interface OfficeMk {
+  name: string;
+  party: string;
+  bloc?: string;
+}
+
 export interface OfficeData {
   role: 'admin' | 'mk';
+  v: number;            // 2 once supabase-office-v2.sql has been run
   updated: string | null;
   items: OfficeItem[];
-  mks?: { name: string; party: string }[]; // admin
+  mks?: OfficeMk[];     // admin
   name?: string;                             // mk
   party?: string;                            // mk
 }
@@ -615,8 +623,29 @@ async function fetchOfficeData(key: string): Promise<OfficeResult> {
   return {
     status: 'ok',
     data: {
-      role: d.role as OfficeData['role'], updated: d.updated ?? null, items: d.items ?? [],
+      role: d.role as OfficeData['role'], v: d.v ?? 1, updated: d.updated ?? null, items: d.items ?? [],
       mks: d.mks, name: d.name, party: d.party,
     },
   };
+}
+
+/** Attach (on) or detach (off) an MK to a product. Admin only. */
+export async function setOfficeAssignment(key: string, item: string, mk: string, on: boolean): Promise<boolean> {
+  const { data, error } = await supabase.rpc('office_assign_set', { p_key: key, p_item: item, p_mk: mk, p_on: on });
+  return !error && !!(data as { ok?: boolean } | null)?.ok;
+}
+
+/** Position-paper links of the weekly schedule: row key → url.
+ *  null = the feature is not available (v2 setup not run, or no access). */
+export async function getOfficePapers(key: string): Promise<Record<string, string> | null> {
+  const { data, error } = await supabase.rpc('office_papers_get', { p_key: key });
+  const d = data as { ok?: boolean; papers?: Record<string, string> } | null;
+  if (error || !d?.ok) return null;
+  return d.papers ?? {};
+}
+
+/** Save a position-paper link for a schedule row; an empty url removes it. */
+export async function setOfficePaper(key: string, rowKey: string, url: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('office_paper_set', { p_key: key, p_row: rowKey, p_url: url });
+  return !error && !!(data as { ok?: boolean } | null)?.ok;
 }

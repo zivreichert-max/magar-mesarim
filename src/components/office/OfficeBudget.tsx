@@ -188,7 +188,13 @@ export default function OfficeBudget() {
           const expanded = open === r.key;
           return (
             <div key={r.key}>
-              <button type="button" className={s.bRow} onClick={() => setOpen(expanded ? null : r.key)}>
+              <div
+                className={s.bRow} role="button" tabIndex={0} aria-expanded={expanded}
+                onClick={() => setOpen(expanded ? null : r.key)}
+                onKeyDown={e => {
+                  if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpen(expanded ? null : r.key); }
+                }}
+              >
                 <span className={s.bNum} dir="ltr">{r.number}</span>
                 <span className={s.bMin}>
                   {r.ministry}
@@ -200,7 +206,7 @@ export default function OfficeBudget() {
                     ? (r.pdf && <a href={r.pdf} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>PDF ↗</a>)
                     : <span dir="ltr">{r.approved}</span>}
                 </span>
-              </button>
+              </div>
               {expanded && (
                 <div className={s.detail}>
                   {r.codes && (<><div className={s.lbl}>מספרי בקשות</div><div dir="ltr" style={{ textAlign: 'right' }}>{r.codes}</div></>)}

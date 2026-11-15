@@ -1,11 +1,15 @@
 'use client';
 
 import { useState, KeyboardEvent } from 'react';
+import Brand from '@/components/office/Brand';
+import s from '@/components/office/Office.module.css';
 
 interface NamePromptProps {
   onName: (name: string) => void;
 }
 
+// Asked once per device, right after the first login: the name is shown in
+// the side panel and labels the visit in the usage log.
 export default function NamePrompt({ onName }: NamePromptProps) {
   const [value, setValue] = useState('');
 
@@ -21,72 +25,21 @@ export default function NamePrompt({ onName }: NamePromptProps) {
   }
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 24,
-        background: 'var(--bg)',
-        zIndex: 50,
-      }}
-    >
-      <h1
-        style={{
-          fontFamily: "var(--font-frank-ruhl), serif",
-          fontSize: 28,
-          fontWeight: 900,
-          color: 'var(--text)',
-        }}
-      >
-        מה השם שלך?
-      </h1>
-      <p style={{ color: 'var(--muted)', fontSize: 14 }}>
-        השם יוצג ליד ההערות שלך
-      </p>
-
-      <div style={{ display: 'flex', gap: 10 }}>
+    <div className={s.gateScreen}>
+      <div className={s.gateCard}>
+        <Brand />
+        <label className={s.gateLabel} htmlFor="gate-name">מה השם שלך?</label>
         <input
+          id="gate-name"
+          className={s.gateInput}
           type="text"
           value={value}
           onChange={e => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="שם מלא"
           autoFocus
-          style={{
-            padding: '12px 18px',
-            borderRadius: 8,
-            border: '1px solid var(--border)',
-            background: 'var(--bg3)',
-            color: 'var(--text)',
-            fontFamily: 'inherit',
-            fontSize: 16,
-            outline: 'none',
-            width: 220,
-            direction: 'rtl',
-          }}
         />
-        <button
-          onClick={handleSubmit}
-          disabled={!value.trim()}
-          style={{
-            padding: '12px 24px',
-            borderRadius: 8,
-            border: 'none',
-            background: value.trim() ? 'var(--text)' : 'var(--bg3)',
-            color: value.trim() ? 'var(--bg)' : 'var(--muted)',
-            fontFamily: 'inherit',
-            fontWeight: 700,
-            cursor: value.trim() ? 'pointer' : 'default',
-            fontSize: 15,
-            transition: 'all 0.15s',
-          }}
-        >
-          המשך
-        </button>
+        <button type="button" className={s.gateBtn} onClick={handleSubmit}>המשך</button>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   getWeeklyKnessetSessions, KnessetSessionRow,
   getManualEventsForWeek, addManualEventForWeek, deleteManualEvent, ManualScheduleEvent,
+  getOfficePapers, setOfficePaper,
 } from '@/lib/supabase';
 import { localIso, anchorSunday, normalizeTime } from '@/lib/scheduleUtils';
 import { safeUrl } from '@/lib/urls';
@@ -11,31 +12,34 @@ import type { GovAgendaItem } from '@/app/api/gov-agenda/route';
 import { KEY_DATES } from '@/data/keyDates';
 import s from './Office.module.css';
 
-// Weekly schedule for the לשכה tab — ONE lean table for the whole week:
-// day → time / body / topic. Sources: Knesset committees + plenum (Supabase,
-// filled by sync-knesset.mjs), government + ministerial-committee agendas
-// (gov.il via /api/gov-agenda), Supreme Court hearings (the בג"ץ rows of
-// the key-dates workbook), and manual rows the admin adds.
+// Weekly schedule — ONE lean table for the whole week: day → time / body /
+// topic. Sources: Knesset committees + plenum (Supabase, filled by
+// sync-knesset.mjs), government + ministerial-committee agendas (gov.il via
+// /api/gov-agenda), Supreme Court hearings (the בג"ץ rows of the key-dates
+// workbook), and manual rows the admin adds.
+//
+// Clicking a row opens its detail: the official source, and a position-paper
+// link that the admin can attach (shown on the row as a "נייר עמדה" chip).
 
 const DAYS = ['יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום שישי'];
 const SHORT = (d: string) => d.replace('יום ', '');
 
 type Kind = 'cm' | 'pl' | 'gov' | 'court' | 'manual';
 const COURT_CATEGORY = 'בג"ץ';
+
 interface Row {
-  key: string;
+  key: string;        // stable id — position papers are stored under it
   time: string;       // '' when unknown
   body: string;
   topic: string;
   url: string | null;
   kind: Kind;
   cancelled?: boolean;
-  closed?: boolean;
   manualId?: string;
 }
 
 const COLORS: Record<'gov' | 'pl' | 'cm' | 'court', string> = {
-  gov: '#111827', pl: '#1e3a7b', cm: '#0075C4', court: '#7c3aed',
+  gov: '#0d0d0d', pl: '#1e3a7b', cm: '#1f72c4', court: '#7c3aed',
 };
 
 // Manual rows carry a free-text body — color them like the matching arena
@@ -46,6 +50,14 @@ function colorFor(row: Row): string {
   return COLORS.cm;
 }
 
+const SOURCE_LABEL: Record<Kind, string> = {
+  cm: 'לעמוד הדיון באתר הכנסת',
+  pl: 'לסדר היום של המליאה',
+  gov: 'לסדר היום באתר gov.il',
+  court: 'למקור',
+  manual: 'למקור',
+};
+
 function weekDays(offset: number, now: Date) {
   const sunday = anchorSunday(now, offset);
   return DAYS.map((name, i) => {
@@ -55,14 +67,19 @@ function weekDays(offset: number, now: Date) {
   });
 }
 
-export default function OfficeWeek() {
+export default function OfficeWeek({ adminKey }: { adminKey: string }) {
   const [sessions, setSessions] = useState<KnessetSessionRow[]>([]);
   const [gov, setGov] = useState<GovAgendaItem[]>([]);
   const [manual, setManual] = useState<ManualScheduleEvent[]>([]);
+  // Position-paper links (row key → url). null = the feature is unavailable
+  // (database update not run yet) — the UI then simply doesn't offer it.
+  const [papers, setPapers] = useState<Record<string, string> | null>(null);
   const [offset, setOffset] = useState<0 | 1>(0);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState({ day: DAYS[0], time: '', body: '', topic: '' });
+  const [open, setOpen] = useState<string | null>(null);
+  const [paperDraft, setPaperDraft] = useState('');
   const [err, setErr] = useState('');
   const [copied, setCopied] = useState(false);
 
@@ -87,9 +104,9 @@ export default function OfficeWeek() {
     return () => { cancelled = true; };
   }, [weekId, manualTick]);
 
-  // The two feeds load independently: the table appears as soon as the
-  // Knesset sessions arrive, and government rows join when gov.il answers
-  // (or are skipped after 8s) — a slow feed never blocks the schedule.
+  // The feeds load independently: the table appears as soon as the Knesset
+  // sessions arrive, and government rows join when gov.il answers (or are
+  // skipped after 8s) — a slow feed never blocks the schedule.
   useEffect(() => {
     let cancelled = false;
     getWeeklyKnessetSessions()
@@ -106,6 +123,12 @@ export default function OfficeWeek() {
 
     return () => { cancelled = true; ctrl.abort(); clearTimeout(timer); };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getOfficePapers(adminKey).then(p => { if (!cancelled) setPapers(p); });
+    return () => { cancelled = true; };
+  }, [adminKey]);
 
   const byDay = useMemo(() => {
     const map = new Map<string, Row[]>();
@@ -158,6 +181,7 @@ export default function OfficeWeek() {
     ? `${first.split('.')[0]}–${last}`
     : `${first}–${last}`;
   const lastSync = sessions.reduce((max, x) => (x.last_seen && x.last_seen > max ? x.last_seen : max), '');
+  const canAttach = papers !== null;
 
   async function submit() {
     setErr('');
@@ -175,8 +199,28 @@ export default function OfficeWeek() {
   }
 
   async function remove(id: string) {
-    try { await deleteManualEvent(id); loadManual(); }
+    try { await deleteManualEvent(id); setOpen(null); loadManual(); }
     catch (e) { setErr(`המחיקה נכשלה: ${(e as Error).message}`); }
+  }
+
+  async function savePaper(rowKey: string, rawUrl: string) {
+    setErr('');
+    const url = rawUrl.trim();
+    if (url && !safeUrl(url)) { setErr('הקישור צריך להתחיל ב-https://'); return; }
+    const ok = await setOfficePaper(adminKey, rowKey, url);
+    if (!ok) { setErr('שמירת נייר העמדה נכשלה'); return; }
+    setPapers(prev => {
+      const next = { ...(prev ?? {}) };
+      if (url) next[rowKey] = url; else delete next[rowKey];
+      return next;
+    });
+    setPaperDraft('');
+  }
+
+  function toggle(key: string) {
+    setErr('');
+    setPaperDraft('');
+    setOpen(prev => (prev === key ? null : key));
   }
 
   async function copyWhatsapp() {
@@ -245,26 +289,69 @@ export default function OfficeWeek() {
               <div>
                 {rows.length === 0 && <div className={s.none}>לא פורסמו דיונים</div>}
                 {rows.map(r => {
-                  const style = { ['--c' as string]: colorFor(r) };
-                  const inner = (
-                    <>
-                      <div className={`${s.time} ${r.time ? '' : s.timeNone}`}>{r.time || '—'}</div>
-                      <div className={s.body}><span className={s.dot} />{r.body}</div>
-                      <div className={s.topic}>
-                        <span className={`${s.topicText} ${r.topic ? '' : s.topicNone}`}>{r.topic || 'הנושא טרם פורסם'}</span>
-                        {r.cancelled && <span className={`${s.tag} ${s.tagRed}`}>בוטל</span>}
-                        {r.kind === 'manual' && <span className={s.tag}>ידני</span>}
-                        {r.manualId && (
-                          <button type="button" className={s.del} title="מחק" aria-label="מחק אירוע"
-                            onClick={e => { e.preventDefault(); remove(r.manualId!); }}>×</button>
-                        )}
+                  const paper = papers ? safeUrl(papers[r.key]) : null;
+                  const expandable = !!(r.url || canAttach || r.manualId);
+                  const expanded = expandable && open === r.key;
+                  const cls = `${s.row} ${expandable ? s.rowClick : ''} ${r.cancelled ? s.cancelled : ''}`;
+                  return (
+                    <div key={r.key} className={s.rowWrap}>
+                      <div
+                        className={cls}
+                        style={{ ['--c' as string]: colorFor(r) }}
+                        role={expandable ? 'button' : undefined}
+                        tabIndex={expandable ? 0 : undefined}
+                        aria-expanded={expandable ? expanded : undefined}
+                        onClick={expandable ? () => toggle(r.key) : undefined}
+                        onKeyDown={expandable ? e => {
+                          if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(r.key); }
+                        } : undefined}
+                      >
+                        <span className={`${s.time} ${r.time ? '' : s.timeNone}`}>{r.time || '—'}</span>
+                        <span className={s.body}><span className={s.dot} />{r.body}</span>
+                        <span className={s.topic}>
+                          <span className={`${s.topicText} ${r.topic ? '' : s.topicNone}`}>{r.topic || 'הנושא טרם פורסם'}</span>
+                          {paper && (
+                            <a className={`${s.tag} ${s.tagPaper}`} href={paper} target="_blank" rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}>נייר עמדה</a>
+                          )}
+                          {r.cancelled && <span className={`${s.tag} ${s.tagRed}`}>בוטל</span>}
+                          {r.kind === 'manual' && <span className={s.tag}>ידני</span>}
+                        </span>
                       </div>
-                    </>
+                      {expanded && (
+                        <div className={s.detail}>
+                          {r.url && (
+                            <div><a href={r.url} target="_blank" rel="noopener noreferrer">{SOURCE_LABEL[r.kind]} ↗</a></div>
+                          )}
+                          {canAttach && (
+                            <>
+                              <div className={s.lbl}>נייר עמדה</div>
+                              {paper ? (
+                                <div className={s.inline}>
+                                  <a href={paper} target="_blank" rel="noopener noreferrer">פתיחת נייר העמדה ↗</a>
+                                  <button type="button" className={s.btn} onClick={() => savePaper(r.key, '')}>הסר</button>
+                                </div>
+                              ) : (
+                                <div className={s.inline}>
+                                  <input
+                                    dir="ltr" placeholder="https://…  קישור לנייר העמדה" value={paperDraft} aria-label="קישור לנייר עמדה"
+                                    onChange={e => setPaperDraft(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') savePaper(r.key, paperDraft); }}
+                                  />
+                                  <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => savePaper(r.key, paperDraft)}>צרף</button>
+                                </div>
+                              )}
+                            </>
+                          )}
+                          {r.manualId && (
+                            <div className={s.inline} style={{ marginTop: 10 }}>
+                              <button type="button" className={s.btn} onClick={() => remove(r.manualId!)}>מחיקת האירוע</button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   );
-                  const cls = `${s.row} ${r.cancelled ? s.cancelled : ''}`;
-                  return r.url && !r.manualId
-                    ? <a key={r.key} className={cls} style={style} href={r.url} target="_blank" rel="noopener noreferrer">{inner}</a>
-                    : <div key={r.key} className={cls} style={style}>{inner}</div>;
                 })}
               </div>
             </div>

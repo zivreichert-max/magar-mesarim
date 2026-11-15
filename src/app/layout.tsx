@@ -19,8 +19,8 @@ const frankRuhl = Frank_Ruhl_Libre({
 });
 
 export const metadata: Metadata = {
-  title: 'מסרים – בחירות 2026',
-  description: 'מסרים – נקודות דיון לקראת הבחירות',
+  title: 'הלשכה · בונים מחדש',
+  description: 'לשכת ח"כ וירטואלית — מעקב פרלמנטרי במקום אחד',
 };
 
 export default function RootLayout({

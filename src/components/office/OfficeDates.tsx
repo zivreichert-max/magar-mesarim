@@ -18,6 +18,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   'ממשלה': '#111827',
   'בג"ץ': '#7c3aed',
   'חירום': '#d97706',
+  'יוקר המחיה': '#ea580c',
 };
 const colorOf = (c: string) => CATEGORY_COLORS[c] ?? '#0075C4';
 
