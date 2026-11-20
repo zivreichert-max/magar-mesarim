@@ -14,14 +14,16 @@ const OfficeWeek = dynamic(() => import('./OfficeWeek'), { loading });
 const OfficeBudget = dynamic(() => import('./OfficeBudget'), { loading });
 const OfficeGov = dynamic(() => import('./OfficeGov'), { loading });
 const OfficeLegislation = dynamic(() => import('./OfficeLegislation'), { loading });
+const OfficeCommittees = dynamic(() => import('./OfficeCommittees'), { loading });
 const OfficeDates = dynamic(() => import('./OfficeDates'), { loading });
 
-type SectionId = 'week' | 'budget' | 'laws' | 'gov' | 'court' | 'dates';
+type SectionId = 'week' | 'budget' | 'laws' | 'committees' | 'gov' | 'court' | 'dates';
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'week', label: 'לו"ז שבועי' },
   { id: 'budget', label: 'פניות תקציב' },
   { id: 'laws', label: 'רמזור חקיקה' },
+  { id: 'committees', label: 'ועדות' },
   { id: 'gov', label: 'ממשלה' },
   { id: 'court', label: 'בג"ץ' },
   { id: 'dates', label: 'מועדים' },
@@ -82,6 +84,7 @@ export default function OfficeShell({ adminKey, userName, onLogout }: OfficeShel
           {section === 'week' && <OfficeWeek adminKey={adminKey} />}
           {section === 'budget' && <OfficeBudget />}
           {section === 'laws' && <OfficeLegislation accessKey={adminKey} />}
+          {section === 'committees' && <OfficeCommittees adminKey={adminKey} />}
           {section === 'gov' && <OfficeGov />}
           {section === 'court' && (
             <OfficeDates
