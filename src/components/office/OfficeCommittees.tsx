@@ -200,6 +200,25 @@ function grouped(c: Committee) {
   return out;
 }
 
+/** A committee as a short WhatsApp message: its name, then the members party by party. */
+function whatsappText(c: Committee): string {
+  const size = c.regular === 1 ? 'חבר אחד' : `${c.regular} חברים`;
+  const lines = [
+    `*${c.name}*${c.parent ? ` (ועדת משנה של ${c.parent})` : ''} · ${size}${c.subs > 0 ? ` + ${c.subs} מ"מ` : ''}`,
+    '',
+  ];
+  for (const g of grouped(c)) {
+    for (const p of g.parties) {
+      const regular = p.members.filter(m => m.role !== 'sub').length;
+      const subs = p.members.length - regular;
+      const count = subs === 0 ? `${regular}` : regular === 0 ? `${subs} מ"מ` : `${regular} + ${subs} מ"מ`;
+      const names = p.members.map(m => (m.label ? `${m.name} (${m.label})` : m.name)).join(', ');
+      lines.push(`*${p.party}* (${count}): ${names}`);
+    }
+  }
+  return lines.join('\n');
+}
+
 const cVar = (color: string) => ({ ['--c' as string]: color });
 
 type View = 'committees' | 'mks';
@@ -212,6 +231,21 @@ export default function OfficeCommittees({ adminKey }: { adminKey: string }) {
   const [openCommittee, setOpenCommittee] = useState<string | null>(null);
   const [openMk, setOpenMk] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [copied, setCopied] = useState<string | null>(null);
+  const [manual, setManual] = useState<{ key: string; text: string } | null>(null);
+
+  async function copyCommittee(c: Committee) {
+    const text = whatsappText(c);
+    try {
+      await navigator.clipboard.writeText(text);
+      setManual(null);
+      setCopied(c.key);
+      setTimeout(() => setCopied(k => (k === c.key ? null : k)), 2000);
+    } catch {
+      // Clipboard blocked — show the message so it can be copied by hand
+      setManual({ key: c.key, text });
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -351,10 +385,20 @@ export default function OfficeCommittees({ adminKey }: { adminKey: string }) {
                         ))}
                       </div>
                     ))}
-                    {c.url && (
-                      <a href={c.url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 10 }}>
-                        עמוד הוועדה באתר הכנסת ↗
-                      </a>
+                    <div className={s.inline} style={{ marginTop: 10 }}>
+                      {c.members.length > 0 && (
+                        <button type="button" className={s.btn} onClick={() => copyCommittee(c)}>
+                          {copied === c.key ? 'הועתק ✓' : 'העתק לוואטסאפ'}
+                        </button>
+                      )}
+                      {c.url && (
+                        <a href={c.url} target="_blank" rel="noopener noreferrer">עמוד הוועדה באתר הכנסת ↗</a>
+                      )}
+                    </div>
+                    {manual?.key === c.key && (
+                      <div className={s.botNote} style={{ whiteSpace: 'pre-wrap' }}>
+                        ההעתקה נחסמה בדפדפן. אפשר לסמן ולהעתיק מכאן:{'\n'}<span>{manual.text}</span>
+                      </div>
                     )}
                   </div>
                 )}
