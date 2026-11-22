@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { safeUrl } from '@/lib/urls';
 import type { GovAgendaItem } from '@/app/api/gov-agenda/route';
+import { officeFetch } from '@/lib/office';
 import s from './Office.module.css';
 
 // Government tracking for the לשכה tab: the latest published agendas of the
@@ -28,7 +29,7 @@ export default function OfficeGov() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/gov-agenda')
+    officeFetch('/api/gov-agenda')
       .then(r => (r.ok ? r.json() : { items: [] }))
       .catch(() => ({ items: [] }))
       .then((d: { items?: GovAgendaItem[] }) => { if (!cancelled) setItems(d.items ?? []); });

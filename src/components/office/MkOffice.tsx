@@ -34,7 +34,7 @@ export default function MkOffice({ access, onLogout }: MkOfficeProps) {
       </aside>
       <main className={s.main}>
         <div className={s.wrap}>
-          <OfficeLegislation accessKey={access.key} />
+          <OfficeLegislation />
         </div>
       </main>
     </div>

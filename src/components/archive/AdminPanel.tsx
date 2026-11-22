@@ -5,7 +5,10 @@ import { supabase, Suggestion, SiteSession, getSiteSessions, IntakeItem, getInta
 import { CLIENTS } from '@/data/clients';
 import { TOPICS } from '@/data/messages';
 
-const CORRECT_PASSWORD = '61218384';
+// ARCHIVE — the election-period admin panel. It used to be the /admin route
+// behind a password written here; the route was removed and the password
+// deleted when the site moved to personal accounts. Nothing renders this file.
+const CORRECT_PASSWORD = '';
 
 const STATUS_COLORS: Record<string, string> = {
   pending:  '#d4a843',

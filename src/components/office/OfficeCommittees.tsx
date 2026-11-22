@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { getOfficeData, OfficeMk } from '@/lib/supabase';
+import { getOfficeData, OfficeMk } from '@/lib/office';
 import s from './Office.module.css';
 
 // ועדות — who sits on each Knesset committee, and on which committees each MK
@@ -163,13 +163,13 @@ function build(all: RawCommittee[], mkList: RawMk[], listed: RawListed[], dir: O
   };
 }
 
-async function load(adminKey: string): Promise<Loaded> {
+async function load(): Promise<Loaded> {
   // Only the composition itself is essential; the rest degrades quietly
   const [all, mks, listed, office] = await Promise.all([
     getJson<RawCommittee[]>(`CommitteeDetails/GetAllCommitteesMembersInKnesset?Lang=he&knessetId=${KNESSET_ID}`),
     getJson<{ Mks?: RawMk[] }>('MKs/GetMks?languageKey=he').catch(() => null),
     getJson<RawListed[]>('Committees/GetAllCommittees/HE').catch(() => null),
-    getOfficeData(adminKey),
+    getOfficeData(),
   ]);
   if (!Array.isArray(all)) throw new Error('תשובה לא צפויה מאתר הכנסת');
   return build(
@@ -223,7 +223,7 @@ const cVar = (color: string) => ({ ['--c' as string]: color });
 
 type View = 'committees' | 'mks';
 
-export default function OfficeCommittees({ adminKey }: { adminKey: string }) {
+export default function OfficeCommittees() {
   const [view, setView] = useState<View>('committees');
   const [data, setData] = useState<Loaded | null>(null);
   const [failed, setFailed] = useState(false);
@@ -249,11 +249,11 @@ export default function OfficeCommittees({ adminKey }: { adminKey: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    load(adminKey)
+    load()
       .then(d => { if (!cancelled) { setData(d); setFailed(false); } })
       .catch(() => { if (!cancelled) setFailed(true); });
     return () => { cancelled = true; };
-  }, [adminKey, attempt]);
+  }, [attempt]);
 
   const loading = !failed && !data;
   const committees = data?.committees ?? [];

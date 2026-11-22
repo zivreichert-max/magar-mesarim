@@ -5,7 +5,7 @@
 // A field's text is the admin's edit when there is one, otherwise the
 // automatic analysis (written by the sync on the admin's PC).
 
-import type { BudgetAnalysis } from '@/lib/supabase';
+import type { BudgetAnalysis } from '@/lib/office';
 
 export const RECOMMENDATIONS = ['לאשר', 'לאשר בתנאי', 'לא לאשר', 'לפצל'] as const;
 

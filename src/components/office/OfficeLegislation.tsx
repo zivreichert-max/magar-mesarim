@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { getOfficeData, setOfficeAssignment, OfficeData, OfficeItem, OfficeMk } from '@/lib/supabase';
+import { getOfficeData, setOfficeAssignment, OfficeData, OfficeItem } from '@/lib/office';
+import { exposureParties, partyColor } from './parties';
 import { safeUrl } from '@/lib/urls';
 import BotAsk from './BotAsk';
 import { lawQuestions } from './botQuestions';
@@ -12,26 +13,13 @@ import s from './Office.module.css';
 // each one. Products come from the Excel workbook (update-legislation.py);
 // the EXPOSURE of products to MKs is decided HERE, on the site: pick a party
 // (the change-bloc parties and the Arab parties only), then an MK from its
-// list. An exposed MK is the one who will get access to that product once
-// the site opens for MKs.
+// list. The office users of an exposed MK see that product.
 //
-// There is no separate prompt: whoever is logged in passes their own
-// credential as `accessKey` (the admin password, or an MK's personal code) and
-// the database decides what they may see — everything, or only their products.
+// There is no separate prompt: the database looks at the signed-in user and
+// decides what they may see — an admin everything, an office only the
+// products exposed to its MK ("החוקים שלנו", read-only).
 
 type Assignee = { name: string; party: string };
-
-// Party → chip color. Accepts both the Hebrew party names of the MK directory
-// and the legacy party ids. Order matters: "ישראל ביתנו" must match before "ישר".
-const PARTY_COLORS: [RegExp, string][] = [
-  [/דמוקרט|democrats/, '#dc2626'],
-  [/ביחד|beyahad/, '#16a34a'],
-  [/ביתנו|yisrael-b/, '#1d4ed8'],
-  [/^ישר|yashar/, '#6b7280'],
-  [/רע.?ם/, '#0f766e'],
-  [/משותפת/, '#b45309'],
-];
-const partyColor = (party: string) => PARTY_COLORS.find(([re]) => re.test(party))?.[1] ?? '#9ca3af';
 
 // v1 fallback (before the database update): assignments came as Excel columns
 const LEGACY_COLS = [
@@ -51,27 +39,10 @@ function assignees(it: OfficeItem): Assignee[] {
 const lightOf = (it: OfficeItem) => (it.ready === 'כן' ? s.lgreen : it.ready === 'לא' ? s.lred : s.lgray);
 const kindOf = (it: OfficeItem) => it.kind || 'אחר';
 
-// Products can be exposed only to MKs of the change bloc and the Arab
-// parties: ישר, ביחד, הדמוקרטים, ישראל ביתנו, רע"ם, המשותפת — in that order.
-const EXPOSE_BLOCS = ['גוש השינוי', 'המפלגות הערביות'];
-const partyRank = (p: string) =>
-  /ביתנו/.test(p) ? 3 : /^ישר/.test(p) ? 0 : /ביחד/.test(p) ? 1 : /דמוקרט/.test(p) ? 2 : /רע.?ם/.test(p) ? 4 : /משותפת/.test(p) ? 5 : 9;
-function exposureParties(mks: OfficeMk[]): { party: string; mks: OfficeMk[] }[] {
-  const hasBlocs = mks.some(m => m.bloc);
-  const groups: { party: string; mks: OfficeMk[] }[] = [];
-  for (const m of mks) {
-    if (hasBlocs && !EXPOSE_BLOCS.includes(m.bloc ?? '')) continue;
-    let g = groups.find(x => x.party === m.party);
-    if (!g) { g = { party: m.party, mks: [] }; groups.push(g); }
-    g.mks.push(m);
-  }
-  return groups.sort((a, b) => partyRank(a.party) - partyRank(b.party));
-}
-
 type StatusFilter = 'all' | 'ready' | 'notready' | 'assigned';
 type Phase = 'loading' | 'ready' | 'denied' | 'setup' | 'error';
 
-export default function OfficeLegislation({ accessKey }: { accessKey: string }) {
+export default function OfficeLegislation() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [data, setData] = useState<OfficeData | null>(null);
   const [errMsg, setErrMsg] = useState('');
@@ -89,7 +60,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
   useEffect(() => {
     let cancelled = false;
     // getOfficeData never hangs: it resolves with an error after a timeout
-    getOfficeData(accessKey).then(res => {
+    getOfficeData().then(res => {
       if (cancelled) return;
       if (res.status === 'ok') {
         setData(res.data);
@@ -104,7 +75,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
       }
     });
     return () => { cancelled = true; };
-  }, [accessKey, attempt]);
+  }, [attempt]);
 
   const retry = () => { setPhase('loading'); setAttempt(a => a + 1); };
 
@@ -158,7 +129,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
       }),
     });
     apply(on);
-    const ok = await setOfficeAssignment(accessKey, it.name, mkName, on);
+    const ok = await setOfficeAssignment(it.name, mkName, on);
     if (!ok) {
       apply(!on);
       setAssignErr('החשיפה לא נשמרה. נסו שוב.');
@@ -189,8 +160,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
       <div className={s.notice}>
         <h2>הרמזור לא זמין בכניסה הזו</h2>
         <p>
-          הסיסמה שאיתה נכנסת לא מחוברת לרמזור. כדי לחבר את סיסמת המנהל יש להריץ{' '}
-          <span className={s.code}>py update-legislation.py</span>.
+          החשבון שאיתו נכנסת אינו רשום בלשכה. פונים למנהל/ת הלשכה.
         </p>
         <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={retry}>נסה שוב</button>
       </div>
@@ -215,7 +185,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
   return (
     <>
       <div className={s.mast}>
-        <h1>{isAdmin ? 'רמזור חקיקה' : 'התוצרים שלי'}</h1>
+        <h1>{isAdmin ? 'רמזור חקיקה' : 'החוקים שלנו'}</h1>
         {!isAdmin && data.name && <span className={s.mastDate}>{data.name}</span>}
         <div className={`${s.mastTools} ${s.stats}`}>
           <span><b>{items.length}</b> תוצרים</span>
@@ -246,7 +216,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
 
       <div className={s.tbl}>
         {chapters.length === 0 && (
-          <div className={s.none}>{isAdmin ? 'אין תוצרים תואמים' : 'עדיין לא שויכו אליך תוצרים'}</div>
+          <div className={s.none}>{isAdmin ? 'אין תוצרים תואמים' : 'עדיין לא שותפו חוקים עם הלשכה'}</div>
         )}
         {chapters.map(([chapter, list]) => {
           const open = allOpen || openChapters.has(chapter);
@@ -362,7 +332,7 @@ export default function OfficeLegislation({ accessKey }: { accessKey: string }) 
       </div>
 
       <div className={s.meta}>
-        <span>תוצרים: אקסל מיפוי חברי הכנסת{updated && <> · עודכן <span dir="ltr">{updated}</span></>}</span>
+        <span>{isAdmin ? 'תוצרים: אקסל מיפוי חברי הכנסת' : 'תוצרים של בונים מחדש'}{updated && <> · עודכן <span dir="ltr">{updated}</span></>}</span>
         {isAdmin && <span>חשיפה לח&quot;כים: נקבעת כאן באתר</span>}
       </div>
     </>

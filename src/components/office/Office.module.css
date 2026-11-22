@@ -376,6 +376,32 @@ a.li:hover { background: #f8fafc; }
 .gateBtn:hover { background: #262626; }
 .gateErr { min-height: 18px; color: #dc2626; font-size: 13px; font-weight: 700; }
 
+.gateNote { font-size: 12.5px; color: var(--mute); line-height: 1.55; }
+.gateLink {
+  font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--blue); background: none; border: none;
+  padding: 0; cursor: pointer; text-align: start; text-decoration: underline;
+}
+.gateBtn:disabled { opacity: 0.6; cursor: default; }
+
+/* ── User management ────────────────────────────────────────────────────── */
+.navOut { display: none; }
+.bHead.uGrid, .bRow.uGrid { grid-template-columns: minmax(120px, 1fr) minmax(170px, 1.35fr) minmax(150px, 1.2fr) 150px; }
+.bRow.uGrid { align-items: center; }
+.uMail { font-size: 13px; color: #374151; text-align: right; overflow-wrap: anywhere; }
+.uRole { font-size: 13px; font-weight: 700; }
+.uMe { font-weight: 400; color: var(--mute); }
+.uOn, .uWait { font-size: 12.5px; font-weight: 800; }
+.uOn { color: #15803d; }
+.uWait { color: #b45309; }
+.uForm { margin-top: 12px; background: var(--wash); border: 2px solid var(--ink); padding: 10px 12px 12px; }
+.uForm .inline { margin-top: 8px; }
+.linkBox { margin-top: 12px; border: 2px solid var(--ink); background: var(--lime); padding: 10px 12px 12px; }
+.linkBox .inline input { background: #fff; }
+.linkTitle { font-size: 13.5px; font-weight: 800; }
+.linkNote { font-size: 12px; margin-top: 6px; color: #374151; }
+.btnDanger { background: #dc2626; border-color: #dc2626; color: #fff; }
+.btnDanger:hover { background: #b91c1c; }
+
 /* ── Narrow screens: the side panel becomes a top bar ───────────────────── */
 @media (max-width: 860px) {
   /* rows: the top bar keeps its own height even when the section below is short */
@@ -384,6 +410,10 @@ a.li:hover { background: #f8fafc; }
   .logo { width: 40px; height: 40px; font-size: 10.5px; }
   .brandName { font-size: 18px; }
   .sideUser, .sideFoot { display: none; }
+  .navOut { display: block; opacity: 0.85; }
+  .bRow.uGrid { grid-template-columns: minmax(0, 1fr) auto; }
+  .bRow.uGrid > .uMail, .bRow.uGrid > .uRole { grid-column: 1 / -1; padding-top: 0; }
+  .bRow.uGrid > .uOn, .bRow.uGrid > .uWait { grid-row: 1; grid-column: 2; }
   .nav { flex-direction: row; overflow-x: auto; gap: 6px; margin-top: 10px; padding-bottom: 2px; scrollbar-width: none; -ms-overflow-style: none; }
   .nav::-webkit-scrollbar { display: none; }
   .navItem { white-space: nowrap; font-size: 13.5px; padding: 7px 11px; flex-shrink: 0; }

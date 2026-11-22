@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, KeyboardEvent } from 'react';
-import { getOfficeData } from '@/lib/supabase';
+import { getOfficeData } from '@/lib/office';
 import Brand from '@/components/office/Brand';
 import s from '@/components/office/Office.module.css';
 

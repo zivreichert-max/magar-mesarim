@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   getWeeklyKnessetSessions, KnessetSessionRow,
   getManualEventsForWeek, addManualEventForWeek, deleteManualEvent, ManualScheduleEvent,
-  getOfficePapers, setOfficePaper,
 } from '@/lib/supabase';
+import { getOfficePapers, setOfficePaper, officeFetch } from '@/lib/office';
 import { localIso, anchorSunday, normalizeTime } from '@/lib/scheduleUtils';
 import { safeUrl } from '@/lib/urls';
 import type { GovAgendaItem } from '@/app/api/gov-agenda/route';
@@ -69,7 +69,9 @@ function weekDays(offset: number, now: Date) {
   });
 }
 
-export default function OfficeWeek({ adminKey }: { adminKey: string }) {
+// canEdit = admin: manual rows and position-paper links. An office gets the
+// same table read-only, without the paper links (for now).
+export default function OfficeWeek({ canEdit }: { canEdit: boolean }) {
   const [sessions, setSessions] = useState<KnessetSessionRow[]>([]);
   const [gov, setGov] = useState<GovAgendaItem[]>([]);
   const [manual, setManual] = useState<ManualScheduleEvent[]>([]);
@@ -117,7 +119,7 @@ export default function OfficeWeek({ adminKey }: { adminKey: string }) {
 
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 8_000);
-    fetch('/api/gov-agenda', { signal: ctrl.signal })
+    officeFetch('/api/gov-agenda', { signal: ctrl.signal })
       .then(r => (r.ok ? r.json() : { items: [] }))
       .catch(() => ({ items: [] }))
       .then((d: { items?: GovAgendaItem[] }) => { if (!cancelled) setGov(d.items ?? []); })
@@ -127,10 +129,11 @@ export default function OfficeWeek({ adminKey }: { adminKey: string }) {
   }, []);
 
   useEffect(() => {
+    if (!canEdit) return;
     let cancelled = false;
-    getOfficePapers(adminKey).then(p => { if (!cancelled) setPapers(p); });
+    getOfficePapers().then(p => { if (!cancelled) setPapers(p); });
     return () => { cancelled = true; };
-  }, [adminKey]);
+  }, [canEdit]);
 
   const byDay = useMemo(() => {
     const map = new Map<string, Row[]>();
@@ -183,7 +186,7 @@ export default function OfficeWeek({ adminKey }: { adminKey: string }) {
     ? `${first.split('.')[0]}–${last}`
     : `${first}–${last}`;
   const lastSync = sessions.reduce((max, x) => (x.last_seen && x.last_seen > max ? x.last_seen : max), '');
-  const canAttach = papers !== null;
+  const canAttach = canEdit && papers !== null;
 
   async function submit() {
     setErr('');
@@ -209,7 +212,7 @@ export default function OfficeWeek({ adminKey }: { adminKey: string }) {
     setErr('');
     const url = rawUrl.trim();
     if (url && !safeUrl(url)) { setErr('הקישור צריך להתחיל ב-https://'); return; }
-    const ok = await setOfficePaper(adminKey, rowKey, url);
+    const ok = await setOfficePaper(rowKey, url);
     if (!ok) { setErr('שמירת נייר העמדה נכשלה'); return; }
     setPapers(prev => {
       const next = { ...(prev ?? {}) };
@@ -256,16 +259,18 @@ export default function OfficeWeek({ adminKey }: { adminKey: string }) {
             <button type="button" className={offset === 0 ? s.on : ''} onClick={() => setOffset(0)}>השבוע</button>
             <button type="button" className={offset === 1 ? s.on : ''} onClick={() => setOffset(1)}>שבוע הבא</button>
           </div>
-          <button type="button" className={s.btn} onClick={() => setFormOpen(o => !o)}>
-            {formOpen ? 'סגור' : '+ אירוע'}
-          </button>
+          {canEdit && (
+            <button type="button" className={s.btn} onClick={() => setFormOpen(o => !o)}>
+              {formOpen ? 'סגור' : '+ אירוע'}
+            </button>
+          )}
           <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={copyWhatsapp}>
             {copied ? 'הועתק ✓' : 'העתק לוואטסאפ'}
           </button>
         </div>
       </div>
 
-      {formOpen && (
+      {canEdit && formOpen && (
         <div className={s.form}>
           <select value={form.day} onChange={e => setForm({ ...form, day: e.target.value })} aria-label="יום">
             {days.map(d => <option key={d.name} value={d.name}>{SHORT(d.name)} {d.display}</option>)}
@@ -293,7 +298,7 @@ export default function OfficeWeek({ adminKey }: { adminKey: string }) {
                 {rows.map(r => {
                   const paper = papers ? safeUrl(papers[r.key]) : null;
                   const questions = weekQuestions(r, d.iso);
-                  const expandable = !!(r.url || canAttach || r.manualId || questions.length);
+                  const expandable = !!(r.url || canAttach || (canEdit && r.manualId) || questions.length);
                   const expanded = expandable && open === r.key;
                   const cls = `${s.row} ${expandable ? s.rowClick : ''} ${r.cancelled ? s.cancelled : ''}`;
                   return (
@@ -347,7 +352,7 @@ export default function OfficeWeek({ adminKey }: { adminKey: string }) {
                             </>
                           )}
                           <BotAsk questions={questions} />
-                          {r.manualId && (
+                          {canEdit && r.manualId && (
                             <div className={s.inline} style={{ marginTop: 10 }}>
                               <button type="button" className={s.btn} onClick={() => remove(r.manualId!)}>מחיקת האירוע</button>
                             </div>

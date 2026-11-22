@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { officeCaller } from '@/lib/officeServer';
 
 const SYSTEM = `אתה כותב פריט לו"ז לוועדת כנסת עבור אתר "זמן בחירות".
 
@@ -41,6 +42,12 @@ function asBoundedString(v: unknown, max: number): string | null {
 }
 
 export async function POST(req: Request) {
+  // Archive route (the election-period schedule editor). It spends the server's
+  // AI key, so it answers only a signed-in admin of the office.
+  const caller = await officeCaller(req);
+  if (!caller || caller.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
     if (rateLimited(ip)) {

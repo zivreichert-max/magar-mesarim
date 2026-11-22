@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { safeUrl } from '@/lib/urls';
-import { BudgetAnalysis, BudgetRequestMeta, getOfficeBudget, setOfficeBudget } from '@/lib/supabase';
+import { BudgetAnalysis, BudgetRequestMeta, getOfficeBudget, setOfficeBudget } from '@/lib/office';
 import BotAsk from './BotAsk';
 import { budgetQuestions } from './botQuestions';
 import {
@@ -269,7 +269,7 @@ function Analysis({ r, a, onSave }: { r: BudgetRequest; a: BudgetAnalysis | unde
 type SortBy = 'number' | 'ministry';
 type Setup = 'loading' | 'ok' | 'setup' | 'off';
 
-export default function OfficeBudget({ adminKey }: { adminKey: string }) {
+export default function OfficeBudget() {
   const [view, setView] = useState<View>('pending');
   const [sortBy, setSortBy] = useState<SortBy>('number');
   const [state, setState] = useState<{ view: View; rows: BudgetRequest[]; total: number } | null>(null);
@@ -293,7 +293,7 @@ export default function OfficeBudget({ adminKey }: { adminKey: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    getOfficeBudget(adminKey).then(res => {
+    getOfficeBudget().then(res => {
       if (cancelled) return;
       if (res.status === 'ok') {
         setAnalysis(Object.fromEntries(res.rows.map(a => [a.key, a])));
@@ -304,7 +304,7 @@ export default function OfficeBudget({ adminKey }: { adminKey: string }) {
       }
     });
     return () => { cancelled = true; };
-  }, [adminKey, attempt]);
+  }, [attempt]);
 
   const loading = !failed && state?.view !== view;
   const withAnalysis = setup === 'ok';
@@ -329,7 +329,7 @@ export default function OfficeBudget({ adminKey }: { adminKey: string }) {
   /** One admin write, then the same change on screen */
   async function save(r: BudgetRequest, field: string, value: string | null): Promise<boolean> {
     const meta: BudgetRequestMeta = { number: r.number, codes: r.codes, ministry: r.ministry, pdf_url: r.pdf ?? '' };
-    const ok = await setOfficeBudget(adminKey, r.reqKey, meta, field, value);
+    const ok = await setOfficeBudget(r.reqKey, meta, field, value);
     setSaveError(!ok);
     if (!ok) return false;
     setAnalysis(prev => {
