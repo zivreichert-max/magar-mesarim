@@ -649,3 +649,71 @@ export async function setOfficePaper(key: string, rowKey: string, url: string): 
   const { data, error } = await supabase.rpc('office_paper_set', { p_key: key, p_row: rowKey, p_url: url });
   return !error && !!(data as { ok?: boolean } | null)?.ok;
 }
+
+// ─── office: budget requests with analysis (פניות תקציב) ──────────────────────
+// One row per request on the Finance Committee's table: `auto` is the automatic
+// analysis (written by sync-budget.mjs on the admin's PC), `edits` is the
+// admin's own text per field and always wins. Protected like the tracker —
+// the analysis holds recommendations to the committee chair.
+
+export interface BudgetAnalysis {
+  key: string;
+  number: string;
+  codes: string;
+  ministry: string;
+  pdf_url: string;
+  pending: boolean;
+  status: 'new' | 'queued' | 'done' | 'error';
+  error: string | null;
+  auto: Record<string, string>;
+  edits: Record<string, string>;
+  rec_ok: boolean;            // the admin approved the recommendation
+  analyzed_at: string | null;
+  analyzed_pdf: string | null;
+  model: string | null;
+  pages: number | null;
+}
+
+export type BudgetAnalysisResult =
+  | { status: 'ok'; rows: BudgetAnalysis[]; run: string | null }
+  | { status: 'setup' }     // supabase-office-v3.sql has not been run yet
+  | { status: 'badkey' }
+  | { status: 'error'; message: string };
+
+export async function getOfficeBudget(key: string): Promise<BudgetAnalysisResult> {
+  try {
+    const { data, error } = await supabase.rpc('office_budget_get', { p_key: key });
+    if (error) {
+      if (error.code === 'PGRST202' || /office_budget_get/.test(error.message)) return { status: 'setup' };
+      return { status: 'error', message: error.message };
+    }
+    const d = data as { ok?: boolean; rows?: BudgetAnalysis[]; run?: string | null } | null;
+    if (!d?.ok) return { status: 'badkey' };
+    return {
+      status: 'ok',
+      run: d.run ?? null,
+      rows: (d.rows ?? []).map(r => ({ ...r, auto: r.auto ?? {}, edits: r.edits ?? {} })),
+    };
+  } catch (e) {
+    return { status: 'error', message: e instanceof Error ? e.message : 'שגיאת רשת' };
+  }
+}
+
+export interface BudgetRequestMeta {
+  number: string;
+  codes: string;
+  ministry: string;
+  pdf_url: string;
+}
+
+/** One admin write. field '_queue' asks for a (new) analysis, '_rec_ok' takes
+ *  'true' / 'false'; any other field stores the admin's text, null = back to
+ *  the automatic text. */
+export async function setOfficeBudget(
+  key: string, reqKey: string, meta: BudgetRequestMeta, field: string, value: string | null,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc('office_budget_set', {
+    p_key: key, p_req: reqKey, p_meta: meta, p_field: field, p_value: value,
+  });
+  return !error && !!(data as { ok?: boolean } | null)?.ok;
+}

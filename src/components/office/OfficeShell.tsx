@@ -82,7 +82,7 @@ export default function OfficeShell({ adminKey, userName, onLogout }: OfficeShel
       <main className={s.main}>
         <div className={s.wrap}>
           {section === 'week' && <OfficeWeek adminKey={adminKey} />}
-          {section === 'budget' && <OfficeBudget />}
+          {section === 'budget' && <OfficeBudget adminKey={adminKey} />}
           {section === 'laws' && <OfficeLegislation accessKey={adminKey} />}
           {section === 'committees' && <OfficeCommittees adminKey={adminKey} />}
           {section === 'gov' && <OfficeGov />}

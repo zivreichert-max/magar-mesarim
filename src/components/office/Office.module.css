@@ -285,6 +285,42 @@ a.li:hover { background: #f8fafc; }
 .bEnd a { color: var(--blue); text-decoration: none; }
 .bEnd a:hover { text-decoration: underline; }
 
+/* ── Budget requests with their analysis (the worksheet's format) ────────── */
+.bHead.ba, .bRow.ba { grid-template-columns: 84px minmax(140px, 1.05fr) 88px 136px minmax(170px, 1.7fr) 52px; }
+.baAmt { font-size: 13.5px; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.rec {
+  display: inline-block; font-size: 12px; font-weight: 800; padding: 2px 8px; white-space: nowrap;
+  border: 2px solid var(--ink); background: #fff; color: var(--ink);
+}
+.recYes { background: var(--lime); }
+.recCond { background: #fde68a; }
+.recNo { background: #dc2626; color: #fff; }
+.recSplit { background: var(--focus); }
+.recDraft { border-style: dashed; }
+.recNote { display: block; font-size: 10.5px; font-weight: 700; color: var(--mute); margin-top: 3px; }
+.baStatus { font-size: 11.5px; font-weight: 700; color: var(--mute); }
+.baBar { display: flex; gap: 6px 12px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: var(--mute); }
+.baRecBox { margin-top: 10px; border: 2px solid var(--ink); background: #fff; padding: 10px 12px 2px; }
+.baRecBox .baField { border-bottom: none; margin-top: 6px; border-top: 1px solid var(--rule); }
+.baFields { margin-top: 12px; border-top: 2px solid var(--ink); margin-bottom: 10px; }
+.baField { display: grid; grid-template-columns: 200px minmax(0, 1fr); border-bottom: 1px solid var(--rule); }
+.baField > div { padding: 8px 0; }
+.baLabel { font-size: 12px; font-weight: 800; color: var(--ink); line-height: 1.4; padding-inline-end: 14px !important; }
+.baValue { white-space: pre-wrap; font-size: 13.5px; overflow-wrap: anywhere; }
+.baEmpty { color: #9ca3af; }
+.baEdit textarea, .baEdit input {
+  width: 100%; font-family: inherit; font-size: 13.5px; line-height: 1.5; padding: 7px 10px;
+  border: 2px solid var(--ink); background: #fff; color: var(--ink); resize: vertical; display: block;
+}
+.baEdit textarea:focus, .baEdit input:focus { outline: 3px solid var(--focus); }
+.baSource { margin: 8px 0; }
+.baSource summary { cursor: pointer; font-size: 10.5px; font-weight: 800; color: var(--blue); letter-spacing: 0.06em; }
+.baSource > div { margin-top: 4px; }
+.baPen { font-family: inherit; border: none; background: none; cursor: pointer; color: #9ca3af; font-size: 13px; padding: 0 5px; line-height: 1; }
+.baPen:hover { color: var(--blue); }
+.clamp3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; padding-bottom: 0 !important; margin-bottom: 10px; }
+.btn:disabled, .cLink:disabled { opacity: 0.5; cursor: default; }
+
 /* ── Committees: by committee and by MK ─────────────────────────────────── */
 .legend { margin-top: 12px; display: flex; gap: 6px 16px; flex-wrap: wrap; font-size: 12.5px; font-weight: 700; }
 .legend i, .bal i { display: inline-block; width: 10px; height: 10px; background: var(--c); margin-inline-end: 6px; }
@@ -380,6 +416,11 @@ a.li:hover { background: #f8fafc; }
   .bRow { grid-template-columns: 72px minmax(0, 1fr) auto; }
   .bRow > .bSum { grid-column: 1 / -1; padding-top: 0; }
   .bRow > .bEnd { grid-row: 1; grid-column: 3; }
+  .bRow.ba { grid-template-columns: 72px minmax(0, 1fr) auto; }
+  .bRow.ba > .baAmt { grid-column: 1; padding-top: 0; font-size: 12.5px; }
+  .bRow.ba > .baRec { grid-column: 2 / -1; padding-top: 0; }
+  .baField { grid-template-columns: minmax(0, 1fr); }
+  .baField > .baLabel { padding-bottom: 0; }
 
   .cRow, .mRow { grid-template-columns: minmax(0, 1fr) auto; }
   .cRow > .cName { grid-column: 1 / -1; padding-bottom: 0; }
