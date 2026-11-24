@@ -21,15 +21,17 @@ const OfficeBudget = dynamic(() => import('./OfficeBudget'), { loading });
 const OfficeGov = dynamic(() => import('./OfficeGov'), { loading });
 const OfficeLegislation = dynamic(() => import('./OfficeLegislation'), { loading });
 const OfficeCommittees = dynamic(() => import('./OfficeCommittees'), { loading });
+const OfficePlenum = dynamic(() => import('./OfficePlenum'), { loading });
 const OfficeDates = dynamic(() => import('./OfficeDates'), { loading });
 const OfficeUsers = dynamic(() => import('./OfficeUsers'), { loading });
 
-type SectionId = 'week' | 'budget' | 'laws' | 'committees' | 'gov' | 'court' | 'dates' | 'users';
+type SectionId = 'week' | 'budget' | 'laws' | 'plenum' | 'committees' | 'gov' | 'court' | 'dates' | 'users';
 
 const SECTIONS: { id: SectionId; label: string; officeLabel?: string; adminOnly?: boolean }[] = [
   { id: 'week', label: 'לו"ז שבועי' },
   { id: 'budget', label: 'פניות תקציב', adminOnly: true },
   { id: 'laws', label: 'רמזור חקיקה', officeLabel: 'החוקים שלנו' },
+  { id: 'plenum', label: 'מליאה' },
   { id: 'committees', label: 'ועדות' },
   { id: 'gov', label: 'ממשלה' },
   { id: 'court', label: 'בג"ץ' },
@@ -95,6 +97,7 @@ export default function OfficeShell({ user, onLogout }: OfficeShellProps) {
           {section === 'week' && <OfficeWeek canEdit={isAdmin} />}
           {section === 'budget' && isAdmin && <OfficeBudget />}
           {section === 'laws' && <OfficeLegislation />}
+          {section === 'plenum' && <OfficePlenum />}
           {section === 'committees' && <OfficeCommittees />}
           {section === 'gov' && <OfficeGov />}
           {section === 'court' && (

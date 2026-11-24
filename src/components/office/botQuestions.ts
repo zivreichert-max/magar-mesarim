@@ -119,6 +119,22 @@ export function lawQuestions(it: { name: string; kind: string }): BotQuestion[] 
   return out.slice(0, MAX);
 }
 
+// ── Plenum ──────────────────────────────────────────────────────────────────
+// A bill on a plenum sitting's agenda. The bot holds the protocols and the law
+// book, so it can tell what was said and what the rules of the stage are.
+export function plenumQuestions(name: string, isoDate: string, took: boolean): BotQuestion[] {
+  const [y, m, d] = isoDate.split('-');
+  const date = `${d}/${m}/${y}`;
+  const bill = name.trim();
+  const out: BotQuestion[] = [];
+  if (took) {
+    out.push({ label: 'מה נאמר בדיון', text: `מה נאמר במליאת הכנסת בדיון על ${bill} בתאריך ${date}? סכם את עמדות הדוברים המרכזיים לפי הפרוטוקול.` });
+  }
+  out.push({ label: 'דיונים קודמים בנושא', text: `אילו דיונים התקיימו בכנסת, במליאה ובוועדות, על ${bill}? הצג אותם לפי תאריך עם עיקרי הדברים.` });
+  out.push({ label: 'שלבי החקיקה בתקנון', text: 'מה קובע תקנון הכנסת לגבי שלבי החקיקה של הצעת חוק: דיון מוקדם, קריאה ראשונה, קריאה שנייה וקריאה שלישית? ציין את הסעיפים הרלוונטיים.' });
+  return out.slice(0, MAX);
+}
+
 // ── Key dates ───────────────────────────────────────────────────────────────
 export function dateQuestions(
   d: { category: string; title: string; date: string },

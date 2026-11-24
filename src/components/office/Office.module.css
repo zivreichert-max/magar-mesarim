@@ -351,6 +351,41 @@ a.li:hover { background: #f8fafc; }
 }
 .cLink:hover { text-decoration: underline; }
 
+/* ── Plenum: a month of sittings, then the bills of the chosen one ───────── */
+.plMonth { min-width: 118px; }
+.plCal { margin-top: 14px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); max-width: 520px; border: 2px solid var(--ink); background: var(--rule); gap: 1px; }
+.plDow { background: #fff; font-size: 11px; font-weight: 800; text-align: center; padding: 4px 0; border-bottom: 1px solid var(--ink); }
+.plDay {
+  background: #fff; min-height: 46px; padding: 4px 6px; font-family: inherit; text-align: start; border: none; color: #9ca3af;
+  display: flex; flex-direction: column; gap: 1px; font-variant-numeric: tabular-nums;
+}
+.plDay b { font-size: 13px; font-weight: 600; }
+.plDay small { font-size: 10.5px; font-weight: 800; }
+.plToday b { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.plSit { cursor: pointer; color: var(--ink); background: var(--focus); }
+.plSit b { font-weight: 900; }
+.plSit small { color: var(--blue-deep); }
+.plSit:hover { background: #b9d5f2; }
+.plSit:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
+.plPast { background: var(--wash); }
+.plOn, .plOn:hover { background: var(--lime); }
+.plOn small { color: var(--ink); }
+.plHead { display: flex; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; margin-top: 24px; }
+.plHead .h2 { margin: 0; }
+.plHead a { font-size: 12.5px; font-weight: 700; color: var(--blue); margin-inline-start: auto; }
+.plPlan { background: #fde68a; }
+.plGrid { grid-template-columns: minmax(0, 1fr) 118px 200px 150px; }
+.bRow.plGrid { align-items: center; }
+.plStage, .plRes { font-size: 12.5px; }
+.plStatus { font-size: 12.5px; font-weight: 700; line-height: 1.35; color: #374151; }
+.plOff .cName, .plOff.plOther, span.plOff { text-decoration: line-through; color: #9ca3af; }
+.plNote { font-size: 12px; color: var(--mute); margin-top: 2px; }
+.plLinks { display: flex; gap: 6px 16px; flex-wrap: wrap; margin-top: 10px; }
+.plMore { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; margin: 18px 0 6px; }
+.plOther { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border-top: 1px solid var(--rule); font-size: 13px; line-height: 1.45; color: #374151; }
+.plOther:first-child { border-top: none; }
+.plOther b { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+
 /* ── Entry screens (password, name) ─────────────────────────────────────── */
 .gateScreen {
   position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 50; background: var(--blue);
@@ -460,4 +495,10 @@ a.li:hover { background: #f8fafc; }
   .mRow > .cName { padding-bottom: 4px; }
   .mRow > .cChair { padding-bottom: 4px; font-size: 12px; color: #374151; }
   .pRow { grid-template-columns: minmax(0, 1fr); }
+
+  .bRow.plGrid { grid-template-columns: minmax(0, 1fr) auto; }
+  .plGrid > .cName { grid-column: 1 / -1; padding-bottom: 2px; }
+  .plGrid > .cChair { grid-column: 1 / -1; grid-row: 3; padding-top: 0; font-size: 12px; color: #374151; }
+  .plGrid > .plStage, .plGrid > .plRes { padding-top: 2px; padding-bottom: 4px; }
+  .plHead a { margin-inline-start: 0; }
 }
