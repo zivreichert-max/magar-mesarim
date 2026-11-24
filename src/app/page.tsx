@@ -6,7 +6,7 @@ import PasswordGate, { MkAccess, Unlock } from '@/components/PasswordGate';
 import NamePrompt from '@/components/NamePrompt';
 import { OfficeLogin, OfficeSetPassword } from '@/components/office/OfficeLogin';
 import { supabase } from '@/lib/supabase';
-import { getOfficeMe, LinkKind, officeSignOut, OfficeUser, setLegacyKey } from '@/lib/office';
+import { getOfficeMe, LinkKind, officeSignOut, OfficeUser, officeVisit, setLegacyKey } from '@/lib/office';
 
 // הלשכה — the site is one workspace behind a personal account:
 //   sign in (email + password)  →  the office, by role (admin / office).
@@ -81,6 +81,29 @@ export default function Home() {
     });
     return () => data.subscription.unsubscribe();
   }, []);
+
+  // Entry log: a sign of life about once a minute while the office is open on
+  // a personal account and the tab is visible. The database decides who it is.
+  const logging = screen === 'ready' && !!user && !user.legacy;
+  useEffect(() => {
+    if (!logging) return;
+    let visit: string | null = null;
+    let stopped = false;
+    const beat = async () => {
+      if (document.visibilityState !== 'visible') return;
+      const id = await officeVisit(visit);
+      if (!stopped && id) visit = id;
+    };
+    const onVisible = () => { if (document.visibilityState === 'visible') beat(); };
+    beat();
+    const timer = setInterval(beat, 60_000);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [logging]);
 
   function closeLink() {
     window.history.replaceState(null, '', window.location.pathname);

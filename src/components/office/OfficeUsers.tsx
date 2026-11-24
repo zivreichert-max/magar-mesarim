@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { getOfficeData, listOfficeUsers, manageOfficeUsers, OfficeMk, OfficeUserRow } from '@/lib/office';
 import { exposureParties, partyColor } from './parties';
+import OfficeVisits from './OfficeVisits';
 import s from './Office.module.css';
 
 // ניהול משתמשים — admins only. Two kinds of users: an admin (sees everything)
@@ -20,7 +21,20 @@ interface Issued { name: string; email: string; link: string; isNew: boolean }
 const dateOf = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: '2-digit' }) : '';
 
+// The section has two views: the users, and the entry log (who entered, when
+// and for how long, by office).
 export default function OfficeUsers() {
+  const [view, setView] = useState<'users' | 'visits'>('users');
+  const seg = (
+    <div className={s.seg}>
+      <button type="button" className={view === 'users' ? s.on : ''} onClick={() => setView('users')}>משתמשים</button>
+      <button type="button" className={view === 'visits' ? s.on : ''} onClick={() => setView('visits')}>יומן כניסות</button>
+    </div>
+  );
+  return view === 'visits' ? <OfficeVisits seg={seg} /> : <UsersList seg={seg} />;
+}
+
+function UsersList({ seg }: { seg: ReactNode }) {
   const [users, setUsers] = useState<OfficeUserRow[] | null>(null);
   const [me, setMe] = useState('');
   const [phase, setPhase] = useState<'loading' | 'ready' | 'denied'>('loading');
@@ -137,6 +151,7 @@ export default function OfficeUsers() {
         <div className={`${s.mastTools} ${s.stats}`}>
           <span><b>{admins}</b> מנהלים</span>
           <span><b>{users.length - admins}</b> משתמשי לשכות</span>
+          {seg}
           <button type="button" className={s.btn} onClick={() => openForm('admin')}>{form === 'admin' ? 'סגור' : '+ מנהל'}</button>
           <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => openForm('office')}>{form === 'office' ? 'סגור' : '+ לשכה'}</button>
         </div>

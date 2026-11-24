@@ -437,6 +437,15 @@ a.li:hover { background: #f8fafc; }
 .btnDanger { background: #dc2626; border-color: #dc2626; color: #fff; }
 .btnDanger:hover { background: #b91c1c; }
 
+/* Entry log: one row per office, its visits on click */
+.bHead.vGrid, .bRow.vGrid { grid-template-columns: minmax(170px, 1.6fr) 90px 110px 170px; }
+.bRow.vGrid { align-items: center; }
+.vNum { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.vLast { font-size: 13px; color: #374151; }
+.vList { background: var(--wash); border-top: 1px solid var(--rule); padding: 8px 14px 10px; padding-inline-start: 34px; }
+.vRow { display: grid; grid-template-columns: 84px minmax(0, 1fr) 64px 96px; gap: 0 10px; font-size: 13px; padding: 4px 0; border-top: 1px solid var(--rule); }
+.vHead { border-top: none; font-size: 10.5px; font-weight: 800; color: var(--blue); letter-spacing: 0.06em; }
+
 /* ── Narrow screens: the side panel becomes a top bar ───────────────────── */
 @media (max-width: 860px) {
   /* rows: the top bar keeps its own height even when the section below is short */
@@ -449,6 +458,9 @@ a.li:hover { background: #f8fafc; }
   .bRow.uGrid { grid-template-columns: minmax(0, 1fr) auto; }
   .bRow.uGrid > .uMail, .bRow.uGrid > .uRole { grid-column: 1 / -1; padding-top: 0; }
   .bRow.uGrid > .uOn, .bRow.uGrid > .uWait { grid-row: 1; grid-column: 2; }
+  .bRow.vGrid { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .bRow.vGrid > .vLast { grid-column: 1 / -1; padding-top: 0; }
+  .vRow { grid-template-columns: 70px minmax(0, 1fr) 52px 78px; }
   .nav { flex-direction: row; overflow-x: auto; gap: 6px; margin-top: 10px; padding-bottom: 2px; scrollbar-width: none; -ms-overflow-style: none; }
   .nav::-webkit-scrollbar { display: none; }
   .navItem { white-space: nowrap; font-size: 13.5px; padding: 7px 11px; flex-shrink: 0; }

@@ -287,6 +287,53 @@ export async function manageOfficeUsers(
   }
 }
 
+// ─── entry log (יומן כניסות) ─────────────────────────────────────────────────
+// Who entered, when and for how long. Written by a heartbeat while the office
+// is open on a personal account; read by admins only. The database takes the
+// user from the signed-in account — the browser sends nothing but a visit id.
+
+/** One sign of life. Returns the id of the visit it belongs to (a new one
+ *  after a gap), or null when the log is not available. Never throws. */
+export async function officeVisit(id: string | null): Promise<string | null> {
+  try {
+    const { data, error } = await supabase.rpc('office_visit', { p_id: id });
+    const d = data as { ok?: boolean; id?: string } | null;
+    return error || !d?.ok ? null : d.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export interface OfficeVisitRow {
+  id: string;
+  start: string;
+  last: string;           // the last sign of life — the visit's end, approximately
+  name: string;
+  email: string;
+  role: 'admin' | 'office';
+  mk: string | null;
+  party: string | null;
+}
+
+export type OfficeVisitsResult =
+  | { status: 'ok'; rows: OfficeVisitRow[]; since: string | null; keepDays: number }
+  | { status: 'setup' }     // supabase-office-v5.sql has not been run yet
+  | { status: 'denied' }
+  | { status: 'error' };
+
+/** Admin: the visits that started between two dates (YYYY-MM-DD, Israel time). */
+export async function getOfficeVisits(from: string, to: string): Promise<OfficeVisitsResult> {
+  try {
+    const { data, error } = await supabase.rpc('office_visits_get', { p_from: from, p_to: to });
+    if (error) return error.code === 'PGRST202' || /office_visits_get/.test(error.message) ? { status: 'setup' } : { status: 'error' };
+    const d = data as { ok?: boolean; rows?: OfficeVisitRow[]; since?: string | null; keep_days?: string | null } | null;
+    if (!d?.ok) return { status: 'denied' };
+    return { status: 'ok', rows: d.rows ?? [], since: d.since ?? null, keepDays: Number(d.keep_days) || 365 };
+  } catch {
+    return { status: 'error' };
+  }
+}
+
 /** fetch() to one of the site's own server routes, carrying the signed-in
  *  user's access token so the route can tell who is asking. */
 export async function officeFetch(url: string, init: RequestInit = {}): Promise<Response> {
