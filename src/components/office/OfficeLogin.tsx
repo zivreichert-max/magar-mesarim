@@ -12,10 +12,9 @@ import s from './Office.module.css';
 interface LoginProps {
   notice?: string;
   onSignedIn: () => void;
-  onLegacy?: () => void;   // transition: the old shared password
 }
 
-export function OfficeLogin({ notice, onSignedIn, onLegacy }: LoginProps) {
+export function OfficeLogin({ notice, onSignedIn }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -51,9 +50,6 @@ export function OfficeLogin({ notice, onSignedIn, onLegacy }: LoginProps) {
         <div className={s.gateNote}>
           שכחת סיסמה, או שאין לך חשבון? מנהל/ת הלשכה שולחים קישור לקביעת סיסמה.
         </div>
-        {onLegacy && (
-          <button type="button" className={s.gateLink} onClick={onLegacy}>כניסה בסיסמה הישנה</button>
-        )}
       </form>
     </div>
   );

@@ -2,40 +2,31 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import PasswordGate, { MkAccess, Unlock } from '@/components/PasswordGate';
-import NamePrompt from '@/components/NamePrompt';
 import { OfficeLogin, OfficeSetPassword } from '@/components/office/OfficeLogin';
 import { supabase } from '@/lib/supabase';
-import { getOfficeMe, LinkKind, officeSignOut, OfficeUser, officeVisit, setLegacyKey } from '@/lib/office';
+import { getOfficeMe, LinkKind, officeSignOut, OfficeUser, officeVisit } from '@/lib/office';
 
 // הלשכה — the site is one workspace behind a personal account:
 //   sign in (email + password)  →  the office, by role (admin / office).
 // A one-time link from an admin (…/#invite=<token> or …/#reset=<token>) opens
 // the set-password screen instead. The session is kept in the browser, so a
-// returning user goes straight in.
+// returning user goes straight in. There is no other way in: the shared
+// password and the MK personal codes were switched off on 24.11.2026.
 // The office itself is code-split so the sign-in screen loads instantly.
 // (The election-period tabs were retired on 15.11.2026; their components stay
 // in the repo as an archive but nothing renders them.)
-//
-// TRANSITION: until the cut-over the old shared password still opens the
-// office ("כניסה בסיסמה הישנה") — PasswordGate, NamePrompt, MkOffice and the
-// legacy key go away with it.
 const OfficeShell = dynamic(() => import('@/components/office/OfficeShell'), { loading: () => null });
-const MkOffice = dynamic(() => import('@/components/office/MkOffice'), { loading: () => null });
 
-type Screen = 'loading' | 'login' | 'link' | 'legacy' | 'name' | 'ready';
+type Screen = 'loading' | 'login' | 'link' | 'ready';
 
 const NOT_REGISTERED = 'החשבון הזה אינו רשום בלשכה. פונים למנהל/ת הלשכה.';
-const legacyAdmin = (name: string): OfficeUser => ({ role: 'admin', name, email: '', mk: null, party: null, legacy: true });
 
 export default function Home() {
   const [screen, setScreen] = useState<Screen>('loading');
   const [user, setUser] = useState<OfficeUser | null>(null);
   const [link, setLink] = useState<{ kind: LinkKind; token: string } | null>(null);
   const [notice, setNotice] = useState('');
-  // Transition: an MK who entered with an old personal code
-  const [mkAccess, setMkAccess] = useState<MkAccess | null>(null);
-  // True while the office is open on a personal account (not the old password)
+  // True while the office is open
   const signedIn = useRef(false);
 
   // Who is signed in → the office, or back to the sign-in screen
@@ -82,9 +73,9 @@ export default function Home() {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  // Entry log: a sign of life about once a minute while the office is open on
-  // a personal account and the tab is visible. The database decides who it is.
-  const logging = screen === 'ready' && !!user && !user.legacy;
+  // Entry log: a sign of life about once a minute while the office is open and
+  // the tab is visible. The database decides who it is.
+  const logging = screen === 'ready' && !!user;
   useEffect(() => {
     if (!logging) return;
     let visit: string | null = null;
@@ -110,27 +101,8 @@ export default function Home() {
     setLink(null);
   }
 
-  function handleUnlock(unlock: Unlock) {
-    if (unlock.role === 'mk') {
-      setLegacyKey(unlock.access.key);
-      setMkAccess(unlock.access);
-      setScreen('ready');
-      return;
-    }
-    setLegacyKey(unlock.key);
-    const stored = localStorage.getItem('author_name');
-    if (stored) {
-      setUser(legacyAdmin(stored));
-      setScreen('ready');
-    } else {
-      setScreen('name');
-    }
-  }
-
   async function logout() {
     signedIn.current = false;
-    setLegacyKey('');
-    setMkAccess(null);
     setUser(null);
     setScreen('login');
     await officeSignOut();
@@ -146,10 +118,6 @@ export default function Home() {
       />
     );
   }
-  if (screen === 'login') return <OfficeLogin notice={notice} onSignedIn={enter} onLegacy={() => setScreen('legacy')} />;
-  if (screen === 'legacy') return <PasswordGate onUnlock={handleUnlock} />;
-  if (screen === 'name') return <NamePrompt onName={name => { setUser(legacyAdmin(name)); setScreen('ready'); }} />;
-  if (mkAccess) return <MkOffice access={mkAccess} onLogout={logout} />;
-  if (!user) return null;
+  if (screen === 'login' || !user) return <OfficeLogin notice={notice} onSignedIn={enter} />;
   return <OfficeShell user={user} onLogout={logout} />;
 }

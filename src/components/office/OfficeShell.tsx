@@ -47,8 +47,7 @@ interface OfficeShellProps {
 export default function OfficeShell({ user, onLogout }: OfficeShellProps) {
   const [section, setSection] = useState<SectionId>('week');
   const isAdmin = user.role === 'admin';
-  // User management needs a personal account (not the old shared password)
-  const sections = SECTIONS.filter(x => (isAdmin || !x.adminOnly) && !(x.id === 'users' && user.legacy));
+  const sections = SECTIONS.filter(x => isAdmin || !x.adminOnly);
   const shownName = user.name || (isAdmin ? 'מנהל' : `לשכת ${user.mk ?? ''}`);
 
   function go(id: SectionId, button: HTMLElement) {

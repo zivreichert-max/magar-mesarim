@@ -5,13 +5,8 @@ import { supabase } from './supabase';
 // budget analysis live in tables the public key cannot read. All access goes
 // through Postgres functions that check the SIGNED-IN user and their role
 // (office_users: 'admin' or 'office'). Nothing sensitive is in this repo — it
-// is public.
-//
-// Transition (until the cut-over): a visitor who entered with the old shared
-// password has no account, so the old key-based functions are called with that
-// key instead. Removed together with PasswordGate.
-let legacyKey = '';
-export function setLegacyKey(key: string): void { legacyKey = key; }
+// is public. (The shared password and the MK personal codes that used to open
+// these functions were switched off on 24.11.2026.)
 
 export interface OfficeItem {
   id: number;
@@ -39,7 +34,7 @@ export interface OfficeMk {
 }
 
 export interface OfficeData {
-  role: 'admin' | 'office' | 'mk';   // 'mk' = old personal code (transition only)
+  role: 'admin' | 'office';
   v: number;            // 2 once supabase-office-v2.sql has been run, 4 with accounts
   updated: string | null;
   items: OfficeItem[];
@@ -55,22 +50,19 @@ export type OfficeResult =
   | { status: 'error'; message: string };
 
 /** Resolves within 15s no matter what — a stuck request becomes an error
- *  the UI can show (with a retry), never an endless spinner.
- *  `key` is only for checking an old personal code at the old gate. */
-export function getOfficeData(key?: string): Promise<OfficeResult> {
+ *  the UI can show (with a retry), never an endless spinner. */
+export function getOfficeData(): Promise<OfficeResult> {
   const timeout = new Promise<OfficeResult>(resolve =>
     setTimeout(() => resolve({ status: 'error', message: 'הטעינה נמשכה יותר מדי זמן' }), 15_000)
   );
-  const run = fetchOfficeData(key ?? legacyKey).catch(
+  const run = fetchOfficeData().catch(
     (e: unknown): OfficeResult => ({ status: 'error', message: e instanceof Error ? e.message : 'שגיאת רשת' })
   );
   return Promise.race([run, timeout]);
 }
 
-async function fetchOfficeData(key: string): Promise<OfficeResult> {
-  const { data, error } = key
-    ? await supabase.rpc('office_get', { p_key: key })
-    : await supabase.rpc('office_get');
+async function fetchOfficeData(): Promise<OfficeResult> {
+  const { data, error } = await supabase.rpc('office_get');
   if (error) {
     // PGRST202 = function not found in the schema cache → setup not run
     if (error.code === 'PGRST202' || /office_get/.test(error.message)) return { status: 'setup' };
@@ -91,17 +83,13 @@ const rpcOk = (r: { data: unknown; error: unknown }) => !r.error && !!(r.data as
 
 /** Expose (on) or un-expose (off) a product to an MK. Admin only. */
 export async function setOfficeAssignment(item: string, mk: string, on: boolean): Promise<boolean> {
-  return rpcOk(legacyKey
-    ? await supabase.rpc('office_assign_set', { p_key: legacyKey, p_item: item, p_mk: mk, p_on: on })
-    : await supabase.rpc('office_assign_set', { p_item: item, p_mk: mk, p_on: on }));
+  return rpcOk(await supabase.rpc('office_assign_set', { p_item: item, p_mk: mk, p_on: on }));
 }
 
 /** Position-paper links of the weekly schedule: row key → url. Admin only.
  *  null = not available to this user. */
 export async function getOfficePapers(): Promise<Record<string, string> | null> {
-  const { data, error } = legacyKey
-    ? await supabase.rpc('office_papers_get', { p_key: legacyKey })
-    : await supabase.rpc('office_papers_get');
+  const { data, error } = await supabase.rpc('office_papers_get');
   const d = data as { ok?: boolean; papers?: Record<string, string> } | null;
   if (error || !d?.ok) return null;
   return d.papers ?? {};
@@ -109,9 +97,7 @@ export async function getOfficePapers(): Promise<Record<string, string> | null> 
 
 /** Save a position-paper link for a schedule row; an empty url removes it. */
 export async function setOfficePaper(rowKey: string, url: string): Promise<boolean> {
-  return rpcOk(legacyKey
-    ? await supabase.rpc('office_paper_set', { p_key: legacyKey, p_row: rowKey, p_url: url })
-    : await supabase.rpc('office_paper_set', { p_row: rowKey, p_url: url }));
+  return rpcOk(await supabase.rpc('office_paper_set', { p_row: rowKey, p_url: url }));
 }
 
 // ─── budget requests with analysis (פניות תקציב) ──────────────────────────────
@@ -146,9 +132,7 @@ export type BudgetAnalysisResult =
 
 export async function getOfficeBudget(): Promise<BudgetAnalysisResult> {
   try {
-    const { data, error } = legacyKey
-      ? await supabase.rpc('office_budget_get', { p_key: legacyKey })
-      : await supabase.rpc('office_budget_get');
+    const { data, error } = await supabase.rpc('office_budget_get');
     if (error) {
       if (error.code === 'PGRST202' || /office_budget_get/.test(error.message)) return { status: 'setup' };
       return { status: 'error', message: error.message };
@@ -178,10 +162,7 @@ export interface BudgetRequestMeta {
 export async function setOfficeBudget(
   reqKey: string, meta: BudgetRequestMeta, field: string, value: string | null,
 ): Promise<boolean> {
-  const args = { p_req: reqKey, p_meta: meta, p_field: field, p_value: value };
-  return rpcOk(legacyKey
-    ? await supabase.rpc('office_budget_set', { p_key: legacyKey, ...args })
-    : await supabase.rpc('office_budget_set', args));
+  return rpcOk(await supabase.rpc('office_budget_set', { p_req: reqKey, p_meta: meta, p_field: field, p_value: value }));
 }
 
 // ─── accounts (Supabase Auth + office_users) ──────────────────────────────────
@@ -195,7 +176,6 @@ export interface OfficeUser {
   email: string;
   mk: string | null;      // office: the MK the office belongs to
   party: string | null;
-  legacy?: boolean;       // entered with the old shared password (transition only)
 }
 
 /** The signed-in user's record, or null when nobody is signed in / the

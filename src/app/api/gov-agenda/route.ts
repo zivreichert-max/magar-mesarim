@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { LEGACY_OPEN, officeCaller } from '@/lib/officeServer';
+import { officeCaller } from '@/lib/officeServer';
 
 const GOVIL_API = 'https://openapi-gc.digital.gov.il/pub/cio/govil/rest/collectors/v1/api/DataCollector/GetResults';
 const CLIENT_ID = '9KFgciHHGDyNiqz5MdQS0eK2ApeJYMc6YnElUICpN1atirZc';
@@ -94,10 +94,9 @@ async function fetchSource(source: typeof SOURCES[number]): Promise<GovAgendaIte
   }
 }
 
-// Public data, but the route is the office's: once the old shared password is
-// gone only a signed-in office user may call it.
+// Public data, but the route is the office's: only a signed-in office user may call it.
 export async function GET(req: Request) {
-  if (!LEGACY_OPEN && !(await officeCaller(req))) {
+  if (!(await officeCaller(req))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const [ministersItems, govItems] = await Promise.all(SOURCES.map(fetchSource));

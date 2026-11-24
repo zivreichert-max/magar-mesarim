@@ -6,11 +6,6 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
-/** Transition: visitors who entered with the old shared password have no
- *  account. While this is true, routes that only serve public data let them
- *  through. Set to false (and delete) at the cut-over. */
-export const LEGACY_OPEN = true;
-
 export type OfficeRole = 'admin' | 'office';
 
 /** Who is calling: the role of the signed-in office user whose access token
